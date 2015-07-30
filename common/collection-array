@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+# Filename:      collection-array
+# Description:   Array manipulation helpers
+
+[[ $COLLECTION_ARRAY_LOADED ]] && return
+
+_includes () {
+    local array="$1[@]"
+    local seeking=$2
+    local in=1
+    for element in "${!array}"; do
+        if [[ "${element}" == "${seeking}" ]]; then
+            in=0
+            break
+        fi
+    done
+    return $in
+}
+
+_indexOf () {
+    local array="$1[@]"
+    local seeking=$2
+    local in=0
+    for element in "${!array}"; do
+        if [[ "${element}" == "${seeking}" ]]; then
+            echo "${in}"
+            break
+        fi
+        in=$((in+1))
+    done
+}
+
+_forEach () {
+    local array="$1[@]"
+    local function=$2
+    local in=0
+    for element in "${!array}"; do
+        "${function}" "${in}"
+        in=$((in+1))
+    done
+}
+
+_count () {
+    local array="$1[@]"
+    local in=0
+    for element in "${!array}"; do
+        in=$((in+1))
+    done
+    echo "${in}"
+}
+
+_get () {
+    local array="$1[@]"
+    local seeking=$2
+    local in=0
+    for element in "${!array}"; do
+        if [[ "${in}" == "${seeking}" ]]; then
+            echo "${element}"
+            break
+        fi
+        in=$((in+1))
+    done
+}
+
+COLLECTION_ARRAY_LOADED=1

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#
+# <doc>
+#
+# A simple Hello World script.
+#
+# </doc>
+#
+# <import>
+#
+# collection-message
+#
+# </import>
+
+main () {
+    _verbose 1
+    _info "Hello World!"
+}
+
