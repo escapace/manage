@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+#
+# <doc>
+#
+# Bootstrap a manage script in the current directory.
+# Optionally takes script directory name as an argument.
+#
+# </doc>
+#
+# <import>
+#
+# collection-shell
+# collection-string
+# collection-message
+# collection-file
+# collection-tag
+#
+# </import>
+
+_managePath () {
+    local destinationpath
+    local sourcepath
+    local path
+    destinationpath="$1"
+    sourcepath="$(pwd)"
+    path="$(_relpath "${destinationpath}" "${sourcepath}")"
+    if [[ "${path}" == ".." ]] ||
+       [[ "${path}" == "."  ]]
+    then
+        _die "Consider a path outside of the manage repository."
+    else
+        echo "${path}"
+    fi
+}
+
+_scriptPath () {
+    local scriptdir
+    local managedir
+    local absmanagedir
+    local absscriptdir
+    local checkcommon
+
+    [ -n "$2" ] && scriptdir="$2" || scriptdir="script"
+    [ -n "$1" ] && managedir="$1" || _die
+
+    absmanagedir="$(_abspath "${managedir}")"
+    absscriptdir="$(_abspath "${scriptdir}")"
+    checkcommon="$(_commonpath "${absmanagedir}" "${absscriptdir}")"
+    if [ "${checkcommon}" == "${absmanagedir}" ]
+    then
+        _die "Consider a path outside of the manage repository."
+    else
+        echo "${scriptdir}"
+    fi
+}
+
+main () {
+    _enableStrictMode
+
+    export T_MANAGEDIRECTORY
+    export T_MANAGEINIT
+    export T_MANAGESCRIPTSDIRECTORY
+
+    T_MANAGEINIT="${MANAGEINIT}"
+    T_MANAGEDIRECTORY="$(_managePath "${MANAGEDIRECTORY}")"
+    T_MANAGESCRIPTSDIRECTORY="$(_scriptPath "${T_MANAGEDIRECTORY}" "$(echo "$*" | _joinLines " ")")"
+
+    _info "Absolute path to manage directory $(_abspath "${T_MANAGEDIRECTORY}")"
+    _info "Absolute path to script directory $(_abspath "${T_MANAGESCRIPTSDIRECTORY}")"
+
+    if [ ! -d "${T_MANAGESCRIPTSDIRECTORY}" ];
+    then
+        _info "Creating script directory $(_abspath "${T_MANAGESCRIPTSDIRECTORY}")"
+        mkdir "${T_MANAGESCRIPTSDIRECTORY}"
+    fi
+
+    _copy "${T_MANAGEDIRECTORY}/template/hello" "${T_MANAGESCRIPTSDIRECTORY}/hello"
+    _copy "${T_MANAGEDIRECTORY}/template/manage.mustache" "${PWD}/manage"
+    _mustache "${PWD}/manage" T_MANAGEINIT T_MANAGEDIRECTORY T_MANAGESCRIPTSDIRECTORY
+}
+

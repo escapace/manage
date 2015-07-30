@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+
+# Filename:      collection-utils
+# Description:   Miscellaneous utility functions for use in other scripts.
+#
+# The utils library provides miscellaneous functions.
+#
+
+[[ $COLLECTION_TAG_LOADED ]] && return
+
+source collection-shell
+source collection-string
+
+_evalEmbedded()
+{
+    #
+    # Eval embedded code contained in a given tag.
+    #
+    # Usage: _evalEmbedded NAME [FILE...]
+    #
+
+    local name=$1; shift
+    eval "$(_embeddedTag "eval:$name" "$@")"
+}
+
+_embedded()
+{
+    local c="#$1"; c="^[[:space:]]*$c[[:space:]]*"
+    sed -n "/$c/p" "$@" | sed "s/$c//" | _squeezeLines
+}
+
+_embeddedRange()
+{
+    #
+    # Get embedded text between a given range.
+    #
+    # Usage: embeddedRange START END [FILE...]
+    #
+
+    local s=${1//\//\\/}; shift
+    local e=${1//\//\\/}; shift
+    local c="^[[:space:]]*#[[:space:]]*"
+
+    sed -n "/$c$s/,/$c$e/p" "$@" | sed '1d;$d' | sed "s/$c//" | _squeezeLines
+}
+
+_embeddedTag()
+{
+    #
+    # Get the embedded text between a start and end XML-like tag.
+    #
+    # Usage: _embeddedTag NAME
+    #
+
+    local name=$1; shift
+    _embeddedRange "<$name>" "</$name>" "$@"
+}
+
+_flatten()
+{
+    #
+    # Substitute variable names with variables.
+    #
+    # The default is to try to substitute all environment variables, but if
+    # any names are given, it will be limited to just those.
+    #
+    # The placeholder syntax can be changed by setting the following variables:
+    #
+    #     FLATTEN_L  # Default: {{
+    #     FLATTEN_R  # Default: }}
+    #
+    # Usage: _flatten TEXT [VAR...]
+    #
+
+    local t=$1; shift
+    local n
+
+    local fl=${FLATTEN_L:-\{\{}
+    local fr=${FLATTEN_R:-\}\}}
+
+    if (( $# == 0 )); then
+        IFS=$'\n' set -- $(set | _variables)
+    fi
+
+    for n in "$@"; do
+        t=${t//${fl}${n}${fr}/${!n}}
+    done
+
+    echo "$t"
+}
+
+_mustache()
+{
+    #
+    # Substitute variable names with variables in a file.
+    #
+    # The default is to try to substitute all environment variables, but if
+    # any names are given, it will be limited to just those.
+    #
+    # The placeholder syntax can be changed by setting the following variables:
+    #
+    #     FLATTEN_L  # Default: {{
+    #     FLATTEN_R  # Default: }}
+    #
+    # Usage: _flattenFile FILE [VAR...]
+    #
+
+    local fn=$1; shift
+
+    [[ -f $fn ]] || return 1
+
+    local n
+
+    local fl=${FLATTEN_L:-\{\{}
+    local fr=${FLATTEN_R:-\}\}}
+
+    if (( $# == 0 )); then
+        IFS=$'\n' set -- $(set | _variables)
+    fi
+
+    for n in "$@"; do
+        sed -i "s%${fl}${n//%/\%}${fr}%${!n}%g" "$fn"
+    done
+}
+
+_variables()
+{
+    #
+    # Pulls all variable names from stdin.
+    #
+
+    sed 's/[[:space:];]/\n/g' "$@" |
+    egrep '^[a-zA-Z0-9_]+=' |
+    sed 's/=.*$//' | sort -u
+}
+
+_functions()
+{
+    #
+    # Pulls all function names from stdin.
+    #
+
+    sed 's/[[:space:];]/\n/g' "$@" |
+    grep -E '^[a-zA-Z0-9_-]+\(\)' |
+    sed 's/().*$//' | sort -u
+}
+
+_lines()
+{
+    #
+    # Get all lines except for comments and blank lines.
+    #
+    # Usage: _lines [FILE...]
+    #
+
+    grep -E -v '^[[:space:]]*#|^[[:space:]]*$' "$@"
+}
+
+_actions()
+{
+    #
+    # Show all functions that are prefixed with SCRIPT_NAME (stripped off).
+    #
+    # Usage: _actions [NAME]
+    #
+
+    local name=${1:-$SCRIPT_NAME}
+    declare -F |
+    awk '{print $NF}' |
+    grep "^${name}_" |
+    sed "s/^${name}_//" |
+    sort -u
+}
+
+COLLECTION_TAG_LOADED=1

@@ -1,0 +1,213 @@
+#!/usr/bin/env bash
+
+# Filename:      collection-messages
+# Description:   A set of functions for giving the user information.
+
+[[ $COLLECTION_MESSAGES_LOADED ]] && return
+
+source collection-terminfo
+source collection-shell
+source collection-string
+
+_verbose()
+{
+    #
+    # With no arguments, test if verbose mode is enabled.
+    # With one argument, set verbose mode to given value.
+    #
+    # Usage: _verbose [VALUE]
+    #
+
+    if (( $# == 0 )); then
+        _truth $VERBOSE && return 0
+        return 1
+    fi
+
+    export VERBOSE=$(_truthValue $1)
+}
+
+_echo()
+{
+    #
+    # Will only echo the first argument if verbose mode is enabled.
+    # Otherwise, echo the second argument.
+    #
+    # Usage: _echo [TRUE_VALUE] [FALSE_VALUE]
+    #
+
+    _truthEcho "$VERBOSE" "$1" "$2"
+}
+
+_verboseOption()
+{
+    #
+    # Echo the appropriate flag depending on the state of verbose mode.
+    #
+
+    _echo "-v" "-q"
+}
+
+__execute()
+{
+    #
+    # Execute a given command or stored command.
+    #
+    # Usage: __execute [ARGUMENT...]
+    #
+
+    "${EXECUTE_CMD[@]}" "$@"
+}
+
+__executeIn()
+{
+    #
+    # Execute a command in a given directory.
+    #
+    # Usage: __executeIn DIRECTORY [COMMAND...]
+    #
+
+    local OPWD=$PWD; cd "$1"; shift
+    __execute "$@"; error=$?
+    cd "$OPWD"
+    return $error
+}
+
+_execute()
+{
+    #
+    # Will execute the given command and only display the output if _verbose
+    # mode is enabled.
+    #
+    # Usage: __execute [COMMAND]
+    #
+
+    if _verbose; then
+        __execute "$@"
+    else
+        __execute "$@" &>/dev/null
+    fi
+}
+
+_executeIn()
+{
+    #
+    # Will execute the given command in the given directory and only display
+    # the output if verbose mode is enabled.
+    #
+    # Usage: _executeIn() DIRECTORY [COMMAND]
+    #
+
+    if _verbose; then
+        __executeIn "$@"
+    else
+        __executeIn "$@" &>/dev/null
+    fi
+}
+_die()
+{
+    #
+    # Displays an error message and exits with the given error code.
+    #
+    # Usage: _die [MESSAGE] [ERROR]
+    #
+
+    _error "$1"; exit ${2:-1}
+}
+
+_info()
+{
+    #
+    # Displays a colorized (if available) informational message.
+    #
+    # Usage: _info [-c] [MESSAGE]
+    #
+
+    local c
+
+    unset OPTIND
+    while getopts ":c" option; do
+        case $option in
+            c) c=1 ;;
+        esac
+    done && shift $((OPTIND - 1))
+
+    if ! _verbose; then
+        return
+    fi
+
+    local msg=${1:-All updates are complete.}
+
+    # Shorten home paths, if they exist.
+    msg=${msg//$HOME/\~}
+
+    echo -e "${term_bold}${term_fg_blue}==> ${term_fg_white}${msg}${term_reset}" >&2
+}
+
+_assist()
+{
+    #
+    # Displays a help message.
+    #
+    # Usage: _assist [MESSAGE]
+    #
+
+    local msg=${1:-All updates are complete.}
+
+    echo -e "${term_reset}  ${msg}${term_reset}" >&2
+}
+
+_warn()
+{
+    #
+    # Displays a colorized (if available) warning message.
+    #
+    # Usage: _warn [-c] [MESSAGE]
+    #
+
+    local c
+
+    unset OPTIND
+    while getopts ":c" option; do
+        case $option in
+            c) c=1 ;;
+        esac
+    done && shift $((OPTIND - 1))
+
+    if ! _verbose; then
+        return
+    fi
+
+    local msg=${1:-A warning has occurred.}
+
+    # Shorten home paths, if they exist.
+    msg=${msg//$HOME/\~}
+
+    echo -e "${term_bold}${term_fg_yellow}WARNING: ${term_fg_white}${msg}${term_reset}" >&2
+}
+
+_error()
+{
+    #
+    # Displays a colorized (if available) error message.
+    #
+    # Usage: _error [-c] [MESSAGE]
+    #
+
+    local c
+
+    unset OPTIND
+    while getopts ":c" option; do
+        case $option in
+            c) c=1 ;;
+        esac
+    done && shift $((OPTIND - 1))
+
+    local msg=${1:-An error has occurred.}
+
+    # Shorten home paths, if they exist.
+    msg=${msg//$HOME/\~}
+
+    echo -e "${term_bold}${term_fg_red}ERROR: ${term_fg_white}${msg}${term_reset}" >&2
+}
+
+COLLECTION_MESSAGES_LOADED=1
