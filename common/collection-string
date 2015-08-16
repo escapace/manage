@@ -153,7 +153,7 @@ _sortList()
             u) u=-u ;;
             r) r=-r ;;
         esac
-    done && shift $(($OPTIND - 1))
+    done && shift $((OPTIND - 1))
 
     local delim=${1:- }
     local item list
