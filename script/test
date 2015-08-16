@@ -6,11 +6,37 @@
 #
 # </doc>
 
+
 main () {
-    "${MANAGEDIRECTORY}"/vendor/bats/bin/bats --tap "${MANAGEDIRECTORY}"/test
-    # echo "${VERBOSE}"
-    # echo "${MANAGEDIRECTORY}"
-    # echo "${MANAGEINIT}"
-    # echo "${MANAGETOPIC}"
+    local bats
+    local tests
+    local name
+    local path
+
+    bats="${MANAGEDIRECTORY}/vendor/bats/bin/bats"
+    tests="${MANAGEDIRECTORY}/test"
+
+    if [ -n "$1" ]
+    then
+        path="$(cd "${tests}" || exit ; pwd)"
+        local OPWD=$PWD ; cd "${path}" || exit
+        for file in "${path}"/*
+        do
+            if [   -f "${file}" ] &&
+               [   -r "${file}" ] &&
+               [ ! -L "${file}" ] &&
+               [[ "$(basename "${file}")" == *.bats ]]
+            then
+                name="$(basename "${file}")"
+                if [[ "$1" == "${name::-5}" ]]
+                then
+                    "${bats}" --tap "${file}"
+                fi
+            fi
+        done
+        cd "${OPWD}" || exit
+    else
+        "${bats}" --tap "${tests}"
+    fi
 }
 
