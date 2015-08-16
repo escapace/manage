@@ -1,2 +1,3 @@
 # _manage
-_manage provides a skeleton for user-defined commands
+
+_manage is a model for setting up shell programs that use subcommands.

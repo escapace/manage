@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+
+# Filename:      collection-shell
+# Description:   Miscellaneous utility functions for use in other scripts.
+#
+# The utils library provides miscellaneous functions.
+#
+
+[[ $COLLECTION_SHELL_LOADED ]] && return
+
+source collection-string
+
+_first()
+
+{
+    #
+    # Get the first value that is non-empty.
+    #
+    # Usage examples:
+    #     EDITOR=$(_first "$VISUAL" "$EDITOR" vi)
+    #
+
+    local value
+    for value in "$@"; do
+        if [[ $value ]]; then
+            echo "$value"
+            return 0
+        fi
+    done
+    return 1
+}
+
+_named()
+{
+    #
+    # Get the value of the variable named the passed argument.
+    #
+    # The only reason why this function exists is because I can't do:
+    #
+    #     echo ${!"some_var"}
+    #
+    # Instead, I have to do:
+    #
+    #     some_var="The value I really want"
+    #     name="some_var"
+    #     echo ${!name}  #==> The value I really want
+    #
+    # With _named(), I can now do:
+    #
+    #     some_var="The value I really want"
+    #     _named "some_var"  #==> The value I really want
+    #
+    # Which eliminates the need for an intermediate variable.
+    #
+
+    echo "${!1}"
+}
+
+_truth()
+{
+    #
+    # Determine the "truthiness" of the given value.
+    #
+    # Usage examples:
+    #     _truth True   #==> true
+    #     _truth        #==> false
+    #     _truth 1      #==> true
+    #     _truth false  #==> false
+    #     _truth on     #==> true
+    #     _truth spam   #==> false
+    #
+
+    case $(_lower <<<"$1") in
+        yes|y|true|t|on|1) return 0 ;;
+    esac
+    return 1
+}
+
+_truthEcho()
+{
+    #
+    # Depending on the "truthiness" of the given value, echo the first (true)
+    # or second (false) value.
+    #
+
+    if _truth "$1"; then
+        [[ $2 ]] && echo "$2"
+    else
+        [[ $3 ]] && echo "$3"
+    fi
+}
+
+_truthValue()
+{
+    #
+    # Gets a value that represents the "truthiness" of the given value.
+    #
+
+    _truthEcho "$1" 1 0
+}
+
+_sleepUntil()
+{
+    #
+    # Causes the running process to wait until the given date.
+    # If the date is in the past, it immediately returns.
+    #
+
+    local secs=$(($(date -d "$1" +%s) - $(date +%s)))
+    (( secs > 0 )) && sleep $secs
+}
+
+_editor()
+{
+    #
+    # Execute the preferred editor.
+    #
+
+    $(_first "$VISUAL" "$EDITOR" "vi") "$@"
+}
+
+_pager()
+{
+    #
+    # Execute the preferred pager.
+    #
+
+    $(_first "$PAGER" "less")
+}
+
+_repeat()
+{
+    #
+    # Repeat a command a given number of times.
+    #
+
+    local count=$1; shift
+    local i
+    for i in $(seq 1 $count); do
+        "$@"
+    done
+}
+
+_disableStrictMode () {
+    set   +o errexit
+    set   +o errtrace
+    set   +o pipefail
+    shopt -u nullglob
+    IFS=$' \n\t'
+}
+
+_enableStrictMode () {
+    set   -o errexit
+    set   -o errtrace
+    set   -o pipefail
+    shopt -s nullglob
+    IFS=$'\n\t'
+}
+
+_exceptionHandler () {
+    local trap_name="$1"
+    echo "ERROR: ${trap_name} on line $( caller )" >&2 ; exit 1
+}
+
+_catchExceptions () {
+    trap '_exceptionHandler "SIGERR" ${LINENO} ${$?}' ERR
+    trap '_exceptionHandler "SIGINT" ${LINENO} ${$?}' INT
+    trap '_exceptionHandler "SIGHUP" ${LINENO} ${$?}' HUP
+    trap '_exceptionHandler "SIGTERM "${LINENO} ${$?}' TERM
+    trap '_exceptionHandler "SIGKILL" ${LINENO} ${$?}' KILL
+    trap '_exceptionHandler "SIGQUIT" ${LINENO} ${$?}' QUIT
+}
+
+COLLECTION_SHELL_LOADED=1

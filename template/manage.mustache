@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+# <doc>
+#
+# _manage is a model for setting up shell programs that use
+# subcommands.
+#
+# For more details on how to define your own commands look
+# online at https://github.com/eitherlands/_manage
+#
+# </doc>
+
+# Relative path to the user-defined commands directory
+MANAGESCRIPTSDIRECTORY="{{T_MANAGESCRIPTSDIRECTORY}}"
+
+# Relative path to the _manage repository
+MANAGEDIRECTORY="{{T_MANAGEDIRECTORY}}"
+
+# The _manage script filename
+MANAGEINIT="{{T_MANAGEINIT}}"
+
+#######################
+MANAGEIMPORTS=("manage")
+MANAGEPATH="${MANAGEDIRECTORY}"/"${MANAGEINIT}"
+
+SELFDIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SELFINIT="$( basename "${BASH_SOURCE[0]}" )"
+SELFPATH="${SELFDIRECTORY}"/"${SELFINIT}"
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    source "${MANAGEPATH}"
+    _harvest "${SELFDIRECTORY%%/}"/"${MANAGESCRIPTSDIRECTORY%%/}"
+    _usageHeaderPath "${SELFPATH}"
+
+    _enableStrictMode
+    _catchExceptions
+
+    unset options
+    unset OPTIND
+    while getopts ":h:?v" options "$@"; do
+        _flags "$options"
+    done && shift $((OPTIND - 1))
+    unset OPTIND
+    unset options
+
+    [ "$1" = "--" ] && shift
+    _run "$@"
+fi
+

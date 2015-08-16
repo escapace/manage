@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# <doc>
+#
+# Run the test suite.
+#
+# </doc>
+
+main () {
+    "${MANAGEDIRECTORY}"/vendor/bats/bin/bats --tap "${MANAGEDIRECTORY}"/test
+    # echo "${VERBOSE}"
+    # echo "${MANAGEDIRECTORY}"
+    # echo "${MANAGEINIT}"
+    # echo "${MANAGETOPIC}"
+}
+
