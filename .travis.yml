@@ -1,5 +1,5 @@
-language: c
-script: manage test
+language: bash
+script: bash manage test
 notifications:
   email:
     on_success: never
