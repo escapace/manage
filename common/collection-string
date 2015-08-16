@@ -1,0 +1,283 @@
+#!/usr/bin/env bash
+
+# Filename:      collection-string
+# Description:   String manipulation helpers
+
+[[ $COLLECTION_STRING_LOADED ]] && return
+
+_camel()
+{
+    #
+    # Make text from stdin camel case.
+    #
+
+    sed 's/_/ /g' |
+    sed 's/\<\(.\)/\U\1/g' |
+    sed 's/ //g'
+}
+
+_capitalize()
+{
+    #
+    # Convert stdin to titlecase.
+    #
+
+    _lower | sed 's/\<./\u&/g' |
+    sed "s/'[[:upper:]]/\L&\l/g"
+}
+
+_commonprefix()
+{
+    #
+    # Gets the common prefix of the strings passed on stdin.
+    #
+    # Usage examples:
+    #     echo -e "spam\nspace"   | _commonprefix  #==> spa
+    #     echo -e "foo\nbar\nbaz" | _commonprefix  #==>
+    #
+
+    local i compare prefix
+
+    if (( $# > 0 )); then
+        local str
+        for str in "$@"; do
+            echo "$str"
+        done | _commonprefix
+        return
+    fi
+
+    while read -r; do
+        [[ $prefix ]] || prefix=$REPLY
+        i=0
+        unset compare
+        while true; do
+            [[ ${REPLY:$i:1} || ${prefix:$i:1} ]] || break
+            [[ ${REPLY:$i:1} != ${prefix:$i:1} ]] && break
+            compare+=${REPLY:$((i++)):1}
+        done
+        prefix=$compare
+        echo "$prefix"
+    done | tail -n1
+}
+
+_commonsuffix()
+{
+    #
+    # Gets the common suffix of the strings passed on stdin.
+    #
+    # Usage examples:
+    #     echo -e "foobar\nbabar" | _commonsuffix  #==> bar
+    #     echo -e "broom\ngroom"  | _commonsuffix  #==> room
+    #
+
+    if (( $# > 0 )); then
+        local str
+        for str in "$@"; do
+            echo "$str"
+        done | _commonsuffix
+        return
+    fi
+
+    rev | _commonprefix | rev
+}
+
+_detox()
+{
+    #
+    # Make text from stdin slightly less insane.
+    #
+
+    sed 's/[^A-Za-z0-9 ]/ /g' |
+    _squeeze | sed 's/ /_/g' | _lower
+}
+
+_joinLines()
+{
+    #
+    # Joins lines from stdin into a string.
+    #
+    # DELIMITER defaults to ", ".
+    #
+    # Usage: _joinLines [DELIMITER]
+    #
+    # Usage examples:
+    #     echo -e "foo\nbar\nbaz" | _joinLines      #==> foo, bar, baz
+    #     echo -e "foo\nbar\nbaz" | _joinLines "|"  #==> foo|bar|baz
+    #
+
+    local delim=${1:-, }
+
+    while read -r; do
+        echo -ne "${REPLY}${delim}"
+    done | sed "s/$delim$//"
+    echo
+}
+
+_lower()
+{
+    #
+    # Convert stdin to lowercase.
+    #
+
+    tr '[:upper:]' '[:lower:]'
+}
+
+_snake()
+{
+    #
+    # Make text from stdin snake case.
+    #
+
+    sed 's/\([[:upper:]]\)/ \1/g' | _detox
+}
+
+_sortList()
+{
+    #
+    # Sorts a list from stdin.
+    #
+    # Usage: _sortList [-ur] [DELIMITER]
+    #
+    # Usage examples:
+    #     echo "c b a"     | _sortList       #==> a b c
+    #     echo "c, b, a"   | _sortList ", "  #==> a, b, c
+    #     echo "c b b b a" | _sortList -u    #==> a b c
+    #     echo "c b a"     | _sortList -r    #==> c b a
+    #
+
+    local r u
+
+    unset OPTIND
+    while getopts ":ur" option; do
+        case $option in
+            u) u=-u ;;
+            r) r=-r ;;
+        esac
+    done && shift $(($OPTIND - 1))
+
+    local delim=${1:- }
+    local item list
+
+    OIFS=$IFS; IFS=$'\n'
+    for item in $(sed "s%${delim//%/\%}%\n%g" | sort $r $u); do
+        IFS=$OIFS
+        list+="$(_trim <<<"$item")$delim"
+    done
+
+    echo "${list%%$delim}"
+}
+
+_splitString()
+{
+    #
+    # Split text from stdin into a list.
+    #
+    # DELIMITER defaults to ",".
+    #
+    # Usage: _splitString [DELIMITER]
+    #
+    # Usage examples:
+    #     echo "foo, bar, baz" | _splitString      #==> foo\nbar\nbaz
+    #     echo "foo|bar|baz"   | _splitString "|"  #==> foo\nbar\nbaz
+    #
+
+    local delim=${1:-,}
+    local line str
+
+    while read -r; do
+        OIFS=$IFS; IFS=$delim
+        for str in $REPLY; do
+            IFS=$OIFS
+            _trim <<<"$str"
+        done
+    done
+}
+
+_squeeze()
+{
+    #
+    # Removes leading/trailing whitespace and condenses all other consecutive
+    # whitespace into a single space.
+    #
+    # Usage examples:
+    #     echo "  foo  bar   baz  " | _squeeze  #==> "foo bar baz"
+    #
+
+    local char=${1:-[[:space:]]}
+    sed "s%\(${char//%/\\%}\)\+%\1%g" | _trim "$char"
+}
+
+_squeezeLines()
+{
+    #
+    # Removes all leading/trailing blank lines and condenses all other
+    # consecutive blank lines into a single blank line.
+    #
+
+    sed '/^[[:space:]]\+$/s/.*//g' | cat -s | _trimLines
+}
+
+_trim()
+{
+    #
+    # Removes all leading/trailing whitespace
+    #
+    # Usage examples:
+    #     echo "  foo  bar baz " | _trim  #==> "foo  bar baz"
+    #
+
+    _trimLeft "$1" | _trimRight "$1"
+}
+
+_trimLeft()
+{
+    #
+    # Removes all leading whitespace (from the left).
+    #
+
+    local char=${1:-[:space:]}
+    sed "s%^[${char//%/\\%}]*%%"
+}
+
+_trimLines()
+{
+    #
+    # Removes all leading/trailing blank lines.
+    #
+    # Explanation of sed command:
+    #
+    #     :a      # Set label a
+    #     $!{     # For every line except the last...
+    #         N   # Add to pattern space with a newline
+    #         ba  # Go back to label a
+    #     }
+    #
+    # The pattern space now consists of a single string containing newlines.
+    #
+    #     s/^[[:space:]]*\n//  # Remove all leading whitespace (blank lines).
+    #     s/\n[[:space:]]*$//  # Remove all trailing whitespace (blank lines).
+    #
+
+    sed ':a;$!{N;ba;};s/^[[:space:]]*\n//;s/\n[[:space:]]*$//'
+}
+
+_trimRight()
+{
+    #
+    # Removes all trailing whitespace (from the right).
+    #
+
+    local char=${1:-[:space:]}
+    sed "s%[${char//%/\\%}]*$%%"
+}
+
+_upper()
+{
+    #
+    # Convert stdin to uppercase.
+    #
+
+    tr '[:lower:]' '[:upper:]'
+}
+
+COLLECTION_STRING_LOADED=1
