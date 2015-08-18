@@ -26,6 +26,7 @@ MANAGEPATH="${MANAGEDIRECTORY}"/"${MANAGEINIT}"
 SELFDIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SELFINIT="$( basename "${BASH_SOURCE[0]}" )"
 SELFPATH="${SELFDIRECTORY}"/"${SELFINIT}"
+SELFOPWD=$PWD ; cd "${SELFDIRECTORY}" || exit
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
 then
@@ -46,5 +47,6 @@ then
 
     [ "$1" = "--" ] && shift
     _run "$@"
+    cd "${SELFOPWD}" || exit
 fi
 
