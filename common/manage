@@ -94,9 +94,11 @@ _usageSubcommand () {
 }
 
 _usageSubcommands () {
-    [[ "$(_topicCount)" != 0 ]] &&
-    echo -e "Subcommands"        &&
-    _forEachTopic _usageSubcommandLine
+    if [[ "$(_topicCount)" != 0 ]];
+    then
+        echo -e "Subcommands"        &&
+        _forEachTopic _usageSubcommandLine
+    fi
 }
 
 _usage () {
@@ -112,7 +114,7 @@ _usage () {
 _harvest() {
     local file
 
-    for file in "$1"/*
+    for file in "$1"/* "$1"/**/*
     do
         if [   -f "${file}" ] &&
            [   -r "${file}" ] &&
