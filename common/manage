@@ -153,7 +153,7 @@ _wrapper () {
                    "main" "$@"
                  )"
 
-    bash -c "${bashcommand}"
+    bash --noprofile -ic "${bashcommand}"
 }
 
 _run () {
