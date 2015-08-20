@@ -18,16 +18,37 @@
 [ -z "$MANAGEPATH" ]             && MANAGEPATH="${MANAGEDIRECTORY}"/"${MANAGEINIT}"
 [ -z "$MANAGESCRIPTSDIRECTORY" ] && MANAGESCRIPTSDIRECTORY="script"
 
-export MANAGEDIRECTORY
-export MANAGEINIT
-export MANAGEPATH
+# export MANAGEDIRECTORY
+# export MANAGEINIT
+# export MANAGEPATH
+#
+_exit () {
+    local OPWD="${MANAGEOPWD}"
+    _cleanup
+    [ -d "${OPWD}" ] && cd "${OPWD}" || exit "$1"
+    exit "$1"
+}
+
+_cleanup () {
+    unset MANAGEINIT
+    unset MANAGEPATH
+    unset MANAGETOPIC
+    unset MANAGEIMPORTS
+    unset MANAGEVERBOSE
+    unset MANAGEDIRECTORY
+    unset MANAGESCRIPTSDIRECTORY
+    unset MANAGE_LOADED
+    unset MANAGESELFDIRECTORY
+    unset MANAGESELFINIT
+    unset MANAGEOPWD
+}
 
 _import()
 {
     local path
     local requirements="$1"
-    path="$(cd "${MANAGEDIRECTORY}"/common || exit ; pwd)"
-    local OPWD=$PWD ; cd "${path}" || exit
+    path="$(cd "${MANAGEDIRECTORY}"/common || _exit ; pwd)"
+    local OPWD=$PWD ; cd "${path}" || _exit
     for file in "${path}"/*
     do
         if [   -f "${file}" ] &&
@@ -44,19 +65,18 @@ _import()
             done
         fi
     done
-    cd "${OPWD}" || exit
+    cd "${OPWD}" || _exit
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
 then
     _import "${MANAGEIMPORTS}"
 else
-    _requirements=("manage")
-    _import "${_requirements[*]}"
+    _import "manage"
     _harvest "${MANAGEDIRECTORY%%/}"/"${MANAGESCRIPTSDIRECTORY%%/}"
 
     _enableStrictMode
-    _catchExceptions
+    _mCatchExceptions
 
     unset options
     unset OPTIND

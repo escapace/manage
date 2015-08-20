@@ -19,11 +19,11 @@ _verbose()
     #
 
     if (( $# == 0 )); then
-        _truth $VERBOSE && return 0
+        _truth $MANAGEVERBOSE && return 0
         return 1
     fi
 
-    export VERBOSE=$(_truthValue $1)
+    export MANAGEVERBOSE=$(_truthValue $1)
 }
 
 _echo()
@@ -35,7 +35,7 @@ _echo()
     # Usage: _echo [TRUE_VALUE] [FALSE_VALUE]
     #
 
-    _truthEcho "$VERBOSE" "$1" "$2"
+    _truthEcho "$MANAGEVERBOSE" "$1" "$2"
 }
 
 _verboseOption()
