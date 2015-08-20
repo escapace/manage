@@ -23,7 +23,7 @@ _verbose()
         return 1
     fi
 
-    export MANAGEVERBOSE=$(_truthValue $1)
+    MANAGEVERBOSE=$(_truthValue $1)
 }
 
 _echo()
