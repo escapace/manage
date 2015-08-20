@@ -171,4 +171,8 @@ _catchExceptions () {
     trap '_exceptionHandler "SIGQUIT" ${LINENO} ${$?}' QUIT
 }
 
+_whereIs () {
+    type "$@" | sed -n -e 's/^.*is //p'
+}
+
 COLLECTION_SHELL_LOADED=1
