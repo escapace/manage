@@ -57,9 +57,9 @@ _scriptPath () {
 main () {
     _enableStrictMode
 
-    export T_MANAGEDIRECTORY
-    export T_MANAGEINIT
-    export T_MANAGESCRIPTSDIRECTORY
+    local T_MANAGEDIRECTORY
+    local T_MANAGEINIT
+    local T_MANAGESCRIPTSDIRECTORY
 
     T_MANAGEINIT="${MANAGEINIT}"
     T_MANAGEDIRECTORY="$(_managePath "${MANAGEDIRECTORY}")"
