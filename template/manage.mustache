@@ -23,19 +23,20 @@ MANAGEINIT="{{T_MANAGEINIT}}"
 MANAGEIMPORTS=("manage")
 MANAGEPATH="${MANAGEDIRECTORY}"/"${MANAGEINIT}"
 
-SELFDIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SELFINIT="$( basename "${BASH_SOURCE[0]}" )"
-SELFPATH="${SELFDIRECTORY}"/"${SELFINIT}"
-SELFOPWD=$PWD ; cd "${SELFDIRECTORY}" || exit
+MANAGESELFDIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MANAGESELFINIT="$( basename "${BASH_SOURCE[0]}" )"
+MANAGEOPWD=$PWD ; cd "${MANAGESELFDIRECTORY}" || _exit
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
 then
     source "${MANAGEPATH}"
-    _harvest "${SELFDIRECTORY%%/}"/"${MANAGESCRIPTSDIRECTORY%%/}"
-    _usageHeaderPath "${SELFPATH}"
+    _harvest "${MANAGESELFDIRECTORY%%/}"/"${MANAGESCRIPTSDIRECTORY%%/}"
+    _usageHeaderPath "${MANAGESELFDIRECTORY}"/"${MANAGESELFINIT}"
+    unset MANAGESELFDIRECTORY
+    unset MANAGESELFINIT
 
     _enableStrictMode
-    _catchExceptions
+    _mCatchExceptions
 
     unset options
     unset OPTIND
@@ -47,6 +48,6 @@ then
 
     [ "$1" = "--" ] && shift
     _run "$@"
-    cd "${SELFOPWD}" || exit
+    cd "${MANAGEOPWD}" || _exit
 fi
 
