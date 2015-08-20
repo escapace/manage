@@ -1,6 +1,6 @@
 <p align="right">
     <a href="https://travis-ci.org/eitherlands/_manage">
-        <img src="https://img.shields.io/travis/eitherlands/_manage.svg?style=flat-square"
+        <img src="https://travis-ci.org/eitherlands/_manage.svg?branch=master"
              alt="build status">
     </a>
 </p>
