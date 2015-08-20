@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
 # Filename:      collection-utils
-# Description:   Miscellaneous utility functions for use in other scripts.
-#
-# The utils library provides miscellaneous functions.
+# Description:   Functions for manipulating & parsing scripts.
 #
 
 [[ $COLLECTION_TAG_LOADED ]] && return
@@ -11,22 +9,30 @@
 source collection-shell
 source collection-string
 
-_evalEmbedded()
+_actions()
 {
     #
-    # Eval embedded code contained in a given tag.
+    # Show all functions that are prefixed with PREFIX (stripped off).
+    # If no [FILE...] is provided functions are looked up in  the running stack.
     #
-    # Usage: _evalEmbedded NAME [FILE...]
+    # Usage:
+    #
+    # _actions [PREFIX] [FILE]
+    # cat | [FILE] | _actions [PREFIX]
     #
 
-    local name=$1; shift
-    eval "$(_embeddedTag "eval:$name" "$@")"
-}
-
-_embedded()
-{
-    local c="#$1"; c="^[[:space:]]*$c[[:space:]]*"
-    sed -n "/$c/p" "$@" | sed "s/$c//" | _squeezeLines
+    local name="$1"
+    shift
+    if [ -t 0 ] && [ -z "${*}" ]
+    then
+        declare -F | awk '{print $NF}' |
+        grep "^${name}" |
+        sort -u
+    else
+        _functions "$@" |
+        grep "^${name}" |
+        sort -u
+    fi
 }
 
 _embeddedRange()
@@ -56,37 +62,41 @@ _embeddedTag()
     _embeddedRange "<$name>" "</$name>" "$@"
 }
 
-_flatten()
+
+_embeddedEval()
 {
     #
-    # Substitute variable names with variables.
+    # Eval embedded code contained in a given tag.
     #
-    # The default is to try to substitute all environment variables, but if
-    # any names are given, it will be limited to just those.
-    #
-    # The placeholder syntax can be changed by setting the following variables:
-    #
-    #     FLATTEN_L  # Default: {{
-    #     FLATTEN_R  # Default: }}
-    #
-    # Usage: _flatten TEXT [VAR...]
+    # Usage: _embeddedEval NAME [FILE...]
     #
 
-    local t=$1; shift
-    local n
+    local name=$1; shift
+    eval "$(_embeddedTag "$name" "$@")"
+}
 
-    local fl=${FLATTEN_L:-\{\{}
-    local fr=${FLATTEN_R:-\}\}}
+_functions()
+{
+    #
+    # Pulls all function names from file.
+    #
+    # Usage: _functions [FILE]
+    #
 
-    if (( $# == 0 )); then
-        IFS=$'\n' set -- $(set | _variables)
-    fi
+    _lines "$@" | _trim |
+    grep -E '^[a-zA-Z0-9_-]+[[:space:]]*[\(]{1}[\)]{1}' |
+    sed 's/().*$//' | _trim | sort -u
+}
 
-    for n in "$@"; do
-        t=${t//${fl}${n}${fr}/${!n}}
-    done
+_lines()
+{
+    #
+    # Get all lines except for comments and blank lines.
+    #
+    # Usage: _lines [FILE...]
+    #
 
-    echo "$t"
+    grep -E -v '^[[:space:]]*#|^[[:space:]]*$' "$@"
 }
 
 _mustache()
@@ -99,10 +109,10 @@ _mustache()
     #
     # The placeholder syntax can be changed by setting the following variables:
     #
-    #     FLATTEN_L  # Default: {{
-    #     FLATTEN_R  # Default: }}
+    #     MUSTACHE_L  # Default: {{
+    #     MUSTACHE_R  # Default: }}
     #
-    # Usage: _flattenFile FILE [VAR...]
+    # Usage: _mustache FILE [VAR...]
     #
 
     local fn=$1; shift
@@ -111,8 +121,8 @@ _mustache()
 
     local n
 
-    local fl=${FLATTEN_L:-\{\{}
-    local fr=${FLATTEN_R:-\}\}}
+    local fl=${MUSTACHE_L:-\{\{}
+    local fr=${MUSTACHE_R:-\}\}}
 
     if (( $# == 0 )); then
         IFS=$'\n' set -- $(set | _variables)
@@ -132,44 +142,6 @@ _variables()
     sed 's/[[:space:];]/\n/g' "$@" |
     egrep '^[a-zA-Z0-9_]+=' |
     sed 's/=.*$//' | sort -u
-}
-
-_functions()
-{
-    #
-    # Pulls all function names from stdin.
-    #
-
-    sed 's/[[:space:];]/\n/g' "$@" |
-    grep -E '^[a-zA-Z0-9_-]+\(\)' |
-    sed 's/().*$//' | sort -u
-}
-
-_lines()
-{
-    #
-    # Get all lines except for comments and blank lines.
-    #
-    # Usage: _lines [FILE...]
-    #
-
-    grep -E -v '^[[:space:]]*#|^[[:space:]]*$' "$@"
-}
-
-_actions()
-{
-    #
-    # Show all functions that are prefixed with SCRIPT_NAME (stripped off).
-    #
-    # Usage: _actions [NAME]
-    #
-
-    local name=${1:-$SCRIPT_NAME}
-    declare -F |
-    awk '{print $NF}' |
-    grep "^${name}_" |
-    sed "s/^${name}_//" |
-    sort -u
 }
 
 COLLECTION_TAG_LOADED=1
