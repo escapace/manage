@@ -18,13 +18,8 @@
 [ -z "$MANAGEPATH" ]             && MANAGEPATH="${MANAGEDIRECTORY}"/"${MANAGEINIT}"
 [ -z "$MANAGESCRIPTSDIRECTORY" ] && MANAGESCRIPTSDIRECTORY="script"
 
-# export MANAGEDIRECTORY
-# export MANAGEINIT
-# export MANAGEPATH
-#
 _exit () {
     local arg=${1:-0}
-    # [ -n "$1" ] && numarg="$1"
     local OPWD="${MANAGEOPWD}"
     _cleanup
     [ -d "${OPWD}" ] && cd "${OPWD}" || exit "${arg}"

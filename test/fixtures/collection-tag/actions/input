@@ -1,0 +1,81 @@
+#!/bin/bash
+
+qwe_with_space () {
+    echo
+}
+
+qwe_with_few_spaces  () {
+    echo
+}
+
+qwe_without_space() {
+    echo
+}
+
+    qwe_tab_with_space () {
+        echo
+    }
+
+    qwe_tab_with_few_spaces  () {
+        echo
+    }
+
+    qwe_tab_without_space() {
+        echo
+    }
+
+
+    qwe_tab_with_space1 ()
+    {
+        echo
+    }
+
+    qwe_tab_with_few_spaces1  ()
+    {
+        echo
+    }
+
+    qwe_tab_without_space1()
+    {
+        echo
+    }
+
+test_with_space () {
+    echo
+}
+
+test_with_few_spaces  () {
+    echo
+}
+
+test_without_space() {
+    echo
+}
+
+    test_tab_with_space () {
+        echo
+    }
+
+    test_tab_with_few_spaces  () {
+        echo
+    }
+
+    test_tab_without_space() {
+        echo
+    }
+
+
+    test_tab_with_space1 ()
+    {
+        echo
+    }
+
+    test_tab_with_few_spaces1  ()
+    {
+        echo
+    }
+
+    test_tab_without_space1()
+    {
+        echo
+    }
