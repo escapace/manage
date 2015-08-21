@@ -15,7 +15,7 @@ main () {
 
     bats="${MANAGEDIRECTORY}/vendor/bats/bin/bats"
     tests="${MANAGEDIRECTORY}/test"
-
+    [ ! -f "${bats}" ] && "Can't find \"bats\". Pull manage submodules first."
     if [ -n "$1" ]
     then
         path="$(cd "${tests}" || exit ; pwd)"

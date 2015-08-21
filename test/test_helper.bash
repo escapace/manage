@@ -27,9 +27,9 @@ import()
     cd "${OPWD}" || exit
 }
 
-# setup() {
-#     export TMP="$BATS_TEST_DIRNAME/tmp"
-# }
+setup() {
+    export TMP="$BATS_TEST_DIRNAME/tmp"
+}
 
 fixtures() {
   FIXTURE_ROOT="$BATS_TEST_DIRNAME/fixtures/$1"
