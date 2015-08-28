@@ -132,7 +132,8 @@ _harvest() {
         if [   -f "${file}" ] &&
            [   -r "${file}" ] &&
            [ ! -L "${file}" ] &&
-           [[ "$(basename "${file}")" =~ ^[-a-zA-Z]*$ ]]
+           [[ "$(basename "${file}")" =~ ^[-a-zA-Z]*$ ]] &&
+           [[ "$(head -n 1 "${file}")" =~ ^(#!){1}.*(bash){1}.* ]]
         then
             _topicPaths+=("${file}")
             _topicNames+=("$(basename "${file}")")
