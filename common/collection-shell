@@ -11,7 +11,6 @@
 source collection-string
 
 _first()
-
 {
     #
     # Get the first value that is non-empty.
@@ -117,6 +116,63 @@ _editor()
     #
 
     $(_first "$VISUAL" "$EDITOR" "vi") "$@"
+}
+
+_execute()
+{
+    #
+    # Execute a given command.
+    #
+    # Usage: _execute [ARGUMENT...]
+    #
+
+    bash --noprofile -ic "$@"
+}
+
+_executeIn()
+{
+    #
+    # Execute a command in a given directory.
+    #
+    # Usage: _executeIn DIRECTORY [COMMAND...]
+    #
+
+    local OPWD=$PWD; cd "$1"; shift
+    _execute "$@"; error=$?
+    cd "$OPWD"
+    return $error
+}
+
+_executeVerbose()
+{
+    #
+    # Will execute the given command and only display the output if _verbose
+    # mode is enabled.
+    #
+    # Usage: _executeVerbose [COMMAND]
+    #
+
+    if _verbose; then
+        _execute "$@"
+    else
+        _execute "$@" &>/dev/null
+    fi
+}
+
+_executeIn()
+{
+    #
+    # Will execute the given command in the given directory and only display
+    # the output if verbose mode is enabled.
+    #
+    # Usage: _executeIn() DIRECTORY [COMMAND]
+    #
+
+    if _verbose; then
+        _executeIn "$@"
+    else
+        _executeIn "$@" &>/dev/null
+    fi
 }
 
 _pager()
