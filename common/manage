@@ -168,7 +168,7 @@ _wrapper () {
                  )"
 
     _cleanup
-    bash --noprofile -ic "${bashcommand}" || _exit
+    _execute "${bashcommand}" || _exit
 }
 
 _run () {
