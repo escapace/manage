@@ -47,62 +47,6 @@ _verboseOption()
     _echo "-v" "-q"
 }
 
-__execute()
-{
-    #
-    # Execute a given command or stored command.
-    #
-    # Usage: __execute [ARGUMENT...]
-    #
-
-    "${EXECUTE_CMD[@]}" "$@"
-}
-
-__executeIn()
-{
-    #
-    # Execute a command in a given directory.
-    #
-    # Usage: __executeIn DIRECTORY [COMMAND...]
-    #
-
-    local OPWD=$PWD; cd "$1"; shift
-    __execute "$@"; error=$?
-    cd "$OPWD"
-    return $error
-}
-
-_execute()
-{
-    #
-    # Will execute the given command and only display the output if _verbose
-    # mode is enabled.
-    #
-    # Usage: __execute [COMMAND]
-    #
-
-    if _verbose; then
-        __execute "$@"
-    else
-        __execute "$@" &>/dev/null
-    fi
-}
-
-_executeIn()
-{
-    #
-    # Will execute the given command in the given directory and only display
-    # the output if verbose mode is enabled.
-    #
-    # Usage: _executeIn() DIRECTORY [COMMAND]
-    #
-
-    if _verbose; then
-        __executeIn "$@"
-    else
-        __executeIn "$@" &>/dev/null
-    fi
-}
 _die()
 {
     #
