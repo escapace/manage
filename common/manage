@@ -7,20 +7,6 @@ source collection-message
 source collection-tag
 source collection-array
 
-_mExceptionHandler () {
-    local trap_name="$1"
-    echo "ERROR: ${trap_name} on line $( caller )" >&2 ; _exit 1
-}
-
-_mCatchExceptions () {
-    trap '_exceptionHandler "SIGERR" ${LINENO} ${$?}' ERR
-    trap '_exceptionHandler "SIGINT" ${LINENO} ${$?}' INT
-    trap '_exceptionHandler "SIGHUP" ${LINENO} ${$?}' HUP
-    trap '_exceptionHandler "SIGTERM "${LINENO} ${$?}' TERM
-    trap '_exceptionHandler "SIGKILL" ${LINENO} ${$?}' KILL
-    trap '_exceptionHandler "SIGQUIT" ${LINENO} ${$?}' QUIT
-}
-
 _topicExists () {
     _includes _topicNames "$*"
 }
@@ -168,7 +154,7 @@ _wrapper () {
                  )"
 
     _cleanup
-    _execute "${bashcommand}" || _exit
+    _execute "${bashcommand}" || _exit "$?"
 }
 
 _run () {

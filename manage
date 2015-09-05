@@ -22,8 +22,8 @@ _exit () {
     local arg=${1:-0}
     local OPWD="${MANAGEOPWD}"
     _cleanup
-    [ -d "${OPWD}" ] && cd "${OPWD}" || exit "${arg}"
-    exit "${arg}"
+    [ -d "${OPWD}" ] && cd "${OPWD}" || exit "${arg}" > /dev/null 2>&1
+    exit "${arg}" > /dev/null 2>&1
 }
 
 _cleanup () {
@@ -44,8 +44,8 @@ _import()
 {
     local path
     local requirements="$1"
-    path="$(cd "${MANAGEDIRECTORY}"/common || _exit ; pwd)"
-    local OPWD=$PWD ; cd "${path}" || _exit
+    path="$(cd "${MANAGEDIRECTORY}"/common || _exit "$?" ; pwd)"
+    local OPWD=$PWD ; cd "${path}" || _exit "$?"
     for file in "${path}"/*
     do
         if [   -f "${file}" ] &&
@@ -62,7 +62,7 @@ _import()
             done
         fi
     done
-    cd "${OPWD}" || _exit
+    cd "${OPWD}" || _exit "$?"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
@@ -73,7 +73,7 @@ else
     _harvest "${MANAGEDIRECTORY%%/}"/"${MANAGESCRIPTSDIRECTORY%%/}"
 
     _enableStrictMode
-    _mCatchExceptions
+    _catchExceptions
 
     unset options
     unset OPTIND
