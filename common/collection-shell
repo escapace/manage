@@ -227,8 +227,10 @@ _catchExceptions () {
     trap '_exceptionHandler "SIGQUIT" ${LINENO} ${$?}' QUIT
 }
 
-_whereIs () {
-    type "$@" | sed -n -e 's/^.*is //p'
+_exists () {
+    export PATH
+    which "$1" &> /dev/null
+    return "$?"
 }
 
 COLLECTION_SHELL_LOADED=1
