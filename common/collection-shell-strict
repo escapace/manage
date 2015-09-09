@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# Filename:      collection-shell-strict
+# Description:   Bash strict mode.
+
+[[ $COLLECTION_SHELL_STRICT_LOADED ]] && return
+
+_disableStrictMode () {
+    set   +o errexit
+    set   +o errtrace
+    set   +o pipefail
+    shopt -u nullglob
+    IFS=$' \n\t'
+}
+
+_enableStrictMode () {
+    set   -o errexit
+    set   -o errtrace
+    set   -o pipefail
+    shopt -s nullglob
+    IFS=$'\n\t'
+}
+
+COLLECTION_SHELL_STRICT_LOADED=1

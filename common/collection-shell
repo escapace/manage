@@ -8,6 +8,8 @@
 
 [[ $COLLECTION_SHELL_LOADED ]] && return
 
+source collection-shell-trap
+source collection-shell-strict
 source collection-string
 
 _first()
@@ -98,26 +100,6 @@ _truthValue()
     _truthEcho "$1" 1 0
 }
 
-_sleepUntil()
-{
-    #
-    # Causes the running process to wait until the given date.
-    # If the date is in the past, it immediately returns.
-    #
-
-    local secs=$(($(date -d "$1" +%s) - $(date +%s)))
-    (( secs > 0 )) && sleep $secs
-}
-
-_editor()
-{
-    #
-    # Execute the preferred editor.
-    #
-
-    $(_first "$VISUAL" "$EDITOR" "vi") "$@"
-}
-
 _execute()
 {
     #
@@ -137,51 +119,11 @@ _executeIn()
     # Usage: _executeIn DIRECTORY [COMMAND...]
     #
 
+    local error
     local OPWD=$PWD; cd "$1"; shift
     _execute "$@"; error=$?
     cd "$OPWD"
     return $error
-}
-
-_executeVerbose()
-{
-    #
-    # Will execute the given command and only display the output if _verbose
-    # mode is enabled.
-    #
-    # Usage: _executeVerbose [COMMAND]
-    #
-
-    if _verbose; then
-        _execute "$@"
-    else
-        _execute "$@" &>/dev/null
-    fi
-}
-
-_executeIn()
-{
-    #
-    # Will execute the given command in the given directory and only display
-    # the output if verbose mode is enabled.
-    #
-    # Usage: _executeIn() DIRECTORY [COMMAND]
-    #
-
-    if _verbose; then
-        _executeIn "$@"
-    else
-        _executeIn "$@" &>/dev/null
-    fi
-}
-
-_pager()
-{
-    #
-    # Execute the preferred pager.
-    #
-
-    $(_first "$PAGER" "less")
 }
 
 _repeat()
@@ -192,45 +134,36 @@ _repeat()
 
     local count=$1; shift
     local i
-    for i in $(seq 1 $count); do
+    for i in $(seq 1 "${count}"); do
         "$@"
     done
 }
 
-_disableStrictMode () {
-    set   +o errexit
-    set   +o errtrace
-    set   +o pipefail
-    shopt -u nullglob
-    IFS=$' \n\t'
+_required() {
+    local i
+    for i in "$@"
+    do
+        [ -z "${i// }" ] && return 1
+    done
+    return 0
 }
 
-_enableStrictMode () {
-    set   -o errexit
-    set   -o errtrace
-    set   -o pipefail
-    shopt -s nullglob
-    IFS=$'\n\t'
-}
-
-_exceptionHandler () {
-    local trap_name="$1"
-    echo "ERROR: ${trap_name} on line $( caller )" >&2 ; exit 1
-}
-
-_catchExceptions () {
-    trap '_exceptionHandler "SIGERR" ${LINENO} ${$?}' ERR
-    trap '_exceptionHandler "SIGINT" ${LINENO} ${$?}' INT
-    trap '_exceptionHandler "SIGHUP" ${LINENO} ${$?}' HUP
-    trap '_exceptionHandler "SIGTERM "${LINENO} ${$?}' TERM
-    trap '_exceptionHandler "SIGKILL" ${LINENO} ${$?}' KILL
-    trap '_exceptionHandler "SIGQUIT" ${LINENO} ${$?}' QUIT
-}
-
-_exists () {
+__exists () {
+    _required "$1" || return 1
     export PATH
     which "$1" &> /dev/null
     return "$?"
+}
+
+_exists () {
+    _required "$1" || return 1
+    local dependency
+    local index=0
+    for dependency in "$@"
+    do
+        __exists "${dependency}" || return "$index"
+        index=$((index+1))
+    done
 }
 
 COLLECTION_SHELL_LOADED=1
