@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+
+# Filename:      collection-net
+# Description:   Network helpers
+
+[[ $COLLECTION_NET_LOADED ]] && return
+
+source collection-string
+
+# _maskcidr ()
+# {
+#    # Assumes there's no "255." after a non-255 byte in the mask
+#    local x=${1##*255.}
+#    set -- 0^^^128^192^224^240^248^252^254^ "$(( (${#1} - ${#x})*2 ))" "${x%%.*}"
+#    x=${1%%$3*}
+#    echo $(( $2 + (${#x}/4) ))
+# }
+
+_network() {
+    local IFS='.' ip i
+    local -a oct msk
+
+    read -ra oct <<<"$1"
+    read -ra msk <<<"$2"
+
+    for i in ${!oct[@]}; do
+        ip+=( "$(( oct[i] & msk[i] ))" )
+    done
+
+    echo "${ip[*]}"
+}
+
+_broadcast() {
+    local IFS='.' ip i
+    local -a oct msk
+
+    read -ra oct <<<"$1"
+    read -ra msk <<<"$2"
+
+    for i in ${!oct[@]}; do
+        ip+=( "$(( oct[i] + ( 255 - ( oct[i] | msk[i] ) ) ))" )
+    done
+
+    echo "${ip[*]}"
+}
+
+_cidrmask() {
+  local i mask=""
+  local full_octets=$(($1/8))
+  local partial_octet=$(($1%8))
+
+  for ((i=0;i<4;i+=1)); do
+    if [ $i -lt $full_octets ]; then
+      mask+=255
+    elif [ $i -eq $full_octets ]; then
+      mask+=$((256 - 2**(8-partial_octet)))
+    else
+      mask+=0
+    fi
+    test $i -lt 3 && mask+=.
+  done
+
+  echo $mask
+}
+
+_mac() {
+    local oui
+    local suffix
+    oui=("7C 6D 62" "00:1b:77" "b8:8d:12" "e8:2a:ea" "00:23:76" "00:26:ff" "50:cc:f8" "f8:1e:df")
+    suffix=$(printf '%02x' $((0x$(od /dev/urandom -N1 -t x1 -An |
+              cut -c 2-) & 0xFE | 0x02)); od /dev/urandom -N2 -t x1 -An)
+    printf '%s %s\n' "${oui[RANDOM%${#oui[@]}]}" "${suffix}" |
+    sed 's/ /:/g'
+}
+
+_cidr() {
+    local regex
+    local address
+    local err=()
+    local bits
+    local total
+    local low
+    local high
+    local mask
+
+    # regex='^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
+    regex='[1-9]{,3}\.[0-9]{,3}\.[0-9]{,3}\.[0-9]{,3}"/"[1-9]{1,2}'
+    if ! [[ "$1" =~ ${regex} ]]
+    then
+        address=( $(echo "$1" | sed 's/\./\n/g' | sed 's/\//\n/g' ) )
+        if [[ ( "${address[0]}" -eq 0     ||
+                "${address[0]}" -gt 255 ) ||
+                "${address[1]}" -gt 255   ||
+                "${address[2]}" -gt 255   ||
+                "${address[3]}" -gt 255   ||
+                "${address[4]}" -gt 32    ]]
+        then
+            err+=($?)
+        else
+            err+=($?)
+            # bits="$((32 - address[4]))"
+            # total="$((2**bits))"
+            # low="$((address[3]))"
+            # high="$((address[3] + total))"
+            # echo "low ${low}"
+            # echo "high ${high}"
+            echo "$1"
+            mask="$(_cidrmask "${address[4]}")"
+            _network "${address[0]}.${address[1]}.${address[2]}.${address[3]}" "${mask}"
+            _broadcast "${address[0]}.${address[1]}.${address[2]}.${address[3]}" "${mask}"
+            echo
+            # echo "bits $bits"
+            # echo "total ${total}"
+            # if [[ $bits -le 8 ]]; then
+            #     for range in $(seq "${low}" "${high}")
+            #     do
+            #         echo "${address[0]}.${address[1]}.${address[2]}.$range"
+            #     done
+            # fi
+        fi
+    else
+        err+=($?)
+    fi
+}
+
+COLLECTION_NET_LOADED=1
