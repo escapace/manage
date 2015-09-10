@@ -8,14 +8,14 @@
 _includes () {
     local array="$1[@]"
     local seeking=$2
-    local in=1
+    local element
     for element in "${!array}"; do
         if [[ "${element}" == "${seeking}" ]]; then
-            in=0
+            return 0
             break
         fi
     done
-    return $in
+    return 1
 }
 
 _indexOf () {
