@@ -8,7 +8,6 @@
 source collection-string
 source collection-shell
 source collection-array
-source collection-string
 
 __mc ()
 {
@@ -112,7 +111,7 @@ __cidr() {
 }
 
 _ipcalc () {
-    _required "$1" || return 1
+    _required "$1" "$2" || return 1
 
     local mode
     local array
@@ -134,7 +133,7 @@ _ipcalc () {
               "netmask"
               "prefix"
               "network"
-              "hotmin"
+              "hostmin"
               "hostmax"
               "broadcast"
               "hosts"
@@ -144,7 +143,7 @@ _ipcalc () {
     then
         command="$1"
         shift
-        if [[ "${#@}" == "2" ]]
+        if _required "$1" "$2"
         then
             mode="__mask"
         else
