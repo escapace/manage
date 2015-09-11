@@ -101,7 +101,7 @@ _assist()
     #      move out this function
 
     local msg=${1:-All updates are complete.}
-    msg="$(msg | _wrap | sed "2,${s/^/    /}")"
+    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/    /}')"
 
     echo -e "${term_reset}  ${msg}${term_reset}" >&2
 }
@@ -131,7 +131,7 @@ _warn()
     # Shorten home paths, if they exist.
     msg=${msg//$HOME/\~}
 
-    msg="$(msg | _wrap | sed '2,${s/^/    /}')"
+    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/    /}')"
 
     echo -e "${term_bold}${term_fg_yellow}==> WARNING: ${term_fg_white}${msg}${term_reset}" >&2
 }
