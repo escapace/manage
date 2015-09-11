@@ -5,6 +5,9 @@
 
 [[ $COLLECTION_ARRAY_LOADED ]] && return
 
+
+source collection-shell
+
 _includes () {
     local array="$1[@]"
     local seeking=$2
@@ -62,5 +65,56 @@ _get () {
         in=$((in+1))
     done
 }
+
+_intersection () {
+    _required "$1" "$2" || return 1
+
+    local A="$1[@]"
+    local B="$2[@]"
+    local AiB=()
+    local itema
+    local itemb
+
+    for itema in "${!A}"; do
+        for itemb in "${!B}"; do
+            if [[ "${itema}" == "${itemb}" ]]; then
+                AiB+=( "$itema" )
+                break
+            fi
+        done
+    done
+
+    echo "${AiB[*]}"
+}
+
+_difference () {
+    _required "$1" "$2" || return 1
+    local intersection
+    local A="$1[@]"
+    local B="$2[@]"
+    local AdB=()
+    local itema
+    local itemb
+
+    intersection=($(_intersection "$1" "$2"))
+
+    for itema in "${!A}"; do
+        if ! _includes intersection "${itema}"
+        then
+            AdB+=( "$itema" )
+        fi
+    done
+
+    for itemb in "${!B}"; do
+        if ! _includes intersection "${itemb}"
+        then
+            AdB+=( "$itemb" )
+        fi
+    done
+
+    echo "${AdB[*]}"
+}
+
+#TODO: union
 
 COLLECTION_ARRAY_LOADED=1

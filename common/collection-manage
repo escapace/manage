@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+[[ $COLLECTION_MANAGE_LOADED ]] && return
+
+source collection-shell
+source collection-string
+source collection-message
+source collection-tag
+source collection-array
+
+_topicExists () {
+    _includes _topicNames "$*"
+}
+
+_topicIndexOf () {
+    _indexOf _topicNames "$*"
+}
+
+_harvest() {
+    local prefix
+    local file
+
+    prefix="$2"
+
+    for file in "$1"/* "$1"/**/*
+    do
+        if [   -f "${file}" ] &&
+           [   -r "${file}" ] &&
+           [ ! -L "${file}" ] &&
+           [[ "$(basename "${file}")" =~ ^[-a-zA-Z]*$ ]] &&
+           [[ "$(head -n 1 "${file}")" =~ ^(#!){1}.*(bash){1}.* ]]
+        then
+            _topicPaths+=("${file}")
+            _topicNames+=("${prefix}$(basename "${file}")")
+        else
+            _warn "Omiting the script \"$(basename "${file}")\"."
+        fi
+    done
+}
+
+_wrapper () {
+    local index="$1"
+    local topic=${_topicNames[$index]}
+    local path=${_topicPaths[$index]}
+    local bashcommand
+    shift
+    MANAGETOPIC="${topic}"
+    MANAGEIMPORTS="$(_embeddedTag "import" "${path}" |tr '\n' ' ')"
+
+    export MANAGEIMPORTS
+    export MANAGETOPIC
+
+    bashcommand="$(echo -n \
+                   MANAGEVERBOSE=\""${MANAGEVERBOSE}"\" \&\& \
+                   MANAGEDIRECTORY=\""${MANAGEDIRECTORY}"\" \&\& \
+                   MANAGETOPIC=\""${MANAGETOPIC}"\" \&\& \
+                   MANAGEIMPORTS=\""${MANAGEIMPORTS}"\" \&\& \
+                   . "${MANAGEPATH}" \&\& \
+                   . "${path}" \&\& \
+                   "main" "$@"
+                 )"
+    _cleanup
+    _execute "${bashcommand}" || exit "$?"
+}
+
+_run () {
+    local topic="$1"
+    if _topicExists "${topic}"
+    then
+        shift
+        _wrapper "$(_topicIndexOf "${topic}")" "$@"
+    else
+        _aid
+    fi
+}
+
+_flags () {
+    case $@ in
+        h|\?)
+            _aid "${OPTARG}"
+            exit 0
+            ;;
+        v)
+            _verbose 1
+            ;;
+        q)
+            _verbose 0
+            ;;
+        :)
+            if [ "${OPTARG}" == "h" ]
+            then
+                _aid
+                exit 0
+            else
+                echo "Option -$OPTARG requires an argument." >&2
+                exit 1
+            fi
+            ;;
+    esac
+}
+
+_aid () {
+    if _topicExists "_aid"
+    then
+        _run "_aid" "$@"
+    elif _topicExists "_manage_aid"
+    then
+        _run "_manage_aid" "$@"
+    else
+        echo "${_topicNames[@]}"
+    fi
+}
+
+_topicNames=()
+_topicPaths=()
+
+COLLECTION_MANAGE_LOADED=1
+

@@ -84,6 +84,8 @@ _info()
     # Shorten home paths, if they exist.
     msg=${msg//$HOME/\~}
 
+    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/    /}')"
+
     echo -e "${term_bold}${term_fg_blue}==> ${term_fg_white}${msg}${term_reset}" >&2
 }
 
@@ -95,7 +97,11 @@ _assist()
     # Usage: _assist [MESSAGE]
     #
 
+    #TODO: variable indent
+    #      move out this function
+
     local msg=${1:-All updates are complete.}
+    msg="$(msg | _wrap | sed "2,${s/^/    /}")"
 
     echo -e "${term_reset}  ${msg}${term_reset}" >&2
 }
@@ -122,11 +128,12 @@ _warn()
     fi
 
     local msg=${1:-A warning has occurred.}
-
     # Shorten home paths, if they exist.
     msg=${msg//$HOME/\~}
 
-    echo -e "${term_bold}${term_fg_yellow}WARNING: ${term_fg_white}${msg}${term_reset}" >&2
+    msg="$(msg | _wrap | sed '2,${s/^/    /}')"
+
+    echo -e "${term_bold}${term_fg_yellow}==> WARNING: ${term_fg_white}${msg}${term_reset}" >&2
 }
 
 _error()
@@ -151,7 +158,9 @@ _error()
     # Shorten home paths, if they exist.
     msg=${msg//$HOME/\~}
 
-    echo -e "${term_bold}${term_fg_red}ERROR: ${term_fg_white}${msg}${term_reset}" >&2
+    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/    /}')"
+
+    echo -e "${term_bold}${term_fg_red}==> ERROR: ${term_fg_white}${msg}${term_reset}" >&2
 }
 
 COLLECTION_MESSAGES_LOADED=1

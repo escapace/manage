@@ -10,44 +10,11 @@
 #
 # </doc>
 
-# Relative path to the user-defined commands directory
-MANAGESCRIPTSDIRECTORY="{{T_MANAGESCRIPTSDIRECTORY}}"
+scope="$( cd "${BASH_SOURCE[0]%/*}" &&
+          source "{{T_MANAGEDIRECTORY}}"/multiplexer )"
 
-# Relative path to the _manage repository
-MANAGEDIRECTORY="{{T_MANAGEDIRECTORY}}"
-
-# The _manage script filename
-MANAGEINIT="{{T_MANAGEINIT}}"
-
-#######################
-MANAGEIMPORTS=("manage")
-MANAGEPATH="${MANAGEDIRECTORY}"/"${MANAGEINIT}"
-
-MANAGESELFDIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-MANAGESELFINIT="$( basename "${BASH_SOURCE[0]}" )"
-MANAGEOPWD=$PWD ; cd "${MANAGESELFDIRECTORY}" || _exit
-
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
-then
-    source "${MANAGEPATH}"
-    _harvest "${MANAGESELFDIRECTORY%%/}"/"${MANAGESCRIPTSDIRECTORY%%/}"
-    _usageHeaderPath "${MANAGESELFDIRECTORY}"/"${MANAGESELFINIT}"
-    unset MANAGESELFDIRECTORY
-    unset MANAGESELFINIT
-
-    _enableStrictMode
-    _catchExceptions
-
-    unset options
-    unset OPTIND
-    while getopts ":h:?v" options "$@"; do
-        _flags "$options"
-    done && shift $((OPTIND - 1))
-    unset OPTIND
-    unset options
-
-    [ "$1" = "--" ] && shift
-    _run "$@"
-    cd "${MANAGEOPWD}" || _exit
-fi
-
+"${scope}" "$( cd "$( dirname "${BASH_SOURCE[0]}" )" &&
+            pwd )/$( basename "${BASH_SOURCE[0]}")" \
+            "$(dirname "${scope}")" \
+            "{{T_MANAGESCRIPTSDIRECTORY}}" \
+            "$@"

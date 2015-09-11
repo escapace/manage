@@ -280,4 +280,12 @@ _upper()
     tr '[:lower:]' '[:upper:]'
 }
 
+_wrap()
+{
+    local width=${1:-55}
+    _squeezeLines | _squeeze | tr -s ' ' ' ' | tr '\012' ' ' |
+    sed "s/ $/@/; s/   */@@/g; s/[^@]\{${width}\} /&@/g" |
+    tr '@' '\012'
+}
+
 COLLECTION_STRING_LOADED=1

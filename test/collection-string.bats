@@ -97,3 +97,9 @@ fixtures collection-string
   [ "$result" = "FOO" ]
 }
 
+@test "Wrap" {
+  expected="$(cat "${FIXTURE_ROOT}/wrap/expected")"
+  result="$(cat "${FIXTURE_ROOT}/wrap/input" | _wrap)"
+  [ "$result" = "${expected}" ]
+}
+

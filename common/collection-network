@@ -11,43 +11,45 @@ source collection-array
 
 __mc ()
 {
-   # Assumes there's no "255." after a non-255 byte in the mask
-   local x=${1##*255.}
-   set -- 0^^^128^192^224^240^248^252^254^ "$(( (${#1} - ${#x})*2 ))" "${x%%.*}"
-   x=${1%%$3*}
-   echo $(( $2 + (${#x}/4) ))
+    local i
+    local len
+    local OIFS
+    OIFS=$IFS
+    IFS=.
+    for i in $1; do
+        while [ "${i}" != "0" ]; do
+            len=$((len + i % 2))
+            i=$((i >> 1))
+        done
+    done
+
+    IFS=$OIFS
+    echo "${len}"
 }
 
 __cm() {
-  local i mask=""
-  local full_octets=$(($1/8))
-  local partial_octet=$(($1%8))
+    local i mask=""
+    local full_octets=$(($1/8))
+    local partial_octet=$(($1%8))
 
-  for ((i=0;i<4;i+=1)); do
-    if [ $i -lt $full_octets ]; then
-      mask+=255
-    elif [ $i -eq $full_octets ]; then
-      mask+=$((256 - 2**(8-partial_octet)))
-    else
-      mask+=0
-    fi
-    test $i -lt 3 && mask+=.
-  done
+    for ((i=0;i<4;i+=1)); do
+        if [ $i -lt $full_octets ]; then
+            mask+=255
+        elif [ $i -eq $full_octets ]; then
+            mask+=$((256 - 2**(8-partial_octet)))
+        else
+            mask+=0
+        fi
+        test $i -lt 3 && mask+=.
+    done
 
-  echo $mask
+    echo $mask
 }
 
-
 __atoi () {
-    local IP
-    local IPNUM
-    local i
-    IP=$1; IPNUM=0
-    for (( i=0 ; i<4 ; ++i )); do
-    ((IPNUM+=${IP%%.*}*$((256**$((3-i))))))
-    IP=${IP#*.}
-    done
-    echo $IPNUM
+    local oc
+    oc=( $(echo "$1" | sed 's/\./\n/g' | sed 's/\//\n/g' ) )
+    echo "$((oc[0] * 256 ** 3 + oc[1] * 256 ** 2 + oc[2] * 256 + oc[3]))"
 }
 
 __itoa () {
@@ -69,19 +71,19 @@ __mask() {
     then
         oc=( $(echo "$1" | sed 's/\./\n/g' | sed 's/\//\n/g' ) )
         if [[ ! (( "${oc[0]}" -eq 0  ||
-                "${oc[0]}" -gt 255 ) ||
-                "${oc[1]}" -gt 255   ||
-                "${oc[2]}" -gt 255   ||
-                "${oc[3]}" -gt 255 ) ]]
-        then
-            echo "${oc[0]}.${oc[1]}.${oc[2]}.${oc[3]}" "$2"
-            return 0
-        else
-            return 1
-        fi
+            "${oc[0]}" -gt 255 ) ||
+            "${oc[1]}" -gt 255   ||
+            "${oc[2]}" -gt 255   ||
+            "${oc[3]}" -gt 255 ) ]]
+    then
+        echo -e "${oc[0]}.${oc[1]}.${oc[2]}.${oc[3]}\n$2"
+        return 0
     else
         return 1
     fi
+else
+    return 1
+fi
 }
 
 __cidr() {
@@ -94,20 +96,20 @@ __cidr() {
     then
         oc=( $(echo "$1" | sed 's/\./\n/g' | sed 's/\//\n/g' ) )
         if [[ ! (( "${oc[0]}" -eq 0  ||
-                "${oc[0]}" -gt 255 ) ||
-                "${oc[1]}" -gt 255   ||
-                "${oc[2]}" -gt 255   ||
-                "${oc[3]}" -gt 255   ||
-                "${oc[4]}" -gt 32  ) ]]
-        then
-            echo "${oc[0]}.${oc[1]}.${oc[2]}.${oc[3]}" "$(__cm "${oc[4]}")"
-            return 0
-        else
-            return 1
-        fi
+            "${oc[0]}" -gt 255 ) ||
+            "${oc[1]}" -gt 255   ||
+            "${oc[2]}" -gt 255   ||
+            "${oc[3]}" -gt 255   ||
+            "${oc[4]}" -gt 32  ) ]]
+    then
+        echo -e "${oc[0]}.${oc[1]}.${oc[2]}.${oc[3]}\n$(__cm "${oc[4]}")"
+        return 0
     else
         return 1
     fi
+else
+    return 1
+fi
 }
 
 _ipcalc () {
@@ -130,14 +132,14 @@ _ipcalc () {
     local command
 
     commands=("address"
-              "netmask"
-              "prefix"
-              "network"
-              "hostmin"
-              "hostmax"
-              "broadcast"
-              "hosts"
-              "range")
+    "netmask"
+    "prefix"
+    "network"
+    "hostmin"
+    "hostmax"
+    "broadcast"
+    "hosts"
+    "range")
 
     if _includes "commands" "$1"
     then
@@ -149,14 +151,12 @@ _ipcalc () {
         else
             mode="__cidr"
         fi
-
         array=($("${mode}" "${@}"))
         if [[ $? == 0 ]]
         then
             ip="${array[0]}"
             mask="${array[1]}"
             prefix="$(__mc "${mask}")"
-
             diff=$((32-prefix))
             noip=$((2**diff))
             ipint="$(__atoi "${ip}")"
@@ -231,9 +231,9 @@ _ipcalc () {
 _mac() {
     local oui
     local suffix
-    oui=("7C 6D 62" "00:1b:77" "b8:8d:12" "e8:2a:ea" "00:23:76" "00:26:ff" "50:cc:f8" "f8:1e:df")
+    oui=("7C:6D:62" "00:1b:77" "b8:8d:12" "e8:2a:ea" "00:23:76" "00:26:ff" "50:cc:f8" "f8:1e:df")
     suffix=$(printf '%02x' $((0x$(od /dev/urandom -N1 -t x1 -An |
-              cut -c 2-) & 0xFE | 0x02)); od /dev/urandom -N2 -t x1 -An)
+    cut -c 2-) & 0xFE | 0x02)); od /dev/urandom -N2 -t x1 -An)
     printf '%s %s\n' "${oui[RANDOM%${#oui[@]}]}" "${suffix}" |
     sed 's/ /:/g'
 }
