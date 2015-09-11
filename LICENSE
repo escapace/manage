@@ -25,3 +25,9 @@ Bashful
 URL:          https://github.com/jmcantrell/bashful
 Copyright:    Copyright (c) Jeremy Cantrell
 License:      GNU General Public License v3
+
+Bats
+-----
+URL:          https://github.com/sstephenson/bats
+Copyright:    Copyright (c) Sam Stephenson
+License:      The MIT License (MIT)

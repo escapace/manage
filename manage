@@ -11,7 +11,8 @@
 
 # Relative path to the user-defined commands directory
 
-scope="$( cd "${BASH_SOURCE[0]%/*}" &&
+scope="$( [ -d "${BASH_SOURCE[0]%/*}" ] &&
+          cd "${BASH_SOURCE[0]%/*}" ;
           source multiplexer )"
 
 "${scope}" "$( cd "$( dirname "${BASH_SOURCE[0]}" )" &&
