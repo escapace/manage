@@ -1,6 +1,6 @@
 language: bash
 sudo: false
-script: bash manage test
+script: ./manage test
 notifications:
   email:
     on_success: never
