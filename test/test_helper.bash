@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 BATS_PARENT_DIRNAME="$( dirname "${BATS_TEST_DIRNAME}" )"
 export BATS_PARENT_DIRNAME
+BMANAGELIBEXEC="${BATS_PARENT_DIRNAME}/libexec"
 
 import()
 {
@@ -28,11 +29,14 @@ import()
 }
 
 setup() {
-    export TMP="$BATS_TEST_DIRNAME/tmp"
+    export TMP="$BATS_TMPDIR/_manage"
+    [ -d "${TMP}" ] ||
+    mkdir -p "${TMP}"
 }
 
 teardown() {
-    [ -d "$TMP" ] && rm -f "$TMP"/*
+    [ -d "${TMP}" ] &&
+    rm -rf "${TMP:?}"
 }
 
 fixtures() {

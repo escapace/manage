@@ -1,0 +1,13 @@
+scripts: script
+strict: true
+default: help
+dependencies:
+  - bash
+  - awk
+  - sed
+  - tr
+  - head
+env:
+  bla: bla
+  asd: qwe
+  keys: keys

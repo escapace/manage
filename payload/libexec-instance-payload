@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# alias exit="exit > /dev/null 2>&1"
+
+manage () {
+    if [ -z "${MANAGEREPOSITORY}" ]
+    then
+        "${MANAGEDIRECTORY}/libexec/manage" "$@"
+    else
+        "${MANAGEDIRECTORY}/libexec/manage" "${MANAGEREPOSITORY}" "$@"
+    fi
+}
+
+_main ()
+{
+    PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
+
+    local _code
+    if declare -f "main" > /dev/null 2>&1
+    then
+        trap '_return $?' INT HUP TERM KILL QUIT EXIT
+        main "$@"
+        _code=$?
+        trap - INT HUP TERM KILL QUIT EXIT ERR
+        # unalias exit
+    fi
+
+    _return "${_code}"
+    return $?
+}
+
+_return ()
+{
+    local _code=${1:-0}
+    if declare -f "onexit" > /dev/null 2>&1
+    then
+        onexit "${_code}" || true
+    fi
+
+    return "${_code}"
+}

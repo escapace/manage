@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 #
+# vim: set ft=sh:
+#
 # <doc>
 #
-# Bootstrap a manage script in the current directory.
+# Bootstrap manage repository in the current directory.
 # Optionally takes script directory name as an argument.
 #
 # </doc>
@@ -55,7 +57,8 @@ _scriptPath () {
 }
 
 main () {
-    _enableStrictMode
+    _verbose true
+    _strict true
 
     local T_MANAGEDIRECTORY
     local T_MANAGESCRIPTSDIRECTORY
@@ -72,8 +75,9 @@ main () {
         mkdir "${T_MANAGESCRIPTSDIRECTORY}"
     fi
 
-    _copy "${T_MANAGEDIRECTORY}/template/hello" "${T_MANAGESCRIPTSDIRECTORY}/hello"
-    _copy "${T_MANAGEDIRECTORY}/template/manage.mustache" "${PWD}/manage"
-    _mustache "${PWD}/manage" T_MANAGEDIRECTORY T_MANAGESCRIPTSDIRECTORY
+    cp -Lf "${T_MANAGEDIRECTORY}/template/hello" "${T_MANAGESCRIPTSDIRECTORY}/hello"
+    cp -Lf  "${T_MANAGEDIRECTORY}/template/manage.yml" "${PWD}/.manage.yml"
+    ln -s  "${T_MANAGEDIRECTORY}/libexec/manage" "${PWD}/manage"
+    #TODO: create a yaml file and put the script directory in there
 }
 

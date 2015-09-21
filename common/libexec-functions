@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+
+exists () {
+    _includes SCRIPTNAMES "$1"
+}
+
+getindex () {
+    _required "$1" ||
+        return 1
+
+    _indexOf SCRIPTNAMES "$1"
+}
+
+getpath ()
+{
+    _required "$1" ||
+        return 1
+
+    echo "${SCRIPTPATHS["$(getindex "$1")"]}"
+}
+
+getscript ()
+{
+    _required "$1" ||
+        return 1
+
+    echo "${SCRIPTNAMES["$(getindex "$1")"]}"
+}
+
+getdoc () {
+    _required "$1" ||
+        return 1
+
+    _embeddedTag "doc" \
+        "$(getpath "$1")"
+}
+
+isurl ()
+{
+    #TODO: regex
+    false
+}
+
+isfile ()
+{
+    _required "$1" ||
+        return 1
+    local file="$1"
+
+    [ -f  "${file}" ] &&
+    [ -r  "${file}" ] ||
+        return 1
+}
+
+isdirectory ()
+{
+    _required "$1" ||
+        return 1
+    [ -d "$1" ] ||
+        return 1
+}
+ismagic () {
+    _required "$1" ||
+        return 1
+    local manage="^(#!){1}.*(manage){1}.*"
+    local bash="^(#!){1}.*(bash){1}.*"
+
+    {
+        read -r line
+    } < "$1"
+
+    [[ "${line}" =~ ${manage} ]] ||
+    [[ "${line}" =~ ${bash}   ]]
+}
+
+isscript () {
+    _required "$1" ||
+        return 1
+
+    local file="$1"
+
+    isfile "${file}" &&
+    ismagic "${file}" &&
+    [[ "$(basename "${file}")" =~ ^[-a-zA-Z]*$ ]]
+}
+

@@ -5,7 +5,30 @@
 
 [[ $COLLECTION_SHELL_STRICT_LOADED ]] && return
 
-_disableStrictMode () {
+_strict()
+{
+    #
+    # With no arguments, test if strict mode is enabled.
+    # With one argument, set strict mode to given value.
+    #
+    # Usage: _strict [VALUE]
+    #
+
+    if (( $# == 0 )); then
+        _truth "${MANAGESTRICT}" && return 0
+        return 1
+    else
+        MANAGESTRICT=$(_truthValue "$1")
+        if _truth "${MANAGESTRICT}"
+        then
+            __strictOn
+        else
+            __strictOff
+        fi
+    fi
+}
+
+__strictOff () {
     set   +o errexit
     set   +o errtrace
     set   +o pipefail
@@ -13,7 +36,7 @@ _disableStrictMode () {
     IFS=$' \n\t'
 }
 
-_enableStrictMode () {
+__strictOn () {
     set   -o errexit
     set   -o errtrace
     set   -o pipefail

@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+
+proceedwithurl () {
+    #TODO: parse git urls
+    true
+}
+
+proceedwithsinglescript () {
+    _required "$1" ||
+        return 1
+
+    processscriptordirectory "$1"
+
+    shift
+    run "${SCRIPTNAMES[0]}" "$@"
+}
+
+processsinglescript ()
+{
+    _required "$1" ||
+        return 1
+    local file
+
+    if isscript "${1}"
+    then
+        file="$(_expandpath "$1")"
+        SCRIPTPATHS+=("${file}")
+        SCRIPTNAMES+=("${2}$(basename "${file}")")
+    else
+        return 1
+    fi
+}
+
+processscriptordirectory () {
+    _required "$1" ||
+        return 1
+
+    local file
+
+    if isdirectory "$1"
+    then
+        for file in "$1"/* "$1"/**/*
+        do
+            processsinglescript "${file}" "$2" || true
+        done
+    elif isfile "$1"
+    then
+        processsinglescript "$1" "$2" || return 1
+    else
+        return 1
+    fi
+}
+
+proceedwithrepository ()
+{
+    #TODO: read the configuration from .manage.yml
+    if isscript "$1"
+    then
+        #TODO: check if the script in $1 is inside a repository
+        proceedwithsinglescript "$@"
+    else
+        isrepository "$1" && shift
+
+        isdirectory "${MANAGEDIRECTORY}/script" ||
+            return 1
+
+        if [[ ! ${MANAGEREPOSITORY} == "${MANAGEDIRECTORY}" ]]
+        then
+            processscriptordirectory "${MANAGEDIRECTORY}/script" "_manage_"
+        fi
+
+        processscriptordirectory "${MANAGEREPOSITORY}/script"
+        run "$@"
+    fi
+}
+
+isrepository ()
+{
+    _required "$1" ||
+        return 1
+
+    [[ "$1" == "${MANAGELIBEXEC}"   ]] && return 1
+    [[ "$1" == "${MANAGEDIRECTORY}" ]] && return 1
+
+    isdirectory "$1" || return 1
+    isfile "$1/.manage.yml" || return 1
+
+    MANAGEREPOSITORY="$(_expandpath "$1")"
+}
+
+searchpath ()
+{
+    _required "$1" || return 1
+    local path
+    local code=1
+
+    for path in "$@"
+    do
+        while [ "${path}" != "/" ] &&
+              [ "${path}" != "." ]
+        do
+            if isrepository "${path}"
+            then
+                code=0
+                break
+            else
+                path="$(dirname "${path}")"
+            fi
+        done
+        [ "${code}" == "0" ] && break
+    done
+
+    return "${code}"
+}
+
+collectscripts ()
+{
+    local callerdirectory
+    local paths
+    callerdirectory="$(dirname "$(_expandpath "${MANAGEZERO}")")"
+    paths=( "${callerdirectory}" "${MANAGECWD}" "$1" )
+
+    if searchpath "${paths[@]}"
+    then
+        proceedwithrepository "$@"
+    elif isurl "$1"
+    then
+        proceedwithurl "$@"
+    else
+        MANAGEREPOSITORY="${MANAGEDIRECTORY}"
+        proceedwithrepository "$@"
+    fi
+}
