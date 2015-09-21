@@ -8,6 +8,15 @@
 
 source collection-shell
 
+_join ()
+{
+    local OIFS="${IFS}"
+    local IFS="$1"
+    shift
+    echo "$*"
+    IFS="${OIFS}"
+}
+
 _includes () {
     local array="$1[@]"
     local seeking=$2
@@ -37,9 +46,10 @@ _indexOf () {
 _forEach () {
     local array="$1[@]"
     local function=$2
+    shift 2
     local in=0
     for element in "${!array}"; do
-        "${function}" "${in}"
+        "${function}" "${in}" "$@"
         in=$((in+1))
     done
 }

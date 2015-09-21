@@ -1,0 +1,48 @@
+#!/usr/bin/env manage
+#
+# vim: set ft=sh:
+#
+# <doc>
+#
+# A simple Hello World script.
+#
+# </doc>
+#
+# <import>
+#
+# collection-shell
+# collection-message
+#
+# </import>
+#
+# <dependencies>
+#
+# bash
+#
+# </dependencies>
+
+main ()
+{
+    _verbose true
+    _strict true
+    echo "Hello World!"
+    echo "Script name: $(basename "${BASH_SOURCE[0]}")"
+    echo "Caller name: $(basename "$0")"
+    echo "Arguments  : $@"
+    echo "PWD        : ${PWD}"
+    echo "Argument 1 : $1"
+    echo "Argument 2 : $2"
+    echo "Argument 3 : $3"
+    echo "Repository : ${MANAGEREPOSITORY}"
+}
+
+onexit ()
+{
+    if (( $1 == 0 ))
+    then
+        _info "Exiting."
+    else
+        _error "An error with exit code \"$1\" has occured."
+    fi
+}
+
