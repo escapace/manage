@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# <doc>
+#
+# A simple Hello World script.
+#
+# </doc>
+
+main () {
+    manage success
+}
+

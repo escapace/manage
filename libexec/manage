@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+#
+# <doc>
+#
+# _manage is a model for setting up shell programs that use
+# subcommands.
+#
+# For more details on how to define your own commands look
+# online at https://github.com/eitherlands/_manage
+#
+# </doc>
+#
+# <dependencies>
+#
+# awk
+# sed
+# tr
+# head
+#
+# </dependencies>
+
+if ((BASH_VERSINFO[0] < 4))
+then
+    echo "You need at least GNU bash, version 4." >&2
+    exit 1
+fi
+
+LC_ALL=en_US.UTF-8
+LANG=en_US.UTF-8
+
+_resolvelink() {
+    $(type -p greadlink readlink | head -1) "$1"
+}
+
+_absoultedirectorypath() {
+    local cwd
+    local path="$1"
+
+    cwd="$(pwd)"
+
+    while [ -n "$path" ]; do
+        cd "${path%/*}" || exit
+        local name="${path##*/}"
+        path="$(_resolvelink "$name" || true)"
+    done
+
+    pwd
+    cd "${cwd}" || exit
+}
+
+_expandpath() {
+    { cd "$(dirname "$1")" 2>/dev/null
+        local dirname="$PWD"
+        cd "$OLDPWD"
+        echo "$dirname/$(basename "$1")"
+    } || echo "$1"
+}
+
+_import()
+{
+    local file
+    local requirement
+    local OPWD=$PWD
+    local requirements="$1"
+    local bashmagic="^(#!){1}.*(bash){1}.*"
+
+    for file in "${MANAGEDIRECTORY}/common/"* "${MANAGEDIRECTORY}/payload/"*
+    do
+        if [   -f "${file}" ] &&
+           [   -r "${file}" ] &&
+           [ ! -L "${file}" ] &&
+           [[ "$(basename "${file}")" =~ ^[-a-zA-Z]*$   ]] &&
+           [[ "$(head -n 1 "${file}")" =~ ${bashmagic}  ]]
+        then
+            for requirement in ${requirements[*]}
+            do
+                if [[ "${requirement}" == "$(basename "${file}")" ]]
+                then
+                    cd "$(dirname "${file}")" || exit "$?"
+                    source "${file}" > /dev/null 2>&1
+                fi
+            done
+        fi
+    done
+    cd "${OPWD}" || exit "$?"
+}
+
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
+then
+    _import "${MANAGEIMPORT[@]}"
+    source "${MANAGESCRIPTPATH}"
+    _main "$@"
+else
+    MANAGEZERO="$0"
+    MANAGELIBEXEC="$(_absoultedirectorypath "${MANAGEZERO}")"
+    MANAGEDIRECTORY="$(_absoultedirectorypath "${MANAGELIBEXEC}")"
+    MANAGECWD="$(_absoultedirectorypath .)"
+
+    _import "libexec-manage"
+    _strict true
+
+    checkdependencies "${MANAGEDIRECTORY}/libexec/manage"
+    collectscripts "$@"
+fi
+
+

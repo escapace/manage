@@ -1,16 +1,13 @@
 #!/usr/bin/env bash
 
 # Filename:      collection-shell
-# Description:   Miscellaneous utility functions for use in other scripts.
-#
-# The utils library provides miscellaneous functions.
+# Description:   Miscellaneous utility functions.
 #
 
 [[ $COLLECTION_SHELL_LOADED ]] && return
 
-source collection-shell-trap
-source collection-shell-strict
 source collection-string
+source collection-shell-strict
 
 _first()
 {
@@ -108,7 +105,7 @@ _execute()
     # Usage: _execute [ARGUMENT...]
     #
 
-    bash --noprofile -ic "$@"
+    bash --norc --noprofile -c "$@" || return $?
 }
 
 _executeIn()
@@ -120,9 +117,11 @@ _executeIn()
     #
 
     local error
-    local OPWD=$PWD; cd "$1"; shift
+    local OPWD=$PWD
+    cd "$1" || return 1
+    shift
     _execute "$@"; error=$?
-    cd "$OPWD"
+    cd "$OPWD" || return 1
     return $error
 }
 
@@ -150,7 +149,6 @@ _required() {
 
 __exists () {
     _required "$1" || return 1
-    export PATH
     which "$1" &> /dev/null
     return "$?"
 }
@@ -161,7 +159,7 @@ _exists () {
     local index=0
     for dependency in "$@"
     do
-        __exists "${dependency}" || return "$index"
+        __exists "${dependency}" || return "$((index+1))"
         index=$((index+1))
     done
 }

@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
 
-# Filename:      collection-utils
+# Filename:      collection-grammar
 # Description:   Functions for manipulating & parsing scripts.
 #
 
-[[ $COLLECTION_TAG_LOADED ]] && return
+[[ $COLLECTION_GRAMMAR_LOADED ]] && return
 
-source collection-shell
 source collection-string
 
 _actions()
 {
     #
     # Show all functions that are prefixed with PREFIX (stripped off).
-    # If no [FILE...] is provided functions are looked up in  the running stack.
+    # If no [FILE...] is provided functions are looked up in the running stack.
     #
     # Usage:
     #
@@ -99,39 +98,6 @@ _lines()
     grep -E -v '^[[:space:]]*#|^[[:space:]]*$' "$@"
 }
 
-_mustache()
-{
-    #
-    # Substitute variable names with variables in a file.
-    #
-    # The default is to try to substitute all environment variables, but if
-    # any names are given, it will be limited to just those.
-    #
-    # The placeholder syntax can be changed by setting the following variables:
-    #
-    #     MUSTACHE_L  # Default: {{
-    #     MUSTACHE_R  # Default: }}
-    #
-    # Usage: _mustache FILE [VAR...]
-    #
-
-    local fn=$1; shift
-
-    [[ -f $fn ]] || return 1
-
-    local n
-
-    local fl=${MUSTACHE_L:-\{\{}
-    local fr=${MUSTACHE_R:-\}\}}
-
-    if (( $# == 0 )); then
-        IFS=$'\n' set -- $(set | _variables)
-    fi
-
-    for n in "$@"; do
-        sed -i "s%${fl}${n//%/\%}${fr}%${!n}%g" "$fn"
-    done
-}
 
 _variables()
 {
@@ -144,4 +110,4 @@ _variables()
     sed 's/=.*$//' | sort -u
 }
 
-COLLECTION_TAG_LOADED=1
+COLLECTION_GRAMMAR_LOADED=1

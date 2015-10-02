@@ -1,42 +1,56 @@
-#!/usr/bin/env bash
+#!/usr/bin/env manage
+#
+# vim: set ft=sh:
 #
 # <doc>
 #
 # Run the test suite.
 #
 # </doc>
-
+#
+# <import>
+#
+# collection-shell
+# collection-message
+#
+# </import>
+#
+# <dependencies>
+#
+# bats
+#
+# </dependencies>
 
 main () {
-    local bats
-    local tests
     local name
-    local path
+    local file
+    local testdirectory
 
-    bats="${MANAGEDIRECTORY}/vendor/bats/bin/bats"
-    tests="${MANAGEDIRECTORY}/test"
-    [ ! -f "${bats}" ] && "Can't find \"bats\". Pull manage submodules first."
-    if [ -n "$1" ]
+    testdirectory="$(_expandpath "${MANAGEREPOSITORY}/test")"
+
+    if [ -d "${testdirectory}" ]
     then
-        path="$(cd "${tests}" || exit ; pwd)"
-        local OPWD=$PWD ; cd "${path}" || exit
-        for file in "${path}"/*
-        do
-            if [   -f "${file}" ] &&
-               [   -r "${file}" ] &&
-               [ ! -L "${file}" ] &&
-               [[ "$(basename "${file}")" == *.bats ]]
-            then
-                name="$(basename "${file}")"
-                if [[ "$1" == "${name::-5}" ]]
+        if _required "${1}"
+        then
+            for file in "${testdirectory}"/*.bats
+            do
+                if [   -f "${file}" ] &&
+                   [   -r "${file}" ]
+                   [[ "$(basename "${file}")" == *.bats ]]
                 then
-                    "${bats}" --tap "${file}"
+                    name="$(basename "${file}")"
+                    if [[ "${1}" == "${name::-5}" ]]
+                    then
+                        bats "$(_truthEcho "${CI}" "--tap" "--pretty")" "${file}"
+                    fi
                 fi
-            fi
-        done
-        cd "${OPWD}" || exit
+            done
+            cd "${OPWD}" || exit
+        else
+            bats "$(_truthEcho "${CI}" "--tap" "--pretty")" "${testdirectory}"
+        fi
     else
-        "${bats}" --tap "${tests}"
+        _die "No tests, aborting."
     fi
 }
 

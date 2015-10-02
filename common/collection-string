@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Filename:      collection-string
-# Description:   String manipulation helpers
+# Description:   String manipulation helpers.
 
 [[ $COLLECTION_STRING_LOADED ]] && return
 
@@ -182,7 +182,7 @@ _splitString()
     #
 
     local delim=${1:-,}
-    local line str
+    local str
 
     while read -r; do
         OIFS=$IFS; IFS=$delim
@@ -283,7 +283,10 @@ _upper()
 _wrap()
 {
     local width=${1:-55}
-    _squeezeLines | _squeeze | tr -s ' ' ' ' | tr '\012' ' ' |
+    _squeezeLines |
+    _squeeze      |
+    tr -s ' ' ' ' |
+    tr '\012' ' ' |
     sed "s/ $/@/; s/   */@@/g; s/[^@]\{${width}\} /&@/g" |
     tr '@' '\012'
 }

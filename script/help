@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+#
+# <doc>
+#
+# Display this help and exit.
+#
+# </doc>
+#
+# <import>
+#
+# collection-message
+# collection-shell
+# collection-string
+#
+# </import>
+#
+# <dependencies>
+#
+# wc
+#
+# </dependencies>
+
+title ()
+{
+    local lspace
+    local length
+    local adjustment
+
+    length="$(getlength "$1")"
+    adjustment="$((length+separatorlength))"
+    lspace="${paragraph:${adjustment}}"
+
+    echo -n "${lspace}$1${separator}"
+}
+
+table () {
+    title "$1"
+    echo  "$2"           |
+    _wrap "${textwidth}" |
+    tr -s '\n'           |
+    sed   "2,\${s/^/${paragraph}/}"
+
+}
+
+description () {
+    table "$1" \
+        "$(getdoc "$1")"
+}
+
+usagestring()
+{
+    echo -e "\n${leftmargin}Usage:" "$(basename "$0") [ script ] [ arguments ... ]\n"
+}
+
+usage ()
+{
+    usagestring
+    forscript filter description
+    echo
+    if _required "$1"
+    then
+        echo -e "${leftmargin}$1\n"
+    fi
+}
+
+help ()
+{
+    if exists "$1"
+    then
+        usagestring
+        description "$1"
+        echo
+    else
+        usage "Script \"$1\" does not exist."
+        return 1
+    fi
+}
+
+getspace () {
+    local len="$1"
+    local char="${2:-" "}"
+    _repeat "${len}" echo -n "${char}"
+}
+
+filter () {
+    local script
+    script="${SCRIPTNAMES[$1]}"
+
+    if [ ! "${script:0:1}" == "_" ]
+    then
+        "$2" "${script}"
+    fi
+}
+
+forscript () {
+    _forEach SCRIPTNAMES \
+        "$1" "$2"
+}
+
+getnames () {
+    echo help
+    forscript filter echo
+}
+
+getlength () {
+    echo "$1" |
+    wc -L
+}
+
+main ()
+{
+    _verbose true
+    _strict true
+
+    maximumwidth="75"
+    separatorlength="3"
+    leftmarginlength="2"
+    longnamelength="$(getlength "$(getnames)")"
+    paragraphlength="$((leftmarginlength +
+        longnamelength +
+        separatorlength))"
+
+    textwidth="$((maximumwidth - paragraphlength))"
+
+    leftmargin="$(getspace "${leftmarginlength}")"
+    paragraph="$(getspace "${paragraphlength}")"
+    separator="$(getspace "${separatorlength}")"
+
+    if _required "$1"
+    then
+        help "$1"
+    else
+        usage
+    fi
+}
+

@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+
+[[ $LIBEXEC_MANAGE_LOADED ]] && return
+
+source collection-shell
+source collection-string
+source collection-message
+source collection-grammar
+source collection-array
+
+SCRIPTNAMES=()
+SCRIPTPATHS=()
+
+source libexec-functions
+source libexec-arguments
+
+run () {
+    if exists "${1}"
+    then
+        prepare "$@"
+    elif exists "help"
+    then
+        prepare "help" "$@"
+    elif exists "_manage_help"
+    then
+        prepare "_manage_help" "$@"
+    fi
+}
+
+isinternal ()
+{
+    _required "$1" ||
+        return 1
+
+    local internal
+    internal=("help" "_manage_help")
+    _includes internal "$1"
+}
+
+checkdependencies ()
+{
+    _required "$1" || return 0
+    local dependencies="$1"
+    local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
+
+    if _required "${dependencies[*]}"
+    then
+        _exists "${dependencies[@]}" ||
+            _die "Dependency \"${dependencies[$(($?-1))]}\" not satisfied."
+    fi
+}
+
+prepare () {
+    local name
+    local path
+    local imports
+    local dependencies
+
+    name="${1}"
+    path="$(getpath "${name}")"
+    imports=($(_embeddedTag "import" "${path}"))
+    dependencies=($(_embeddedTag "dependencies" "${path}"))
+
+    shift
+
+    checkdependencies "${dependencies[@]}"
+
+    if isinternal "${name}"
+    then
+        _import "${imports[@]}"
+        source "${path}"
+        main "$@"
+    else
+        local caller
+        local exports
+        local payload
+        local commandstring
+        caller="$(basename "${MANAGEZERO}")"
+        libexec="source \"${MANAGEDIRECTORY}/libexec/manage\""
+
+        payload=( "libexec-instance-payload" "${imports[@]}")
+        exports="MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
+                 MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\"
+                 MANAGESCRIPTPATH=\"${path}\"
+                 MANAGEIMPORT=\"$(_join " " "${payload[@]}")\""
+
+        commandstring="$(echo "${exports} && ${libexec}" | _squeeze | tr '\n' ' ')"
+
+        (
+            exec -a "${caller}"         \
+                "bash"                  \
+                "--norc"                \
+                "--noprofile"           \
+                "-c" "${commandstring}" \
+                "${caller}"             \
+                "$@"
+        ) || exit $?
+    fi
+}
+
+LIBEXEC_MANAGE_LOADED=1
+

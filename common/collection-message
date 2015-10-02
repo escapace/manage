@@ -3,7 +3,7 @@
 # Filename:      collection-messages
 # Description:   A set of functions for giving the user information.
 
-[[ $COLLECTION_MESSAGES_LOADED ]] && return
+[[ $COLLECTION_MESSAGE_LOADED ]] && return
 
 source collection-terminfo
 source collection-shell
@@ -55,7 +55,7 @@ _die()
     # Usage: _die [MESSAGE] [ERROR]
     #
 
-    _error "$1"; _exit ${2:-1}
+    _error "$1"; exit ${2:-1}
 }
 
 _info()
@@ -87,23 +87,6 @@ _info()
     msg="$(echo "${msg}" | _wrap | sed '2,${s/^/    /}')"
 
     echo -e "${term_bold}${term_fg_blue}==> ${term_fg_white}${msg}${term_reset}" >&2
-}
-
-_assist()
-{
-    #
-    # Displays a help message.
-    #
-    # Usage: _assist [MESSAGE]
-    #
-
-    #TODO: variable indent
-    #      move out this function
-
-    local msg=${1:-All updates are complete.}
-    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/    /}')"
-
-    echo -e "${term_reset}  ${msg}${term_reset}" >&2
 }
 
 _warn()
@@ -163,4 +146,4 @@ _error()
     echo -e "${term_bold}${term_fg_red}==> ERROR: ${term_fg_white}${msg}${term_reset}" >&2
 }
 
-COLLECTION_MESSAGES_LOADED=1
+COLLECTION_MESSAGE_LOADED=1
