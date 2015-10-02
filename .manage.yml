@@ -1,12 +1,11 @@
-manage:
-  scripts: script
-  strict: true
-  default: help
-  dependencies:
-    - bash
-    - awk
-    - sed
-    - tr
-    - head
-  env:
-    - bla: bla
+scripts: script
+strict: true
+default: help
+dependencies:
+  - bash
+  - awk
+  - sed
+  - tr
+  - head
+env:
+  bla: bla

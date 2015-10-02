@@ -11,111 +11,15 @@
 # <import>
 #
 # collection-shell
+# libexec-yaml
 #
 # </import>
 #
 
-yay_parse() {
-    _required "$1" ||
-        return 1
-
-    [ -f "$1" ] ||
-        return 1
-
-    local prefix
-    local s
-    local w
-    local fs
-
-    if _required "$2"
-    then
-        prefix="$2"
-    else
-        prefix="$(basename "$1")"
-        prefix="${prefix%.*}"
-    fi
-
-    echo "declare -g -A $prefix;"
-
-    s='[[:space:]]*'
-    w='[a-zA-Z0-9_]*'
-    fs=$(echo @|tr @ '\034')
-
-    sed -n -e "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
-
-    awk -F"$fs" '{
-        indent       = length($1)/2;
-        key          = $2;
-        value        = $3;
-
-        # No prefix or parent for the top level (indent zero)
-        root_prefix  = "'"${prefix}"'_";
-        if (indent ==0 ) {
-            prefix = "";          parent_key = "'"${prefix}"'";
-        } else {
-            prefix = root_prefix; parent_key = keys[indent-1];
-        }
-
-        keys[indent] = key;
-
-        # remove keys left behind if prior row was indented more than this row
-
-        for (i in keys) {if (i > indent) {delete keys[i]}}
-            if (length(value) > 0) {
-                # value
-                printf("%s%s[%s]=\"%s\";\n", prefix, parent_key , key, value);
-                printf("%s%s[_keys]+=\"%s\";\n", prefix, parent_key , key);
-            } else {
-                # collection
-                printf("%s%s[_children]+=\"%s%s\";\n", prefix, parent_key , root_prefix, key);
-                printf("declare -g -A %s%s;\n", root_prefix, key);
-                printf("%s%s[_parent]=\"%s%s\";\n", root_prefix, key, prefix, parent_key);
-            }
-    }'
-}
-
-# helper to load yay data file
-# yay() { eval $(yay_parse "$@"); }
-value() {
-    echo \${"$1"["$2"]}
-}
-
-print_collection() {
-    value "$1" keys
-    # for k in $(value "$1" keys)
-    # do
-    #     echo "$2$k = $(value "$1" "$k")"
-    # done
-
-    # for c in $(value $1 children)
-    # do
-    #     echo -e "$2$c\n$2{"
-    #     print_collection $c "  $2"
-    #     echo "$2}"
-    # done
-}
-
-parse_yaml() {
-   local prefix=$2
-   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
-   sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
-   awk -F$fs '{
-      indent = length($1)/2;
-      vname[indent] = $2;
-      for (i in vname) {if (i > indent) {delete vname[i]}}
-      if (length($3) > 0) {
-         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
-      }
-   }'
-}
-
 main () {
     _strict true
-    yay_parse "${MANAGEDIRECTORY}"/example.yml
-    echo "---"
-    parse_yaml "${MANAGEDIRECTORY}"/example.yml
-    # print_collection example
+    YAML="$(parseyaml "${MANAGEDIRECTORY}"/.manage.yml)"
+    eval "$(yaml "${YAML}" default strict qweqwe dependencies)"
+    echo "${DEFAULT}"
+    echo "${DEPENDENCIES[@]}"
 }

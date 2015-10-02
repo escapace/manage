@@ -13,6 +13,7 @@ SCRIPTPATHS=()
 
 source libexec-functions
 source libexec-arguments
+source libexec-yaml
 
 run () {
     if exists "${1}"
