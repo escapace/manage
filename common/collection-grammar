@@ -105,9 +105,11 @@ _variables()
     # Pulls all variable names from stdin.
     #
 
-    sed 's/[[:space:];]/\n/g' "$@" |
-    egrep '^[a-zA-Z0-9_]+=' |
-    sed 's/=.*$//' | sort -u
+    sed 's/[[:space:];]/\n/g' "$@"    |
+    grep -E '^[a-zA-Z0-9_]+(\+\=|\=)' |
+    sed 's/+=.*$//' |
+    sed 's/=.*$//'  |
+    sort -u
 }
 
 COLLECTION_GRAMMAR_LOADED=1
