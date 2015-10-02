@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# <doc>
+#
+# A simple Hello World script.
+#
+# </doc>
+#
+# <import>
+#
+# collection-shell
+#
+# </import>
+
+
+main () {
+    _strict true
+    echo "Hello World" > /dev/null
+}
+
+onexit () {
+    echo "onexit $1"
+}

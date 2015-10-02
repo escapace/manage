@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# <doc>
+#
+# A simple Hello World script.
+#
+# </doc>
+
+main () {
+    while read -r value
+    do
+        echo "${value}"
+    done
+}
+
+onexit () {
+    echo "onexit $1"
+}

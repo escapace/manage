@@ -228,14 +228,4 @@ _ipcalc () {
     fi
 }
 
-_mac() {
-    local oui
-    local suffix
-    oui=("7C:6D:62" "00:1b:77" "b8:8d:12" "e8:2a:ea" "00:23:76" "00:26:ff" "50:cc:f8" "f8:1e:df")
-    suffix=$(printf '%02x' $((0x$(od /dev/urandom -N1 -t x1 -An |
-    cut -c 2-) & 0xFE | 0x02)); od /dev/urandom -N2 -t x1 -An)
-    printf '%s %s\n' "${oui[RANDOM%${#oui[@]}]}" "${suffix}" |
-    sed 's/ /:/g'
-}
-
 COLLECTION_NETWORK_LOADED=1

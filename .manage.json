@@ -1,0 +1,19 @@
+{
+  "manage": {
+    "default": "help", 
+    "strict": true, 
+    "dependencies": [
+      "bash", 
+      "awk", 
+      "sed", 
+      "tr", 
+      "head"
+    ], 
+    "env": [
+      {
+        "bla": "bla"
+      }
+    ], 
+    "scripts": "script"
+  }
+}
