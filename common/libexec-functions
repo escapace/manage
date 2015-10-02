@@ -81,6 +81,6 @@ isscript () {
 
     isfile "${file}" &&
     ismagic "${file}" &&
-    [[ "$(basename "${file}")" =~ ^[-a-zA-Z]*$ ]]
+    [[ "$(basename "${file}")" =~ ^[-a-zA-Z\_]*$ ]]
 }
 
