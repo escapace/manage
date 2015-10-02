@@ -3,7 +3,7 @@
 load test_helper
 fixtures usability
 manage="${FIXTURE_ROOT}/eganam"
-MANAGE="${BMANAGELIBEXEC}/manage"
+MANAGE="${BATSMANAGELIBEXEC}/manage"
 
 @test "Usability: Execute a repostory script." {
     run "${manage}" success
@@ -185,7 +185,7 @@ MANAGE="${BMANAGELIBEXEC}/manage"
 }
 
 @test "Usability: Execute repository script from TMP with libexec manage in PATH." {
-    PATH="$BMANAGELIBEXEC:$PATH"
+    PATH="$BATSMANAGELIBEXEC:$PATH"
     cd "${TMP}"
     run "${FIXTURE_ROOT}/script/aloha" yeah
     [ "${status}"   = "0"                               ]

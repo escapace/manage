@@ -5,7 +5,6 @@
 # <doc>
 #
 # Bootstrap manage repository in the current directory.
-# Optionally takes script directory name as an argument.
 #
 # </doc>
 #
@@ -74,10 +73,13 @@ main () {
         _info "Creating script directory $(_abspath "${T_MANAGESCRIPTSDIRECTORY}")"
         mkdir "${T_MANAGESCRIPTSDIRECTORY}"
     fi
+    mkdir "${PWD}/test"
 
-    cp -Lf "${T_MANAGEDIRECTORY}/template/hello" "${T_MANAGESCRIPTSDIRECTORY}/hello"
-    cp -Lf  "${T_MANAGEDIRECTORY}/template/manage.yml" "${PWD}/.manage.yml"
-    ln -s  "${T_MANAGEDIRECTORY}/libexec/manage" "${PWD}/manage"
-    #TODO: create a yaml file and put the script directory in there
+    cp -Lf "${T_MANAGEDIRECTORY}/template/hello"        "${T_MANAGESCRIPTSDIRECTORY}/hello"
+    cp -Lf "${T_MANAGEDIRECTORY}/template/test"         "${T_MANAGESCRIPTSDIRECTORY}/test"
+    cp -Lf  "${T_MANAGEDIRECTORY}/template/manage.yml"  "${PWD}/.manage.yml"
+    cp -Lf  "${T_MANAGEDIRECTORY}/template/helper.bash" "${PWD}/test/helper.bash"
+    cp -Lf  "${T_MANAGEDIRECTORY}/template/hello.bats"  "${PWD}/test/hello.bats"
+    ln -s  "${T_MANAGEDIRECTORY}/libexec/manage"        "${PWD}/manage"
 }
 
