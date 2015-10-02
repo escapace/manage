@@ -15,11 +15,11 @@
 #
 # </import>
 #
-# <dependencies>
+# <dependency>
 #
 # bash
 #
-# </dependencies>
+# </dependency>
 
 main ()
 {

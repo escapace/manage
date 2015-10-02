@@ -148,13 +148,13 @@ _required() {
 }
 
 __exists () {
-    _required "$1" || return 1
+    _required "$1" || return 0
     which "$1" &> /dev/null
     return "$?"
 }
 
 _exists () {
-    _required "$1" || return 1
+    _required "$1" || return 0
     local dependency
     local index=0
     for dependency in "$@"

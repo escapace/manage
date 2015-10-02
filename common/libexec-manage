@@ -39,15 +39,14 @@ isinternal ()
 
 checkdependencies ()
 {
-    _required "$1" || return 0
-    local dependencies="$1"
+    _required "$1" || return 1
+    local path="$1"
+    local dependencies
     local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
+    dependencies=($(_embeddedTag "dependency" "${path}"))
 
-    if _required "${dependencies[*]}"
-    then
-        _exists "${dependencies[@]}" ||
-            _die "Dependency \"${dependencies[$(($?-1))]}\" not satisfied."
-    fi
+    _exists "${dependencies[@]}" ||
+        _die "Dependency \"${dependencies[$(($?-1))]}\" not satisfied."
 }
 
 prepare () {
@@ -59,11 +58,10 @@ prepare () {
     name="${1}"
     path="$(getpath "${name}")"
     imports=($(_embeddedTag "import" "${path}"))
-    dependencies=($(_embeddedTag "dependencies" "${path}"))
 
     shift
 
-    checkdependencies "${dependencies[@]}"
+    checkdependencies "${path}"
 
     if isinternal "${name}"
     then

@@ -15,11 +15,11 @@
 #
 # </import>
 #
-# <dependencies>
+# <dependency>
 #
 # bats
 #
-# </dependencies>
+# </dependency>
 
 main () {
     local name
