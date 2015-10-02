@@ -25,7 +25,10 @@ main () {
     local name
     local file
     local testdirectory
+    export MANAGEDIRECTORY
+    export MANAGEREPOSITORY
 
+    #TODO: variable test directory
     testdirectory="$(_expandpath "${MANAGEREPOSITORY}/test")"
 
     if [ -d "${testdirectory}" ]

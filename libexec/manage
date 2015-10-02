@@ -92,7 +92,7 @@ then
     source "${MANAGESCRIPTPATH}"
     _main "$@"
 else
-    MANAGEZERO="$0"
+    MANAGEZERO="$(_expandpath "$0")"
     MANAGELIBEXEC="$(_absoultedirectorypath "${MANAGEZERO}")"
     MANAGEDIRECTORY="$(_absoultedirectorypath "${MANAGELIBEXEC}")"
     MANAGECWD="$(_absoultedirectorypath .)"

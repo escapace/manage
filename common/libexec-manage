@@ -70,28 +70,29 @@ prepare () {
         source "${path}"
         main "$@"
     else
-        local caller
+        local zero
         local exports
         local payload
         local commandstring
-        caller="$(basename "${MANAGEZERO}")"
+        zero="$(basename "${MANAGEZERO}")"
         libexec="source \"${MANAGEDIRECTORY}/libexec/manage\""
 
         payload=( "libexec-instance-payload" "${imports[@]}")
         exports="MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
                  MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\"
                  MANAGESCRIPTPATH=\"${path}\"
+                 MANAGEZERO=\"${MANAGEZERO}\"
                  MANAGEIMPORT=\"$(_join " " "${payload[@]}")\""
 
         commandstring="$(echo "${exports} && ${libexec}" | _squeeze | tr '\n' ' ')"
 
         (
-            exec -a "${caller}"         \
+            exec -a "${zero}"         \
                 "bash"                  \
                 "--norc"                \
                 "--noprofile"           \
                 "-c" "${commandstring}" \
-                "${caller}"             \
+                "${zero}"             \
                 "$@"
         ) || exit $?
     fi
