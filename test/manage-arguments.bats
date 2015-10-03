@@ -1,24 +1,24 @@
 #!/usr/bin/env bats
 
-load test_helper
-fixtures usability
+load test-helper-external
+fixtures manage-arguments
 manage="${FIXTURE_ROOT}/eganam"
 MANAGE="${BATSMANAGELIBEXEC}/manage"
 
-@test "Usability: Execute a repostory script." {
+@test "Manage Arguments: Execute a repostory script." {
     run "${manage}" success
     [ "${output}" = "Hello World!!!" ]
     [ "${status}" = "0"              ]
 }
 
-@test "Usability: Execute a repostory script from another script." {
+@test "Manage Arguments: Execute a repostory script from another script." {
     cd "${TMP}"
     run "${manage}" something
     [ "${output}" = "Hello World!!!" ]
     [ "${status}" = "0"              ]
 }
 
-@test "Usability: Proper argument handling." {
+@test "Manage Arguments: Proper argument handling." {
     cd "${TMP}"
     "${MANAGE}" bootstrap
     run "${TMP}/manage" hello qwe "zxc ad"
@@ -32,7 +32,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[6]}" = "Argument 2 : zxc ad"     ]
 }
 
-@test "Usability: Execute external repository script with linked manage from FIXTURE_ROOT." {
+@test "Manage Arguments: Execute external repository script with linked manage from FIXTURE_ROOT." {
     cd "${TMP}"
     "${MANAGE}" bootstrap
     run "${TMP}/manage" hello
@@ -52,7 +52,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${FIXTURE_ROOT}"    ]
 }
 
-@test "Usability: Execute external repository script with libexec manage from FIXTURE_ROOT." {
+@test "Manage Arguments: Execute external repository script with libexec manage from FIXTURE_ROOT." {
     cd "${TMP}"
     "${MANAGE}" bootstrap
     run "${TMP}/manage" hello
@@ -72,7 +72,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${FIXTURE_ROOT}"    ]
 }
 
-@test "Usability: Execute external script with linked manage from FIXTURE_ROOT." {
+@test "Manage Arguments: Execute external script with linked manage from FIXTURE_ROOT." {
     cd "${TMP}"
     "${MANAGE}" bootstrap
     run "${TMP}/manage" hello
@@ -92,7 +92,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${FIXTURE_ROOT}"    ]
 }
 
-@test "Usability: Execute external script with libexec manage from FIXTURE_ROOT." {
+@test "Manage Arguments: Execute external script with libexec manage from FIXTURE_ROOT." {
     cd "${TMP}"
     "${MANAGE}" bootstrap
     run "${TMP}/manage" hello
@@ -112,7 +112,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${FIXTURE_ROOT}"    ]
 }
 
-@test "Usability: Execute repository script with linked manage from FIXTURE_ROOT." {
+@test "Manage Arguments: Execute repository script with linked manage from FIXTURE_ROOT." {
     cd "${FIXTURE_ROOT}"
     run "${manage}" aloha yeah
 
@@ -124,7 +124,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${FIXTURE_ROOT}"    ]
 }
 
-@test "Usability: Execute repository script with linked manage from TMP." {
+@test "Manage Arguments: Execute repository script with linked manage from TMP." {
     cd "${TMP}"
     run "${manage}" aloha yeah
 
@@ -136,7 +136,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${TMP}"             ]
 }
 
-@test "Usability: Execute repository script with linked manage from TMP, script path as an argument." {
+@test "Manage Arguments: Execute repository script with linked manage from TMP, script path as an argument." {
     cd "${TMP}"
     run "${manage}" "${FIXTURE_ROOT}/script/aloha" yeah
     echo "${output}"
@@ -148,7 +148,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${TMP}"             ]
 }
 
-@test "Usability: Execute script with libexec manage from FIXTURE_ROOT." {
+@test "Manage Arguments: Execute script with libexec manage from FIXTURE_ROOT." {
     cd "${FIXTURE_ROOT}"
     run "${MANAGE}" aloha yeah
 
@@ -160,7 +160,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${FIXTURE_ROOT}"    ]
 }
 
-@test "Usability: Execute repository script with libexec manage from TMP, repository path as an argument." {
+@test "Manage Arguments: Execute repository script with libexec manage from TMP, repository path as an argument." {
     cd "${TMP}"
     run "${MANAGE}" "${FIXTURE_ROOT}" aloha yeah
 
@@ -172,7 +172,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${TMP}"             ]
 }
 
-@test "Usability: Execute script with libexec manage from TMP, script path as an argument." {
+@test "Manage Arguments: Execute script with libexec manage from TMP, script path as an argument." {
     cd "${TMP}"
     run "${MANAGE}" "${FIXTURE_ROOT}/script/aloha" yeah
     echo "${output}"
@@ -184,7 +184,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${TMP}"             ]
 }
 
-@test "Usability: Execute repository script from TMP with libexec manage in PATH." {
+@test "Manage Arguments: Execute repository script from TMP with libexec manage in PATH." {
     PATH="$BATSMANAGELIBEXEC:$PATH"
     cd "${TMP}"
     run "${FIXTURE_ROOT}/script/aloha" yeah
@@ -196,55 +196,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[4]}" = "PWD        : ${TMP}"             ]
 }
 
-@test "Usability: Check script exit code with strict mode enabled, script return 45." {
-    run "${manage}" s-return-onexit
-    [ "${output}" = "onexit 45"    ]
-    [ "${status}" = "45"           ]
-}
-
-@test "Usability: Check script exit code with strict mode enabled, script exits with code 45." {
-    run "${manage}" s-exit-onexit
-    [ "${output}" = "onexit 45"    ]
-    [ "${status}" = "45"           ]
-}
-
-@test "Usability: Check script exit code with strict mode enabled, script has an error." {
-    run "${manage}" s-err-onexit
-    [ "${output}" = "onexit 1"     ]
-    [ "${status}" = "1"            ]
-}
-
-@test "Usability: Check script exit code with strict mode enabled, script exits with code 0." {
-    run "${manage}" s-hello-onexit
-    [ "${output}" = "onexit 0"     ]
-    [ "${status}" = "0"            ]
-}
-
-@test "Usability: Check script exit code with strict mode disabled, script exits with code 0." {
-    run "${manage}" ns-hello-onexit
-    [ "${output}" = "onexit 0"     ]
-    [ "${status}" = "0"            ]
-}
-
-@test "Usability: Check script exit code with strict mode disabled, script has an error." {
-    run "${manage}" ns-err-onexit
-    [ "${output}" = "onexit 1"     ]
-    [ "${status}" = "1"            ]
-}
-
-@test "Usability: Check script exit code with strict mode disabled, script returns 45." {
-    run "${manage}" ns-return-onexit
-    [ "${output}" = "onexit 45"    ]
-    [ "${status}" = "45"           ]
-}
-
-@test "Usability: Check script exit code with strict mode disabled, script exits with code 45." {
-    run "${manage}" ns-exit-onexit
-    [ "${output}" = "onexit 45"    ]
-    [ "${status}" = "45"           ]
-}
-
-@test "Usability: Execute script and check stdin." {
+@test "Manage Arguments: Execute script and check stdin." {
     IFS=$'\n\t'
     lines=($(echo "A pipe" | "${manage}" pipe))
     [ "${lines[0]}" = "A pipe"     ]

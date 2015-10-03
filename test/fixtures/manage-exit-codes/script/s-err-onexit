@@ -14,8 +14,9 @@
 
 
 main () {
-    _strict false
-    echo "Hello World" > /dev/null
+    _ strict true
+    cat /tmp/thisfiledoesnotexistsdoesit > /dev/null 2>&1
+    true
 }
 
 onexit () {

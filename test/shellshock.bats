@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load test_helper
+load test-helper-generic
 
 @test "Shellshock: CVE-2014-6271" {
     result=$(env 'x=() { :;}; echo vulnerable' 'BASH_FUNC_x()=() { :;}; echo vulnerable' bash -c "echo test" 2>&1 | grep 'vulnerable' | wc -l)

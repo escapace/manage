@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load test_helper
+load test-helper-external
 fixtures collection-manage
 manage="${BATS_PARENT_DIRNAME}/libexec/manage"
 

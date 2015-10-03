@@ -27,82 +27,134 @@ then
     exit 1
 fi
 
-LC_ALL=en_US.UTF-8
-LANG=en_US.UTF-8
-
-_resolvelink() {
-    $(type -p greadlink readlink | head -1) "$1"
-}
-
-_absoultedirectorypath() {
-    local cwd
-    local path="$1"
-
-    cwd="$(pwd)"
-
-    while [ -n "$path" ]; do
-        cd "${path%/*}" || exit
-        local name="${path##*/}"
-        path="$(_resolvelink "$name" || true)"
-    done
-
-    pwd
-    cd "${cwd}" || exit
-}
-
-_expandpath() {
-    { cd "$(dirname "$1")" 2>/dev/null
-        local dirname="$PWD"
-        cd "$OLDPWD"
-        echo "$dirname/$(basename "$1")"
-    } || echo "$1"
-}
-
-_import()
+__ ()
 {
-    local file
-    local requirement
-    local OPWD=$PWD
-    local requirements="$1"
-    local bashmagic="^(#!){1}.*(bash){1}.*"
+    local ___one="$1"
+    shift
 
-    for file in "${MANAGEDIRECTORY}/common/"* "${MANAGEDIRECTORY}/payload/"*
-    do
-        if [   -f "${file}" ] &&
-           [   -r "${file}" ] &&
-           [ ! -L "${file}" ] &&
-           [[ "$(basename "${file}")" =~ ^[-a-zA-Z]*$   ]] &&
-           [[ "$(head -n 1 "${file}")" =~ ${bashmagic}  ]]
-        then
-            for requirement in ${requirements[*]}
+    [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/common" "${MANAGEDIRECTORY}/payload")
+
+    case "${___one}" in
+        namespace)
+            local ___source
+            local ___name="$1"
+            shift
+            ___source="$(__ getsource "$*")"
+            #shellcheck disable=SC2016
+            eval '
+            '"${___name}"' () (
+                '"${___source}"'
+
+                local ___one="$1"
+                shift
+
+                _"${___one}" "$@" || return $?
+                return $?
+            )'
+            ;;
+        getsource)
+            (
+                local f
+                local fns
+                local fone
+                local ftwo
+                local scripts=($1)
+                fone="$(compgen -A function | sort)"
+                __ import "${scripts[*]}"
+                ftwo="$(compgen -A function | sort)"
+                fns=($(comm -13 <(echo "${fone}") <(echo "${ftwo}")))
+
+                for f in "${fns[@]}"
+                do
+                    declare -f "${f}"
+                done
+            )
+            ;;
+
+        import)
+            local i
+            local cwd
+            local file
+            local script
+            local scripts=($1)
+            local paths=(${MANAGEIMPORTPATHS[@]})
+            local bashmagic="^(#!){1}.*(bash){1}.*"
+
+            cwd="$(pwd)"
+
+            for ((i=0;i<${#paths[@]};i++))
             do
-                if [[ "${requirement}" == "$(basename "${file}")" ]]
-                then
-                    cd "$(dirname "${file}")" || exit "$?"
-                    source "${file}" > /dev/null 2>&1
-                fi
+                paths[i]="${paths[i]}/*"
             done
-        fi
-    done
-    cd "${OPWD}" || exit "$?"
+
+            for file in ${paths[*]}
+            do
+                for script in ${scripts[*]}
+                do
+                    if [[ "${script}" == "$(basename "${file}")"   ]] &&
+                       [[ "$(head -n 1 "${file}")" =~ ${bashmagic} ]]
+                    then
+                        cd "$(dirname "${file}")"         || true
+                        source "${file}" > /dev/null 2>&1 || true
+                    fi
+                done
+            done
+            cd "${cwd}" || exit
+        esac
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
 then
-    _import "${MANAGEIMPORT[@]}"
-    source "${MANAGESCRIPTPATH}"
+    __ namespace "_" "${MANAGEIMPORT[*]}"
+    __ import "libexec-instance-payload"
+    [ -n "${MANAGESCRIPTPATH}" ] && source "${MANAGESCRIPTPATH}"
     _main "$@"
 else
-    MANAGEZERO="$(_expandpath "$0")"
-    MANAGELIBEXEC="$(_absoultedirectorypath "${MANAGEZERO}")"
-    MANAGEDIRECTORY="$(_absoultedirectorypath "${MANAGELIBEXEC}")"
-    MANAGECWD="$(_absoultedirectorypath .)"
 
-    _import "libexec-manage"
-    _strict true
+    resolvelink() {
+        $(type -p greadlink readlink | head -1) "$1"
+    }
+
+    absolutedirectorypath() {
+        local cwd
+        local path="$1"
+
+        cwd="$(pwd)"
+
+        while [ -n "$path" ]; do
+            cd "${path%/*}" || exit
+            local name="${path##*/}"
+            path="$(resolvelink "$name" || true)"
+        done
+
+        pwd
+        cd "${cwd}" || exit
+    }
+
+    expandpath() {
+        { cd "$(dirname "$1")" 2>/dev/null
+            local dirname="$PWD"
+            cd "$OLDPWD"
+            echo "$dirname/$(basename "$1")"
+        } || echo "$1"
+    }
+
+    # shellcheck disable=SC2034
+
+    MANAGECWD="$(absolutedirectorypath .)"
+    MANAGEZERO="$(expandpath "$0")"
+    MANAGELIBEXEC="$(absolutedirectorypath "${MANAGEZERO}")"
+    MANAGEDIRECTORY="$(absolutedirectorypath "${MANAGELIBEXEC}")"
+
+    LC_ALL=C
+
+    __ import "libexec-manage"
+
+    __ namespace "_" "collection-shell"   \
+                     "collection-array"   \
+                     "collection-string"  \
+                     "collection-grammar"
 
     checkdependencies "${MANAGEDIRECTORY}/libexec/manage"
     collectscripts "$@"
 fi
-
-

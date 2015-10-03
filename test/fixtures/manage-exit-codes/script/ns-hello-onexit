@@ -14,11 +14,8 @@
 
 
 main () {
-    _strict false
-
-    true
-    return 45
-    true
+    _ strict false
+    echo "Hello World" > /dev/null
 }
 
 onexit () {

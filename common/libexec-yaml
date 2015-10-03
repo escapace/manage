@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 parseyaml() {
-    _required "$1" ||
+    _ required "$1" ||
         return 1
 
     local s
@@ -33,7 +33,7 @@ parseyaml() {
 }
 
 yaml () {
-    _required "$1" "$2" ||
+    _ required "$1" "$2" ||
         return 1
 
     local yaml="$1"
@@ -49,7 +49,7 @@ yaml () {
     do
         for argument in "$@"
         do
-            if [[ "$(echo "${argument}" | _upper )" == "${variable}" ]]
+            if [[ "$(echo "${argument}" | _ upper )" == "${variable}" ]]
             then
                 echo "local ${variable}"
                 echo "${yaml}" |

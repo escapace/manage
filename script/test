@@ -29,11 +29,11 @@ main () {
     export MANAGEREPOSITORY
 
     #TODO: variable test directory
-    testdirectory="$(_expandpath "${MANAGEREPOSITORY}/test")"
+    testdirectory="${MANAGEREPOSITORY}/test"
 
     if [ -d "${testdirectory}" ]
     then
-        if _required "${1}"
+        if _ required "${1}"
         then
             for file in "${testdirectory}"/*.bats
             do
@@ -44,16 +44,16 @@ main () {
                     name="$(basename "${file}")"
                     if [[ "${1}" == "${name::-5}" ]]
                     then
-                        bats "$(_truthEcho "${CI}" "--tap" "--pretty")" "${file}"
+                        bats "$(_ truthEcho "${CI}" "--tap" "--pretty")" "${file}"
                     fi
                 fi
             done
             cd "${OPWD}" || exit
         else
-            bats "$(_truthEcho "${CI}" "--tap" "--pretty")" "${testdirectory}"
+            bats "$(_ truthEcho "${CI}" "--tap" "--pretty")" "${testdirectory}"
         fi
     else
-        _die "No tests, aborting."
+        _ die "No tests, aborting."
     fi
 }
 

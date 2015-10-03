@@ -36,7 +36,7 @@ title ()
 table () {
     title "$1"
     echo  "$2"           |
-    _wrap "${textwidth}" |
+    _ wrap "${textwidth}" |
     tr -s '\n'           |
     sed   "2,\${s/^/${paragraph}/}"
 
@@ -57,7 +57,7 @@ usage ()
     usagestring
     forscript filter description
     echo
-    if _required "$1"
+    if _ required "$1"
     then
         echo -e "${leftmargin}$1\n"
     fi
@@ -79,7 +79,7 @@ help ()
 getspace () {
     local len="$1"
     local char="${2:-" "}"
-    _repeat "${len}" echo -n "${char}"
+    _ repeat "${len}" echo -n "${char}"
 }
 
 filter () {
@@ -93,7 +93,7 @@ filter () {
 }
 
 forscript () {
-    _forEach SCRIPTNAMES \
+    _ forEach SCRIPTNAMES \
         "$1" "$2"
 }
 
@@ -109,8 +109,8 @@ getlength () {
 
 main ()
 {
-    _verbose true
-    _strict true
+    _ verbose true
+    _ strict true
 
     maximumwidth="75"
     separatorlength="3"
@@ -126,7 +126,7 @@ main ()
     paragraph="$(getspace "${paragraphlength}")"
     separator="$(getspace "${separatorlength}")"
 
-    if _required "$1"
+    if _ required "$1"
     then
         help "$1"
     else

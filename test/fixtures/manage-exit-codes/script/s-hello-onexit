@@ -14,7 +14,7 @@
 
 
 main () {
-    _strict true
+    _ strict true
     echo "Hello World" > /dev/null
 }
 

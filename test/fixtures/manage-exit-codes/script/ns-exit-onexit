@@ -14,8 +14,11 @@
 
 
 main () {
-    _strict false
-    cat /tmp/thisfiledoesnotexistsdoesit > /dev/null 2>&1
+    _ strict false
+
+    true
+    exit 45
+    true
 }
 
 onexit () {
