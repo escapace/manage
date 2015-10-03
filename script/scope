@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# <doc>
+#
+# A simple Hello World script.
+#
+# </doc>
+#
+# <dependency>
+#
+# bash
+#
+# </dependency>
+
+_ () {
+    getsource () (
+        local i
+        local f
+        local fns
+        local fone
+        local ftwo
+        local file
+        local script
+        local paths=($1)
+        local scripts=($2)
+
+        for ((i=0;i<${#paths[@]};i++))
+        do
+        paths[i]="${paths[i]}/*"
+        done
+
+        fone="$(compgen -A function | sort)"
+
+        for file in ${paths[*]}
+        do
+            for script in ${scripts[*]}
+            do
+                #TODO: More tests
+                if [[ "${script}" == "$(basename "${file}")" ]]
+                then
+                    cd "$(dirname "${file}")"         || true
+                    source "${file}" > /dev/null 2>&1 || true
+                fi
+            done
+        done
+
+        ftwo="$(compgen -A function | sort)"
+        fns=($(comm -13 <(echo "${fone}") <(echo "${ftwo}")))
+
+        for f in "${fns[@]}"
+        do
+            if [[ "${f}" =~ ^_[a-zA-Z0-9_] ]]
+            then
+                declare -f "${f}"
+            fi
+        done
+    )
+
+    run () (
+        local one="$1"
+        shift
+
+        source <(echo "${MANAGESOURCE}")
+
+        _"${one}" "$@"
+    )
+
+    local files=("collection-network" "collection-string")
+    local paths=("${MANAGEDIRECTORY}/common" "${MANAGEDIRECTORY}/payload")
+    [ -z "${MANAGESOURCE}" ] && MANAGESOURCE="$(getsource "${paths[*]}" "${files[*]}")"
+
+    run "$@"
+}
+
+main () {
+    _ ipcalc hostmax "10.0.0.10/24"
+    _ ipcalc hostmax "10.0.5.10/24"
+    _ ipcalc hostmax "10.3.5.10/24"
+    echo uppercase | _ upper
+}
