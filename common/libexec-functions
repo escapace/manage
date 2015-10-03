@@ -1,37 +1,25 @@
 #!/usr/bin/env bash
 
 exists () {
-    _includes SCRIPTNAMES "$1"
+    _ includes SCRIPTNAMES "$1"
 }
 
 getindex () {
-    _required "$1" ||
-        return 1
-
-    _indexOf SCRIPTNAMES "$1"
+    _ indexOf SCRIPTNAMES "$1"
 }
 
 getpath ()
 {
-    _required "$1" ||
-        return 1
-
     echo "${SCRIPTPATHS["$(getindex "$1")"]}"
 }
 
 getscript ()
 {
-    _required "$1" ||
-        return 1
-
     echo "${SCRIPTNAMES["$(getindex "$1")"]}"
 }
 
 getdoc () {
-    _required "$1" ||
-        return 1
-
-    _embeddedTag "doc" \
+    _ embeddedTag "doc" \
         "$(getpath "$1")"
 }
 
@@ -43,8 +31,6 @@ isurl ()
 
 isfile ()
 {
-    _required "$1" ||
-        return 1
     local file="$1"
 
     [ -f  "${file}" ] &&
@@ -54,14 +40,11 @@ isfile ()
 
 isdirectory ()
 {
-    _required "$1" ||
-        return 1
     [ -d "$1" ] ||
         return 1
 }
+
 ismagic () {
-    _required "$1" ||
-        return 1
     local manage="^(#!){1}.*(manage){1}.*"
     local bash="^(#!){1}.*(bash){1}.*"
 
@@ -73,14 +56,38 @@ ismagic () {
     [[ "${line}" =~ ${bash}   ]]
 }
 
+#shellcheck disable=SC1001
 isscript () {
-    _required "$1" ||
-        return 1
-
     local file="$1"
 
     isfile "${file}" &&
     ismagic "${file}" &&
     [[ "$(basename "${file}")" =~ ^[-a-zA-Z\_]*$ ]]
+}
+
+isinternal ()
+{
+    _ required "$1" ||
+        return 1
+
+    local internal
+    # shellcheck disable=SC2034
+    internal=("help" "_manage_help" "completion" "_manage_completion")
+    _ includes internal "$1"
+}
+
+checkdependencies ()
+{
+    _ required "$1" || return 1
+    local path="$1"
+    local dependencies
+    local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
+    dependencies=($(_ embeddedTag "dependency" "${path}"))
+
+    if ! _ exists "${dependencies[@]}"
+    then
+        echo "Dependency \"${dependencies[$(($?-1))]}\" not satisfied."
+        exit 1
+    fi
 }
 

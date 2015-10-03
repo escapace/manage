@@ -14,8 +14,10 @@
 
 
 main () {
-    _strict true
-    cat /tmp/thisfiledoesnotexistsdoesit > /dev/null 2>&1
+    _ strict true
+
+    true
+    return 45
     true
 }
 

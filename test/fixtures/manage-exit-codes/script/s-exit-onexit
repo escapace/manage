@@ -14,10 +14,10 @@
 
 
 main () {
-    _strict true
+    _ strict true
 
     true
-    return 45
+    exit 45
     true
 }
 

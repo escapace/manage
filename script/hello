@@ -4,7 +4,7 @@
 #
 # <doc>
 #
-# A simple Hello World script.
+# Hello World
 #
 # </doc>
 #
@@ -23,8 +23,8 @@
 
 main ()
 {
-    _verbose true
-    _strict true
+    _ verbose true
+    _ strict true
     echo "Hello World!"
     echo "Script name: $(basename "${BASH_SOURCE[0]}")"
     echo "Caller name: $(basename "$0")"
@@ -34,15 +34,16 @@ main ()
     echo "Argument 2 : $2"
     echo "Argument 3 : $3"
     echo "Repository : ${MANAGEREPOSITORY}"
+    echo "M directory: ${MANAGEDIRECTORY}"
 }
 
 onexit ()
 {
     if (( $1 == 0 ))
     then
-        _info "Exiting."
+        _ info "Exiting."
     else
-        _error "An error with exit code \"$1\" has occured."
+        _ error "An error with exit code \"$1\" has occured."
     fi
 }
 

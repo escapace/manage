@@ -6,9 +6,6 @@ proceedwithurl () {
 }
 
 proceedwithsinglescript () {
-    _required "$1" ||
-        return 1
-
     processscriptordirectory "$1"
 
     shift
@@ -17,13 +14,11 @@ proceedwithsinglescript () {
 
 processsinglescript ()
 {
-    _required "$1" ||
-        return 1
     local file
 
     if isscript "${1}"
     then
-        file="$(_expandpath "$1")"
+        file="$(expandpath "$1")"
         SCRIPTPATHS+=("${file}")
         SCRIPTNAMES+=("${2}$(basename "${file}")")
     else
@@ -32,9 +27,6 @@ processsinglescript ()
 }
 
 processscriptordirectory () {
-    _required "$1" ||
-        return 1
-
     local file
 
     if isdirectory "$1"
@@ -76,7 +68,7 @@ proceedwithrepository ()
 
 isrepository ()
 {
-    _required "$1" ||
+    _ required "$1" ||
         return 1
 
     [[ "$1" == "${MANAGELIBEXEC}"   ]] && return 1
@@ -85,12 +77,12 @@ isrepository ()
     isdirectory "$1" || return 1
     isfile "$1/.manage.yml" || return 1
 
-    MANAGEREPOSITORY="$(_expandpath "$1")"
+    MANAGEREPOSITORY="$(expandpath "$1")"
 }
 
 searchpath ()
 {
-    _required "$1" || return 1
+    _ required "$1" || return 1
     local path
     local code=1
 
@@ -117,7 +109,7 @@ collectscripts ()
 {
     local callerdirectory
     local paths
-    callerdirectory="$(dirname "$(_expandpath "${MANAGEZERO}")")"
+    callerdirectory="$(dirname "$(expandpath "${MANAGEZERO}")")"
     paths=( "${callerdirectory}" "${MANAGECWD}" "$1" )
 
     if searchpath "${paths[@]}"

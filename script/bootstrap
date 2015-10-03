@@ -24,11 +24,11 @@ _managePath () {
     local path
     destinationpath="$1"
     sourcepath="$(pwd)"
-    path="$(_relpath "${destinationpath}" "${sourcepath}")"
+    path="$(_ relpath "${destinationpath}" "${sourcepath}")"
     if [[ "${path}" == ".." ]] ||
        [[ "${path}" == "."  ]]
     then
-        _die "Consider a path outside of the manage repository."
+        _ die "Consider a path outside of the manage repository."
     else
         echo "${path}"
     fi
@@ -42,35 +42,35 @@ _scriptPath () {
     local checkcommon
 
     [ -n "$2" ] && scriptdir="$2" || scriptdir="script"
-    [ -n "$1" ] && managedir="$1" || _die
+    [ -n "$1" ] && managedir="$1" || _ die
 
-    absmanagedir="$(_abspath "${managedir}")"
-    absscriptdir="$(_abspath "${scriptdir}")"
-    checkcommon="$(_commonpath "${absmanagedir}" "${absscriptdir}")"
+    absmanagedir="$(_ abspath "${managedir}")"
+    absscriptdir="$(_ abspath "${scriptdir}")"
+    checkcommon="$(_ commonpath "${absmanagedir}" "${absscriptdir}")"
     if [ "${checkcommon}" == "${absmanagedir}" ]
     then
-        _die "Consider a path outside of the manage repository."
+        _ die "Consider a path outside of the manage repository."
     else
         echo "${scriptdir}"
     fi
 }
 
 main () {
-    _verbose true
-    _strict true
+    _ verbose true
+    _ strict true
 
     local T_MANAGEDIRECTORY
     local T_MANAGESCRIPTSDIRECTORY
 
     T_MANAGEDIRECTORY="$(_managePath "${MANAGEDIRECTORY}")"
-    T_MANAGESCRIPTSDIRECTORY="$(_scriptPath "${T_MANAGEDIRECTORY}" "$(echo "$*" | _joinLines " ")")"
+    T_MANAGESCRIPTSDIRECTORY="$(_scriptPath "${T_MANAGEDIRECTORY}" "$(echo "$*" | _ joinLines " ")")"
 
-    _info "Absolute path to manage directory $(_abspath "${T_MANAGEDIRECTORY}")"
-    _info "Absolute path to script directory $(_abspath "${T_MANAGESCRIPTSDIRECTORY}")"
+    _ info "Absolute path to manage directory $(_ abspath "${T_MANAGEDIRECTORY}")"
+    _ info "Absolute path to script directory $(_ abspath "${T_MANAGESCRIPTSDIRECTORY}")"
 
     if [ ! -d "${T_MANAGESCRIPTSDIRECTORY}" ];
     then
-        _info "Creating script directory $(_abspath "${T_MANAGESCRIPTSDIRECTORY}")"
+        _ info "Creating script directory $(_ abspath "${T_MANAGESCRIPTSDIRECTORY}")"
         mkdir "${T_MANAGESCRIPTSDIRECTORY}"
     fi
     mkdir "${PWD}/test"

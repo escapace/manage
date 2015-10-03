@@ -2,24 +2,13 @@
 
 [[ $LIBEXEC_MANAGE_LOADED ]] && return
 
-source collection-shell
-source collection-string
-source collection-message
-source collection-grammar
-source collection-array
-
-SCRIPTNAMES=()
-SCRIPTPATHS=()
-
 source libexec-functions
 source libexec-arguments
-source libexec-yaml
+# source libexec-yaml
 
-run () {
-    if exists "${1}"
-    then
-        prepare "$@"
-    elif exists "help"
+runhelp ()
+{
+    if exists "help"
     then
         prepare "help" "$@"
     elif exists "_manage_help"
@@ -28,37 +17,47 @@ run () {
     fi
 }
 
-isinternal ()
+runcomplete ()
 {
-    _required "$1" ||
-        return 1
-
-    local internal
-    internal=("help" "_manage_help")
-    _includes internal "$1"
+    if exists "completion"
+    then
+        prepare "completion" "$@"
+    elif exists "_manage_completion"
+    then
+        prepare "_manage_completion" "$@"
+    fi
 }
 
-checkdependencies ()
-{
-    _required "$1" || return 1
-    local path="$1"
-    local dependencies
-    local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
-    dependencies=($(_embeddedTag "dependency" "${path}"))
+run () {
+    local name="$1"
+    shift
 
-    _exists "${dependencies[@]}" ||
-        _die "Dependency \"${dependencies[$(($?-1))]}\" not satisfied."
+    case name in
+        completion)
+            runcomplete "$@"
+            ;;
+        help)
+            runhelp "$@"
+            ;;
+        *)
+            if exists "${name}"
+            then
+                prepare "${name}" "$@"
+            else
+                runhelp
+            fi
+    esac
 }
+
 
 prepare () {
     local name
     local path
     local imports
-    local dependencies
 
     name="${1}"
     path="$(getpath "${name}")"
-    imports=($(_embeddedTag "import" "${path}"))
+    imports=($(_ embeddedTag "import" "${path}"))
 
     shift
 
@@ -66,25 +65,23 @@ prepare () {
 
     if isinternal "${name}"
     then
-        _import "${imports[@]}"
+        __ import "${imports[*]}"
         source "${path}"
         main "$@"
     else
         local zero
         local exports
-        local payload
         local commandstring
         zero="$(basename "${MANAGEZERO}")"
         libexec="source \"${MANAGEDIRECTORY}/libexec/manage\""
 
-        payload=( "libexec-instance-payload" "${imports[@]}")
         exports="MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
                  MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\"
                  MANAGESCRIPTPATH=\"${path}\"
                  MANAGEZERO=\"${MANAGEZERO}\"
-                 MANAGEIMPORT=\"$(_join " " "${payload[@]}")\""
+                 MANAGEIMPORT=\"$(_ join " " "${imports[@]}")\""
 
-        commandstring="$(echo "${exports} && ${libexec}" | _squeeze | tr '\n' ' ')"
+        commandstring="$(echo "${exports} && ${libexec}" | _ squeeze | tr '\n' ' ')"
 
         (
             exec -a "${zero}"         \
