@@ -6,49 +6,42 @@ source libexec-functions
 source libexec-arguments
 # source libexec-yaml
 
-runhelp ()
-{
-    if exists "help"
-    then
-        prepare "help" "$@"
-    elif exists "_manage_help"
-    then
-        prepare "_manage_help" "$@"
-    fi
-}
+swaprun () {
+    local name
+    local names
+    names=("_manage_$1" "$1")
+    shift
 
-runcomplete ()
-{
-    if exists "completion"
-    then
-        prepare "completion" "$@"
-    elif exists "_manage_completion"
-    then
-        prepare "_manage_completion" "$@"
-    fi
+    for name in "${names[@]}"
+    do
+        if exists "${name}"
+        then
+            prepare "${name}" "$@"
+            break
+        fi
+    done
 }
 
 run () {
     local name="$1"
-    shift
+    shift || true
 
-    case name in
+    case "${name}" in
         completion)
-            runcomplete "$@"
+            swaprun "completion" "$@"
             ;;
         help)
-            runhelp "$@"
+            swaprun "help" "$@"
             ;;
         *)
             if exists "${name}"
             then
                 prepare "${name}" "$@"
             else
-                runhelp
+                swaprun "help" "$@"
             fi
     esac
 }
-
 
 prepare () {
     local name
@@ -59,7 +52,7 @@ prepare () {
     path="$(getpath "${name}")"
     imports=($(_ embeddedTag "import" "${path}"))
 
-    shift
+    shift || true
 
     checkdependencies "${path}"
 

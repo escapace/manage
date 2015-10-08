@@ -2,7 +2,7 @@
 #
 # <doc>
 #
-# Display this help and exit.
+# Display this help and exit
 #
 # </doc>
 #
@@ -109,8 +109,8 @@ getlength () {
 
 main ()
 {
-    _ verbose true
-    _ strict true
+    # _ verbose true
+    # _ strict true
 
     maximumwidth="75"
     separatorlength="3"

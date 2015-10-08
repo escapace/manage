@@ -7,14 +7,12 @@ fixtures collection-grammar
 @test "Collection-grammar: Actions File" {
   expected="$(cat "${FIXTURE_ROOT}/actions/expected")"
   result="$(_ actions "qwe_" "${FIXTURE_ROOT}/actions/input")"
-  echo "${result}"
   [ "$result" = "${expected}" ]
 }
 
 @test "Collection-grammar: Actions stdin" {
   expected="$(cat "${FIXTURE_ROOT}/actions/expected")"
   result="$(cat "${FIXTURE_ROOT}/actions/input" | _ actions "qwe_")"
-  echo "${result}"
   [ "$result" = "${expected}" ]
 }
 
@@ -22,7 +20,6 @@ fixtures collection-grammar
   load "${FIXTURE_ROOT}/actions/input"
   expected="$(cat "${FIXTURE_ROOT}/actions/expected")"
   result="$(_ actions "qwe_")"
-  echo "${result}"
   [ "$result" = "${expected}" ]
 }
 
@@ -60,13 +57,11 @@ fixtures collection-grammar
 @test "Collection-grammar: Variables" {
   expected="$(cat "${FIXTURE_ROOT}/variables/expected")"
   result="$(_ variables "${FIXTURE_ROOT}/variables/input")"
-  echo "$result"
   [ "$result" = "${expected}" ]
 }
 
 @test "Collection-grammar: Variables stdin" {
   expected="$(cat "${FIXTURE_ROOT}/variables/expected")"
   result="$(cat "${FIXTURE_ROOT}/variables/input" | _ variables)"
-  echo "$result"
   [ "$result" = "${expected}" ]
 }

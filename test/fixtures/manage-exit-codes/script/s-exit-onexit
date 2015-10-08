@@ -14,7 +14,7 @@
 
 
 main () {
-    _ strict true
+    strict true
 
     true
     exit 45
