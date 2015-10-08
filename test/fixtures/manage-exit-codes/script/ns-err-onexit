@@ -14,7 +14,7 @@
 
 
 main () {
-    _ strict false
+    strict false
     cat /tmp/thisfiledoesnotexistsdoesit > /dev/null 2>&1
 }
 

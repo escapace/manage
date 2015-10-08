@@ -5,13 +5,6 @@ proceedwithurl () {
     true
 }
 
-proceedwithsinglescript () {
-    processscriptordirectory "$1"
-
-    shift
-    run "${SCRIPTNAMES[0]}" "$@"
-}
-
 processsinglescript ()
 {
     local file
@@ -49,12 +42,22 @@ proceedwithrepository ()
     if isscript "$1"
     then
         #TODO: check if the script in $1 is inside a repository
-        proceedwithsinglescript "$@"
+        processscriptordirectory "$1"
+
+        shift
+        run "${SCRIPTNAMES[0]}" "$@"
     else
-        isrepository "$1" && shift
+        if isrepository "$1"
+        then
+            shift
+        else
+            true
+        fi
+
 
         isdirectory "${MANAGEDIRECTORY}/script" ||
             return 1
+
 
         if [[ ! ${MANAGEREPOSITORY} == "${MANAGEDIRECTORY}" ]]
         then

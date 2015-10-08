@@ -7,7 +7,6 @@
 [[ $COLLECTION_SHELL_LOADED ]] && return
 
 source collection-string
-source collection-shell-strict
 
 _first()
 {

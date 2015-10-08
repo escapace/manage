@@ -27,6 +27,32 @@ then
     exit 1
 fi
 
+strict()
+{
+    # set strict mode to given value.
+    #
+    # Usage: strict [VALUE]
+    #
+
+    local value
+    value="$(tr '[:upper:]' '[:lower:]' <<< "$1")"
+    case "${value}" in
+        yes|y|true|t|on|1)
+            set   -o errexit
+            set   -o errtrace
+            set   -o pipefail
+            shopt -s nullglob
+            IFS=$'\n\t'
+            ;;
+        *)
+            set   +o errexit
+            set   +o errtrace
+            set   +o pipefail
+            shopt -u nullglob
+            IFS=$' \n\t'
+    esac
+}
+
 __ ()
 {
     local ___one="$1"
@@ -110,6 +136,7 @@ then
     [ -n "${MANAGESCRIPTPATH}" ] && source "${MANAGESCRIPTPATH}"
     _main "$@"
 else
+    strict true
 
     resolvelink() {
         $(type -p greadlink readlink | head -1) "$1"

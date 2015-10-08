@@ -12,6 +12,7 @@
 #
 # collection-shell
 # collection-message
+# collection-string
 #
 # </import>
 #
@@ -23,8 +24,8 @@
 
 main ()
 {
-    _ verbose true
-    _ strict true
+    # _ verbose true
+    strict true
     echo "Hello World!"
     echo "Script name: $(basename "${BASH_SOURCE[0]}")"
     echo "Caller name: $(basename "$0")"
