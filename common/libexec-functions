@@ -19,7 +19,7 @@ getscript ()
 }
 
 getdoc () {
-    _ embeddedTag "doc" \
+    _ tag "doc" \
         "$(getpath "$1")"
 }
 
@@ -82,7 +82,7 @@ checkdependencies ()
     local path="$1"
     local dependencies
     local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
-    dependencies=($(_ embeddedTag "dependency" "${path}"))
+    dependencies=($(_ tag "dependency" "${path}"))
 
     if ! _ exists "${dependencies[@]}"
     then

@@ -4,7 +4,6 @@
 
 source libexec-functions
 source libexec-arguments
-# source libexec-yaml
 
 swaprun () {
     local name
@@ -50,7 +49,7 @@ prepare () {
 
     name="${1}"
     path="$(getpath "${name}")"
-    imports=($(_ embeddedTag "import" "${path}"))
+    imports=($(_ tag "import" "${path}"))
 
     shift || true
 

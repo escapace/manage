@@ -180,7 +180,7 @@ else
     __ namespace "_" "collection-shell"   \
                      "collection-array"   \
                      "collection-string"  \
-                     "collection-grammar"
+                     "collection-tag"
 
     checkdependencies "${MANAGEDIRECTORY}/libexec/manage"
     collectscripts "$@"
