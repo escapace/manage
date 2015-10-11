@@ -1,6 +1,10 @@
 language: bash
 sudo: false
-script: bin/manage test
+script:
+  - bin/manage test
+  - cd ..
+  - _manage/bin/manage bootstrap
+  - ./manage test
 notifications:
   email:
     on_success: never
