@@ -13,8 +13,7 @@
 # collection-shell
 # collection-string
 # collection-message
-# collection-file
-# collection-tag
+# collection-path
 #
 # </import>
 
@@ -35,14 +34,22 @@ _managePath () {
 }
 
 _scriptPath () {
+    _ required "$1" ||
+        _ die
     local scriptdir
     local managedir
     local absmanagedir
     local absscriptdir
     local checkcommon
 
-    [ -n "$2" ] && scriptdir="$2" || scriptdir="script"
-    [ -n "$1" ] && managedir="$1" || _ die
+    managedir="$1"
+
+    if _ required "$2"
+    then
+        scriptdir="$2"
+    else
+        scriptdir="script"
+    fi
 
     absmanagedir="$(_ abspath "${managedir}")"
     absscriptdir="$(_ abspath "${scriptdir}")"
@@ -61,6 +68,7 @@ main () {
     local T_MANAGEDIRECTORY
     local T_MANAGESCRIPTSDIRECTORY
 
+    #shellcheck disable=SC2153
     T_MANAGEDIRECTORY="$(_managePath "${MANAGEDIRECTORY}")"
     T_MANAGESCRIPTSDIRECTORY="$(_scriptPath "${T_MANAGEDIRECTORY}" "$(echo "$*" | _ joinLines " ")")"
 
