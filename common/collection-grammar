@@ -83,7 +83,7 @@ _functions()
     #
 
     _lines "$@" | _trim |
-    grep -E '^[a-zA-Z0-9_-]+[[:space:]]*[\(]{1}[\)]{1}' |
+    egrep '^[a-zA-Z0-9_-]+[[:space:]]*[\(]{1}[\)]{1}' |
     sed 's/().*$//' | _trim | sort -u
 }
 
@@ -95,7 +95,7 @@ _lines()
     # Usage: _lines [FILE...]
     #
 
-    grep -E -v '^[[:space:]]*#|^[[:space:]]*$' "$@"
+    egrep -v '^[[:space:]]*#|^[[:space:]]*$' "$@"
 }
 
 
@@ -106,7 +106,7 @@ _variables()
     #
 
     sed 's/[[:space:];]/\n/g' "$@"    |
-    grep -E '^[a-zA-Z0-9_]+(\+\=|\=)' |
+    egrep '^[a-zA-Z0-9_]+(\+\=|\=)' |
     sed 's/+=.*$//' |
     sed 's/=.*$//'  |
     sort -u
