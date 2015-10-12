@@ -14,7 +14,7 @@ _join ()
 
     local array="$1[*]"
     local OIFS="${IFS}"
-    if _required "$2"
+    if [ ! -z "$2" ]
     then
         local IFS="$2"
     else
@@ -157,7 +157,5 @@ _union () {
 
     _join AuB "$3"
 }
-
-
 
 COLLECTION_ARRAY_LOADED=1
