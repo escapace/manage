@@ -30,9 +30,9 @@ getnames () {
 
 main ()
 {
+    #TODO: https://github.com/basecamp/sub/blob/master/completions/sub.bash
     case "$1" in
         zsh)
-
             # shellcheck disable=SC2016
             echo '
             function _manage_completion() {

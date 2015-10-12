@@ -49,12 +49,12 @@ description () {
 
 usagestring()
 {
-    echo -e "\n${leftmargin}Usage:" "$(basename "$0") [ script ] [ arguments ... ]\n"
+    echo -e "\n${leftmargin}Usage:" "$(basename "$0") $1 [ arguments ... ]\n"
 }
 
 usage ()
 {
-    usagestring
+    usagestring '[ script ]'
     forscript filter description
     echo
     if _ required "$1"
@@ -67,7 +67,7 @@ help ()
 {
     if exists "$1"
     then
-        usagestring
+        usagestring "$1"
         description "$1"
         echo
     else

@@ -71,7 +71,7 @@ prepare () {
                  MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\"
                  MANAGESCRIPTPATH=\"${path}\"
                  MANAGEZERO=\"${MANAGEZERO}\"
-                 MANAGEIMPORT=\"$(_ join " " "${imports[@]}")\""
+                 MANAGEIMPORT=\"$(_ join imports ' ')\""
 
         commandstring="$(echo "${exports} && ${libexec}" | _ squeeze | tr '\n' ' ')"
 
