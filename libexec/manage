@@ -29,9 +29,9 @@ fi
 
 strict()
 {
-    # set strict mode to given value.
+    # set/unset strict mode
     #
-    # Usage: strict [VALUE]
+    # Usage: strict true/false
     #
 
     local value
@@ -53,6 +53,31 @@ strict()
     esac
 }
 
+verbose()
+{
+    #
+    # With no arguments, test if verbose mode is enabled.
+    # With one argument, set/unset verbose mode.
+    #
+
+    if (( $# == 0 )); then
+        # [[ ${MANAGEVERBOSE} ]] && return 0
+        # return 1
+        [ -n "${MANAGEVERBOSE}" ] && return "${MANAGEVERBOSE}"
+        return 1
+    else
+        local value
+        value="$(tr '[:upper:]' '[:lower:]' <<< "$1")"
+        case "${value}" in
+            no|n|false|f|off|0)
+                MANAGEVERBOSE=1
+                ;;
+            *)
+                MANAGEVERBOSE=0
+        esac
+    fi
+}
+
 __ ()
 {
     local ___one="$1"
@@ -61,22 +86,26 @@ __ ()
     [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/common" "${MANAGEDIRECTORY}/payload")
 
     case "${___one}" in
+        underscore)
+            __ namespace "_" "$*"
+            ;;
         namespace)
             local ___source
             local ___name="$1"
             shift
             ___source="$(__ getsource "$*")"
+
             #shellcheck disable=SC2016
             eval '
-            '"${___name}"' () (
-                '"${___source}"'
+                '"${___name}"' () (
+                    '"${___source}"'
 
-                local ___one="$1"
-                shift
+                    local ___one="$1"
+                    shift
 
-                _"${___one}" "$@" || return $?
-                return $?
-            )'
+                    _"${___one}" "$@" || return $?
+                    return $?
+                )'
             ;;
         getsource)
             (
@@ -131,7 +160,7 @@ __ ()
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
 then
-    __ namespace "_" "${MANAGEIMPORT[*]}"
+    __ underscore "${MANAGEIMPORT[*]}"
     __ import "libexec-instance-payload"
     [ -n "${MANAGESCRIPTPATH}" ] && source "${MANAGESCRIPTPATH}"
     _main "$@"
@@ -177,10 +206,10 @@ else
 
     __ import "libexec-manage"
 
-    __ namespace "_" "collection-shell"   \
-                     "collection-array"   \
-                     "collection-string"  \
-                     "collection-tag"
+    __ underscore "collection-shell"   \
+                  "collection-array"   \
+                  "collection-string"  \
+                  "collection-tag"
 
     checkdependencies "${MANAGEDIRECTORY}/libexec/manage"
     collectscripts "$@"

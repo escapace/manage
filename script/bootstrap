@@ -64,6 +64,7 @@ _scriptPath () {
 
 main () {
     strict true
+    verbose true
 
     local T_MANAGEDIRECTORY
     local T_MANAGESCRIPTSDIRECTORY

@@ -24,7 +24,7 @@
 
 main ()
 {
-    # _ verbose true
+    verbose true
     strict true
 
     echo "Hello World!"
@@ -43,6 +43,8 @@ onexit ()
     if (( $1 == 0 ))
     then
         _ info "Exiting."
+        _ warn "Exiting."
+        _ error "Exiting."
     else
         _ error "An error with exit code \"$1\" has occured."
     fi

@@ -5,26 +5,9 @@
 
 [[ $COLLECTION_MESSAGE_LOADED ]] && return
 
-source collection-terminfo
 source collection-shell
 source collection-string
-
-_verbose()
-{
-    #
-    # With no arguments, test if verbose mode is enabled.
-    # With one argument, set verbose mode to given value.
-    #
-    # Usage: _verbose [VALUE]
-    #
-
-    if (( $# == 0 )); then
-        _truth $MANAGEVERBOSE && return 0
-        return 1
-    fi
-
-    MANAGEVERBOSE=$(_truthValue $1)
-}
+source collection-markup
 
 _echo()
 {
@@ -35,16 +18,12 @@ _echo()
     # Usage: _echo [TRUE_VALUE] [FALSE_VALUE]
     #
 
-    _truthEcho "$MANAGEVERBOSE" "$1" "$2"
-}
-
-_verboseOption()
-{
-    #
-    # Echo the appropriate flag depending on the state of verbose mode.
-    #
-
-    _echo "-v" "-q"
+    if verbose
+    then
+        echo "$1"
+    else
+        echo "$2"
+    fi
 }
 
 _die()
@@ -55,10 +34,10 @@ _die()
     # Usage: _die [MESSAGE] [ERROR]
     #
 
-    _error "$1"; exit ${2:-1}
+    _error "$1"; exit "${2:-1}"
 }
 
-_info()
+__message()
 {
     #
     # Displays a colorized (if available) informational message.
@@ -66,84 +45,55 @@ _info()
     # Usage: _info [-c] [MESSAGE]
     #
 
-    local c
-
-    unset OPTIND
-    while getopts ":c" option; do
-        case $option in
-            c) c=1 ;;
-        esac
-    done && shift $((OPTIND - 1))
-
-    if ! _verbose; then
+    if ! verbose
+    then
         return
     fi
 
-    local msg=${1:-All updates are complete.}
+    _required "$1" "$2" ||
+        return 0
 
-    # Shorten home paths, if they exist.
+    local msg
+    local color
+    local level
+
+    level="$1"
+    shift
+    msg="$*"
     msg=${msg//$HOME/\~}
+    # shellcheck disable=SC2016
+    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/  /}')"
 
-    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/    /}')"
+    case "${level}" in
+        WARN)
+            color="yellow"
+            ;;
+        ERROR)
+            color="red"
+            ;;
+        INFO)
+            color="blue"
+            ;;
+        *)
+            return 0
+    esac
 
-    echo -e "${term_bold}${term_fg_blue}==> ${term_fg_white}${msg}${term_reset}" >&2
+    >&2 echo "$(_a bold)${level} $(_c ${color})==>$(_c)$(_a) ${msg}"
+}
+
+_info()
+{
+    __message INFO "$@"
 }
 
 _warn()
 {
-    #
-    # Displays a colorized (if available) warning message.
-    #
-    # Usage: _warn [-c] [MESSAGE]
-    #
-
-    local c
-
-    unset OPTIND
-    while getopts ":c" option; do
-        case $option in
-            c) c=1 ;;
-        esac
-    done && shift $((OPTIND - 1))
-
-    if ! _verbose; then
-        return
-    fi
-
-    local msg=${1:-A warning has occurred.}
-    # Shorten home paths, if they exist.
-    msg=${msg//$HOME/\~}
-
-    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/    /}')"
-
-    echo -e "${term_bold}${term_fg_yellow}==> WARNING: ${term_fg_white}${msg}${term_reset}" >&2
+    __message WARN "$@"
 }
 
 _error()
 {
-    #
-    # Displays a colorized (if available) error message.
-    #
-    # Usage: _error [-c] [MESSAGE]
-    #
-
-    local c
-
-    unset OPTIND
-    while getopts ":c" option; do
-        case $option in
-            c) c=1 ;;
-        esac
-    done && shift $((OPTIND - 1))
-
-    local msg=${1:-An error has occurred.}
-
-    # Shorten home paths, if they exist.
-    msg=${msg//$HOME/\~}
-
-    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/    /}')"
-
-    echo -e "${term_bold}${term_fg_red}==> ERROR: ${term_fg_white}${msg}${term_reset}" >&2
+    __message ERROR "$@"
 }
 
 COLLECTION_MESSAGE_LOADED=1
