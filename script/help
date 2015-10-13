@@ -109,8 +109,7 @@ getlength () {
 
 main ()
 {
-    # _ verbose true
-    # _ strict true
+    strict true
 
     maximumwidth="75"
     separatorlength="3"
