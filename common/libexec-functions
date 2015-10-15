@@ -96,3 +96,11 @@ checkscriptdependencies ()
     checkdependencies "${dependencies[@]}"
 }
 
+cachescripts () {
+    [ -f "${MANAGECACHE}/manifest.scripts" ] &&
+        rm -f "${MANAGECACHE}/manifest.scripts"
+    for file in "${SCRIPTPATHS[@]}"
+    do
+        md5sum "${file}" >> "${MANAGECACHE}/manifest.scripts"
+    done
+}

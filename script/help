@@ -30,7 +30,7 @@ title ()
     adjustment="$((length+separatorlength))"
     lspace="${paragraph:${adjustment}}"
 
-    echo -n "${lspace}$1${separator}"
+    echo -n "$(_ a bold)${lspace}$1${separator}$(_ a)"
 }
 
 table () {
@@ -49,7 +49,7 @@ description () {
 
 usagestring()
 {
-    echo -e "\n${leftmargin}Usage:" "$(basename "$0") $1 [ arguments ... ]\n"
+    echo -e "\n${leftmargin}$(_a bold)Usage:$(_a)" "$(basename "$0") $1 [ arguments ... ]\n"
 }
 
 usage ()
@@ -67,9 +67,9 @@ help ()
         description "$1"
         echo
     else
-        usage
+        __ cache usage
         echo -e "${leftmargin}Script \"$1\" does not exist.\n"
-        exit 1
+        return 1
     fi
 }
 
@@ -126,7 +126,7 @@ main ()
     then
         help "$1"
     else
-        usage
+        __ cache usage
     fi
 }
 

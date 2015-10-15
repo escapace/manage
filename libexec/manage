@@ -18,6 +18,7 @@
 # head
 # grep
 # comm
+# md5sum
 #
 # </dependency>
 
@@ -64,8 +65,6 @@ verbose()
     #
 
     if (( $# == 0 )); then
-        # [[ ${MANAGEVERBOSE} ]] && return 0
-        # return 1
         [ -n "${MANAGEVERBOSE}" ] && return "${MANAGEVERBOSE}"
         return 1
     else
@@ -88,7 +87,45 @@ __ ()
 
     [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/common")
 
+    if [ -n "${MANAGESCRIPTDIRECTORY}" ] &&
+       [ -n "${MANAGEREPOSITORY}" ]
+    then
+        MANAGECACHE="${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}/.cache"
+    else
+        MANAGECACHE="${MANAGEDIRECTORY}/script/.cache"
+    fi
+
+    [ -d "${MANAGECACHE}"                  ] || mkdir -p "${MANAGECACHE}"
+    [ -f "${MANAGECACHE}/manifest.imports" ] || touch "${MANAGECACHE}/manifest.imports"
+
     case "${___one}" in
+        cache)
+            local __key
+            local __value
+            local __code=0
+
+            __key="$(md5sum <<< "${MANAGECACHE}$(caller)$*")"
+            __key="cache.${__key:0:32}"
+            __value="${MANAGECACHE}/${__key}"
+
+            sed -i '/^$/d' "${MANAGECACHE}"/manifest.* \
+                > /dev/null 2>&1 || true
+
+            if [ -f "${__value}" ] &&
+               md5sum --status \
+                      --strict \
+                      -c "${MANAGECACHE}"/manifest.* \
+                      > /dev/null 2>&1
+            then
+                cat "${__value}"
+            else
+                "$@" || __code=$?
+            fi
+
+            "$@" > "${__value}" &
+
+            return "${__code}"
+            ;;
         underscore)
             __ namespace "_" "$*"
             ;;
@@ -96,11 +133,14 @@ __ ()
             local ___source
             local ___name="$1"
             shift
-            ___source="$(__ getsource "$*")"
+
+            ___source="$(__ cache __ getsource "$*")"
 
             #shellcheck disable=SC2016
             eval '
                 '"${___name}"' () (
+                    strict true
+
                     '"${___source}"'
 
                     local ___one="$1"
@@ -128,7 +168,12 @@ __ ()
                 done
             )
             ;;
-
+        manifest)
+            local file="$1"
+            cache="$(awk "!/$(basename "${file}")/" "${MANAGECACHE}/manifest.imports")"
+            echo "${cache}" > "${MANAGECACHE}/manifest.imports"
+            md5sum "${file}" >> "${MANAGECACHE}/manifest.imports"
+            ;;
         import)
             local i
             local cwd
@@ -137,7 +182,6 @@ __ ()
             local scripts=($1)
             local paths=(${MANAGEIMPORTPATHS[@]})
             local bashmagic="^(#!){1}.*(bash){1}.*"
-
             cwd="$(pwd)"
 
             for ((i=0;i<${#paths[@]};i++))
@@ -153,10 +197,12 @@ __ ()
                        [[ "$(head -n 1 "${file}")" =~ ${bashmagic} ]]
                     then
                         cd "$(dirname "${file}")"         || true
+                        __ manifest "${file}"             || true
                         source "${file}" > /dev/null 2>&1 || true
                     fi
                 done
             done
+
             cd "${cwd}" || exit
         esac
 }
@@ -215,6 +261,8 @@ else
                   "collection-message" \
                   "collection-tag"     \
                   "collection-yaml"
+
+    __ manifest "${MANAGEDIRECTORY}/libexec/manage"
 
     checkscriptdependencies "${MANAGEDIRECTORY}/libexec/manage"
     collectscripts "$@"

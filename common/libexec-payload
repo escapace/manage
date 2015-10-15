@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# alias exit="exit > /dev/null 2>&1"
-
 manage () {
     if [ -z "${MANAGEREPOSITORY}" ]
     then
@@ -13,8 +11,8 @@ manage () {
 
 _main ()
 {
+    strict false
     PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
-
     local _code
     if declare -f "main" > /dev/null 2>&1
     then
