@@ -3,7 +3,9 @@ sudo: false
 script:
   - bin/manage test
   - cd ..
-  - _manage/bin/manage bootstrap
+  - mkdir project
+  - cd project
+  - ../manage/bin/manage bootstrap
   - ./manage test
 notifications:
   email:
