@@ -34,6 +34,7 @@ _die()
     # Usage: _die [MESSAGE] [ERROR]
     #
 
+    verbose true
     _error "$1"; exit "${2:-1}"
 }
 
@@ -41,8 +42,6 @@ __message()
 {
     #
     # Displays a colorized (if available) informational message.
-    #
-    # Usage: _info [-c] [MESSAGE]
     #
 
     if ! verbose

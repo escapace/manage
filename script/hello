@@ -27,7 +27,7 @@ main ()
     verbose true
     strict true
 
-    echo "Hello World!"
+    echo "${HELLO}"
     echo "Script name: $(basename "${BASH_SOURCE[0]}")"
     echo "Caller name: $(basename "$0")"
     echo "Arguments  : $@"

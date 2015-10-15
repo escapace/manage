@@ -24,18 +24,15 @@
 main () {
     local name
     local file
-    local testdirectory
     export MANAGEDIRECTORY
     export MANAGEREPOSITORY
+    export MANAGEMANAGETESTDIRECTORY
 
-    #TODO: variable test directory
-    testdirectory="${MANAGEREPOSITORY}/test"
-
-    if [ -d "${testdirectory}" ]
+    if [ -d "${MANAGETESTDIRECTORY}" ]
     then
         if _ required "${1}"
         then
-            for file in "${testdirectory}"/*.bats
+            for file in "${MANAGETESTDIRECTORY}"/*.bats
             do
                 if [   -f "${file}" ] &&
                    [   -r "${file}" ]
@@ -50,7 +47,7 @@ main () {
             done
             cd "${OPWD}" || exit
         else
-            bats "$(_ truthEcho "${CI}" "--tap" "--pretty")" "${testdirectory}"
+            bats "$(_ truthEcho "${CI}" "--tap" "--pretty")" "${MANAGETESTDIRECTORY}"
         fi
     else
         _ die "No tests, aborting."

@@ -6,7 +6,7 @@
 # subcommands.
 #
 # For more details on how to define your own commands look
-# online at https://github.com/eitherlands/_manage
+# online at https://github.com/eitherlands/manage
 #
 # </doc>
 #
@@ -21,9 +21,12 @@
 #
 # </dependency>
 
-if ((BASH_VERSINFO[0] < 4))
+if ((BASH_VERSINFO[0] >= 4)) &&
+   ((BASH_VERSINFO[1] >= 2))
 then
-    echo "You need at least GNU bash, version 4." >&2
+    true
+else
+    echo "You need at least GNU bash, version 4.2" >&2
     exit 1
 fi
 
@@ -83,7 +86,7 @@ __ ()
     local ___one="$1"
     shift
 
-    [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/common" "${MANAGEDIRECTORY}/payload")
+    [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/common")
 
     case "${___one}" in
         underscore)
@@ -161,7 +164,7 @@ __ ()
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
 then
     __ underscore "${MANAGEIMPORT[*]}"
-    __ import "libexec-instance-payload"
+    __ import "libexec-payload"
     [ -n "${MANAGESCRIPTPATH}" ] && source "${MANAGESCRIPTPATH}"
     _main "$@"
 else
@@ -209,8 +212,10 @@ else
     __ underscore "collection-shell"   \
                   "collection-array"   \
                   "collection-string"  \
-                  "collection-tag"
+                  "collection-message" \
+                  "collection-tag"     \
+                  "collection-yaml"
 
-    checkdependencies "${MANAGEDIRECTORY}/libexec/manage"
+    checkscriptdependencies "${MANAGEDIRECTORY}/libexec/manage"
     collectscripts "$@"
 fi

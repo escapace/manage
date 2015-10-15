@@ -15,5 +15,7 @@ fixtures collection-yaml
     [ "$(yml dependencies)"  == $'bash\nawk' ]
     [ "$(yml one)"  == "asd zxc qwe" ]
     [ "$(yml two ' ')"  == "asd zxc qwe" ]
+    yml doesnotexits || [[ $? == 1 ]]
+
 }
 

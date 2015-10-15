@@ -1,0 +1,11 @@
+scripts: script
+tests: test
+default: help
+dependencies:
+  - bash
+  - awk
+  - sed
+  - tr
+  - head
+env:
+  HELLO: "Hello World!"
