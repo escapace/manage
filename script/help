@@ -57,10 +57,6 @@ usage ()
     usagestring '[ script ]'
     forscript filter description
     echo
-    if _ required "$1"
-    then
-        echo -e "${leftmargin}$1\n"
-    fi
 }
 
 help ()
@@ -71,8 +67,9 @@ help ()
         description "$1"
         echo
     else
-        usage "Script \"$1\" does not exist."
-        return 1
+        usage
+        echo -e "${leftmargin}Script \"$1\" does not exist.\n"
+        exit 1
     fi
 }
 

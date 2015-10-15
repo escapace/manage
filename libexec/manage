@@ -2,7 +2,7 @@
 #
 # <doc>
 #
-# _manage is a model for setting up shell programs that use
+# manage is a model for setting up shell programs that use
 # subcommands.
 #
 # For more details on how to define your own commands look
