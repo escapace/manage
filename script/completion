@@ -62,6 +62,6 @@ main ()
             echo 'complete -c manage -a "(manage completion)" -f'
             ;;
         *)
-            getnames
+            __ cache getnames
     esac
 }

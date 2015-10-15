@@ -87,6 +87,7 @@ prepare () {
     local name
     local path
     local imports
+    local code=0
 
     name="${1}"
     path="$(getpath "${name}")"
@@ -100,7 +101,7 @@ prepare () {
     then
         __ import "${imports[*]}"
         source "${path}"
-        main "$@"
+        main "$@" || code=$?
     else
         local zero
         local exports
@@ -126,8 +127,11 @@ prepare () {
                 "-c" "${commandstring}" \
                 "${zero}"               \
                 "$@"
-        ) || exit $?
+        ) || code=$?
     fi
+
+    cachescripts || true
+    exit "${code}"
 }
 
 LIBEXEC_MANAGE_LOADED=1

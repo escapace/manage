@@ -4,7 +4,7 @@
 #
 # <doc>
 #
-# Bootstrap manage repository in the current directory
+# Bootstrap manage project in the current directory
 #
 # </doc>
 #
@@ -82,6 +82,8 @@ main () {
         mkdir "${T_MANAGESCRIPTSDIRECTORY}"
     fi
     mkdir "${PWD}/test"
+
+    #TODO: do not overwrite
 
     cp -Lf "${T_MANAGEDIRECTORY}/template/hello"        "${T_MANAGESCRIPTSDIRECTORY}/hello"
     cp -Lf "${T_MANAGEDIRECTORY}/template/test"         "${T_MANAGESCRIPTSDIRECTORY}/test"

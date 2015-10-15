@@ -38,6 +38,8 @@ processscriptordirectory () {
 
 processyaml () {
     eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" "yml")"
+    MANAGESCRIPTDIRECTORY="$(yml scripts || echo script)"
+    checkdependencies "$(yml dependencies || echo)"
 }
 
 proceedwithrepository ()
@@ -67,12 +69,8 @@ proceedwithrepository ()
 
         processyaml
 
-        local scriptdirectory
-        scriptdirectory="$(yml scripts || echo script)"
-        checkdependencies "$(yml dependencies || echo)"
-
-        processscriptordirectory "${MANAGEREPOSITORY}/${scriptdirectory}" ||
-            _ die "Cannot find ${MANAGEREPOSITORY}/${scriptdirectory}, aborting."
+        processscriptordirectory "${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}" ||
+            _ die "Cannot find ${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}, aborting."
 
         run "$@"
     fi
