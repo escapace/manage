@@ -5,9 +5,9 @@
     </a>
 </p>
 
-# _manage
+# manage
 
-_manage is a model for setting up shell programs that use subcommands.
+manage is a model for setting up shell programs that use subcommands.
 
 # Tab completion
 
