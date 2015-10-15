@@ -1,5 +1,5 @@
 scripts: script
-strict: true
+tests: test
 default: help
 dependencies:
   - bash
@@ -8,4 +8,4 @@ dependencies:
   - tr
   - head
 env:
-  bla: bla
+  HELLO: "Hello World!"

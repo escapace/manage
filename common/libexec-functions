@@ -76,18 +76,23 @@ isinternal ()
     _ includes internal "$1"
 }
 
-checkdependencies ()
-{
-    _ required "$1" || return 1
-    local path="$1"
-    local dependencies
+checkdependencies () {
+    local dependencies=($@)
     local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
-    dependencies=($(_ tag "dependency" "${path}"))
 
     if ! _ exists "${dependencies[@]}"
     then
         echo "Dependency \"${dependencies[$(($?-1))]}\" not satisfied."
         exit 1
     fi
+}
+
+checkscriptdependencies ()
+{
+    _ required "$1" || return 1
+    local path="$1"
+    local dependencies
+    dependencies=($(_ tag "dependency" "${path}"))
+    checkdependencies "${dependencies[@]}"
 }
 

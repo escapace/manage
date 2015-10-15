@@ -47,33 +47,33 @@ _yaml() {
         sed 's/[a-zA-Z0-9_]\+[\+\=]/\L&/g'
     )"
 
-    if _required "${parsed}"
-    then
-        local variable
-        local result
-        variables=($(echo "${parsed}" |
-                    sed 's/+=.*$//' |
-                    sed 's/=.*$//'  |
-                    sort -u))
+    local variable
+    local result
+
+    variables=($(echo "${parsed}" |
+                sed 's/+=.*$//' |
+                sed 's/=.*$//'  |
+                sort -u))
 
 
+    result="$(
+        echo "${2} () {" \
+        'local __keys=('"$(_ join variables ' ')"')'
         if (( ${#variables[@]} != 0 ))
         then
-            result="$(
-                echo "${2} () {" \
-                'local __keys=('"$(_ join variables ' ')"')'
-                for variable in "${variables[@]}"
-                do
-                    echo "local ${variable}"
-                    echo "${parsed}" |
-                    grep -E "^${variable}(\+\=|\=)"
-                done
-                echo "_ join \"\$1\" \"\$2\""
-                echo '}'
-            )"
-            echo "${result}"
+            for variable in "${variables[@]}"
+            do
+                echo "local ${variable}"
+                echo "${parsed}" |
+                grep -E "^${variable}(\+\=|\=)"
+            done
         fi
-    fi
+        # shellcheck disable=SC2016
+        echo '[[ ! -v "$1" ]] && return 1'
+        echo "_ join \"\$1\" \"\$2\""
+        echo '}'
+    )"
+    echo "${result}"
 }
 
 COLLECTION_YAML_LOADED=1

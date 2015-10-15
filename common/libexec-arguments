@@ -36,14 +36,17 @@ processscriptordirectory () {
     fi
 }
 
+processyaml () {
+    eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" "yml")"
+}
+
 proceedwithrepository ()
 {
-    #TODO: read the configuration from .manage.yml
     if isscript "$1"
     then
-        #TODO: check if the script in $1 is inside a repository
-        processscriptordirectory "$1"
+        searchpath "$1" && processyaml
 
+        processscriptordirectory "$1"
         shift
         run "${SCRIPTNAMES[0]}" "$@"
     else
@@ -54,17 +57,23 @@ proceedwithrepository ()
             true
         fi
 
-
         isdirectory "${MANAGEDIRECTORY}/script" ||
             return 1
-
 
         if [[ ! ${MANAGEREPOSITORY} == "${MANAGEDIRECTORY}" ]]
         then
             processscriptordirectory "${MANAGEDIRECTORY}/script" "_manage_"
         fi
 
-        processscriptordirectory "${MANAGEREPOSITORY}/script"
+        processyaml
+
+        local scriptdirectory
+        scriptdirectory="$(yml scripts || echo script)"
+        checkdependencies "$(yml dependencies || echo)"
+
+        processscriptordirectory "${MANAGEREPOSITORY}/${scriptdirectory}" ||
+            _ die "Cannot find ${MANAGEREPOSITORY}/${scriptdirectory}, aborting."
+
         run "$@"
     fi
 }

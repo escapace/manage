@@ -15,32 +15,73 @@ swaprun () {
     do
         if exists "${name}"
         then
-            prepare "${name}" "$@"
             break
         fi
     done
+
+    prepare "${name}" "$@"
 }
 
 run () {
     local name="$1"
-    shift || true
 
     case "${name}" in
         completion)
+            shift
             swaprun "completion" "$@"
             ;;
         help)
+            shift
             swaprun "help" "$@"
             ;;
         *)
             if exists "${name}"
             then
+                shift
                 prepare "${name}" "$@"
             else
-                swaprun "help" "$@"
+                name="$(yml default || echo help)"
+
+                if exists "${name}"
+                then
+                    prepare "${name}" "$@"
+                elif [[ "${name}" == "help" ]]
+                then
+                    swaprun "help" "$@"
+                else
+                    _ die "The default script \"${name}\" defined in .manage.yml does not exist."
+                fi
             fi
     esac
 }
+
+getenv ()
+{
+    if declare -f "yml" > /dev/null 2>&1
+    then
+        local keys
+        local key
+        keys="$(yml __keys || echo)"
+        for key in ${keys}
+        do
+            if [[ "${key}" =~ ^env_.* ]]
+            then
+                echo "$(_ upper <<< "${key#env_}")=\"$(yml "${key}" || echo)\""
+            fi
+        done
+    fi
+}
+
+gettest ()
+{
+    if declare -f "yml" > /dev/null 2>&1
+    then
+        yml tests || echo test
+    else
+        echo test
+    fi
+}
+
 
 prepare () {
     local name
@@ -53,7 +94,7 @@ prepare () {
 
     shift || true
 
-    checkdependencies "${path}"
+    checkscriptdependencies "${path}"
 
     if isinternal "${name}"
     then
@@ -67,21 +108,23 @@ prepare () {
         zero="$(basename "${MANAGEZERO}")"
         libexec="source \"${MANAGEDIRECTORY}/libexec/manage\""
 
-        exports="MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
+        exports="$(getenv)
+                 MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
                  MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\"
+                 MANAGETESTDIRECTORY=\"${MANAGEREPOSITORY}/$(gettest)\"
                  MANAGESCRIPTPATH=\"${path}\"
                  MANAGEZERO=\"${MANAGEZERO}\"
                  MANAGEIMPORT=\"$(_ join imports ' ')\""
 
-        commandstring="$(echo "${exports} && ${libexec}" | _ squeeze | tr '\n' ' ')"
+        commandstring="$(echo "${exports} && ${libexec}" | tr '\n' ' ' | _ squeeze )"
 
         (
-            exec -a "${zero}"         \
+            exec -a "${zero}"           \
                 "bash"                  \
                 "--norc"                \
                 "--noprofile"           \
                 "-c" "${commandstring}" \
-                "${zero}"             \
+                "${zero}"               \
                 "$@"
         ) || exit $?
     fi
