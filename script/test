@@ -49,8 +49,6 @@ isci () {
     [[ ! "${#ci[@]}" == "${code}" ]]
 }
 
-
-
 main () {
     local name
     local file
