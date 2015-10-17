@@ -15,14 +15,13 @@ _main ()
     local _code
     if declare -f "main" > /dev/null 2>&1
     then
-        trap '_return $?' INT HUP TERM KILL QUIT EXIT
+        trap '__ once _return $?' INT HUP TERM KILL QUIT EXIT
         main "$@"
         _code=$?
         trap - INT HUP TERM KILL QUIT EXIT ERR
-        # unalias exit
     fi
 
-    _return "${_code}"
+    __ once _return "${_code}"
     return $?
 }
 

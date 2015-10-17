@@ -99,6 +99,12 @@ __ ()
     [ -f "${MANAGECACHE}/manifest.imports" ] || touch "${MANAGECACHE}/manifest.imports"
 
     case "${___one}" in
+        once)
+            local __code=0
+            "$@" || __code="$?"
+            eval "$1"' () { return '"${__code}"'; }'
+            return "${__code}"
+            ;;
         cache)
             local __key
             local __value
