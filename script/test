@@ -21,9 +21,40 @@
 #
 # </dependency>
 
+isci () {
+
+    # Returns 0 if the current environment
+    # is a Continuous Integration server.
+
+    local ci=(
+        "${CI}"                     # Travis CI, CircleCI, ...
+        "${CONTINUOUS_INTEGRATION}" # Travis CI, ...
+        "${BUILD_NUMBER}"           # Jenkins, TeamCity, ...
+        "${JENKINS_URL}"            # Jenkins
+        "${bamboo_planKey}"         # Bamboo (by Atlassian)
+        "${TF_BUILD}"               # Team Foundation Server
+        "${TEAMCITY_VERSION}"       # TeamCity (by JetBrains)
+        "${BUILDKITE}"              # Buildkite
+        "${HUDSON_URL}"             # Hudson
+    )
+
+    local code=0
+    local variable
+
+    for variable in "${ci[@]}"
+    do
+        _ required "${variable}" || ((++code))
+    done
+
+    [[ ! "${#ci[@]}" == "${code}" ]]
+}
+
+
+
 main () {
     local name
     local file
+    local target
     export MANAGEDIRECTORY
     export MANAGEREPOSITORY
     export MANAGEMANAGETESTDIRECTORY
@@ -35,22 +66,26 @@ main () {
             for file in "${MANAGETESTDIRECTORY}"/*.bats
             do
                 if [   -f "${file}" ] &&
-                   [   -r "${file}" ]
+                   [   -r "${file}" ] &&
                    [[ "$(basename "${file}")" == *.bats ]]
                 then
                     name="$(basename "${file}")"
                     if [[ "${1}" == "${name::-5}" ]]
                     then
-                        bats "$(_ truthEcho "${CI}" "--tap" "--pretty")" "${file}"
+                        target="${file}"
                     fi
                 fi
             done
             cd "${OPWD}" || exit
         else
-            bats "$(_ truthEcho "${CI}" "--tap" "--pretty")" "${MANAGETESTDIRECTORY}"
+            target="${MANAGETESTDIRECTORY}"
         fi
+
+        [ -n "${target}" ] &&
+            bats "$(isci && echo --tap || echo --pretty)" "${target}"
+
     else
-        _ die "No tests, aborting."
+        _ die "The directory ${MANAGETESTDIRECTORY} does not exist."
     fi
 }
 
