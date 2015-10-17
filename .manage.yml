@@ -9,3 +9,5 @@ dependencies:
   - head
 env:
   HELLO: "Hello World!"
+  MANAGEURL: "git://github.com/eitherlands/manage"
+  MANAGEMAINTAINER: "Mark Milstein <mark+github@eitherlands.com> (@epiloque)"
