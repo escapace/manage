@@ -106,7 +106,7 @@ main ()
 
     echo "# maintainer: ${maintainer}"
 
-    tags=($(git tag --sort -v:refname))
+    tags=($(git tag -l))
     versions=()
 
     for tag in "${tags[@]}"
@@ -124,12 +124,12 @@ main ()
         aliases=($(getversions "${version}"))
         versionaliases=( "${version}" ${aliases[@]} )
 
-        if [[ "${index}" == "0" ]]
+        index=$((index+1))
+        if [[ "${index}" == "${#versions[@]}" ]]
         then
             versionaliases+=("latest")
         fi
 
-        index=$((index+1))
 
         echo
         for va in "${versionaliases[@]}"
