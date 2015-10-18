@@ -3,6 +3,7 @@ tests: test
 default: help
 url: git://github.com/eitherlands/manage.git
 maintainer: "Mark Milstein <mark+github@eitherlands.com> (@epiloque)"
+key: https://epiloque.github.io/epiloque.pub
 versions:
   legacy: 0.1.4
   stable: 0.1.5
