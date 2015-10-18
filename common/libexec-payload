@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 manage () {
-    if [ -z "${MANAGEREPOSITORY}" ]
+    if [ "${MANAGEREPOSITORY}" == "${MANAGEDIRECTORY}" ]
     then
         "${MANAGEDIRECTORY}/libexec/manage" "$@"
     else

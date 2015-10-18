@@ -257,6 +257,10 @@ else
     MANAGELIBEXEC="$(absolutedirectorypath "${MANAGEZERO}")"
     MANAGEDIRECTORY="$(absolutedirectorypath "${MANAGELIBEXEC}")"
 
+    # shellcheck disable=SC2034
+
+    MANAGEPUBLIC=("help" "test" "library")
+
     LC_ALL=C
 
     __ import "libexec-manage"

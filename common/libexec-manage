@@ -8,7 +8,7 @@ source libexec-arguments
 swaprun () {
     local name
     local names
-    names=("_manage_$1" "$1")
+    names=("$1" "_manage_$1")
     shift
 
     for name in "${names[@]}"
@@ -25,34 +25,26 @@ swaprun () {
 run () {
     local name="$1"
 
-    case "${name}" in
-        completion)
-            shift
-            swaprun "completion" "$@"
-            ;;
-        help)
-            shift
-            swaprun "help" "$@"
-            ;;
-        *)
-            if exists "${name}"
-            then
-                shift
-                prepare "${name}" "$@"
-            else
-                name="$(yml default || echo help)"
+    if _ includes MANAGEPUBLIC "${name}"
+    then
+        swaprun "$@"
+    elif exists "${name}"
+    then
+        shift
+        prepare "${name}" "$@"
+    else
+        name="$(yml default || echo help)"
 
-                if exists "${name}"
-                then
-                    prepare "${name}" "$@"
-                elif [[ "${name}" == "help" ]]
-                then
-                    swaprun "help" "$@"
-                else
-                    _ die "The default script \"${name}\" defined in .manage.yml does not exist."
-                fi
-            fi
-    esac
+        if exists "${name}"
+        then
+            prepare "${name}" "$@"
+        elif [[ "${name}" == "help" ]]
+        then
+            swaprun "help" "$@"
+        else
+            _ die "The default script \"${name}\" defined in .manage.yml does not exist."
+        fi
+    fi
 }
 
 getenv ()

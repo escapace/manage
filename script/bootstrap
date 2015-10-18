@@ -86,7 +86,6 @@ main () {
     #TODO: do not overwrite
 
     cp -Lf "${T_MANAGEDIRECTORY}/template/hello"        "${T_MANAGESCRIPTSDIRECTORY}/hello"
-    cp -Lf "${T_MANAGEDIRECTORY}/template/test"         "${T_MANAGESCRIPTSDIRECTORY}/test"
     cp -Lf  "${T_MANAGEDIRECTORY}/template/manage.yml"  "${PWD}/.manage.yml"
     cp -Lf  "${T_MANAGEDIRECTORY}/template/helper.bash" "${PWD}/test/helper.bash"
     cp -Lf  "${T_MANAGEDIRECTORY}/template/hello.bats"  "${PWD}/test/hello.bats"
