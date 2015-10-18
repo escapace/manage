@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# <doc>
+#
+# Generate stackbrew library
+#
+# </doc>
+#
+# Instruction format:
+#
+# <tag>: <git-url>@<git-commit-id>
+#
+# <import>
+#
+# collection-shell
+# collection-message
+# collection-string
+# collection-yaml
+#
+# </import>
+#
+# <dependency>
+#
+# bash
+#
+# </dependency>
+
+verify () {
+    _ required "$1" ||
+        return 1
+
+    local regex='^v[0-9]\.[0-9]\.[0-9]$'
+    if [[ "$1" =~ ${regex} ]]
+    then
+        git tag -v "$1" > /dev/null 2>&1
+    else
+        return 1
+    fi
+}
+
+getversions ()
+{
+    _ required "$1" || echo
+    if declare -f "yml" > /dev/null 2>&1
+    then
+        local keys
+        local key
+        keys="$(yml __keys || echo)"
+        for key in ${keys}
+        do
+            if [[ "${key}" =~ ^versions_.* ]] &&
+               [[ "$(yml "${key}" || echo)" == "$1" ]]
+            then
+                echo "${key#versions_}"
+            fi
+        done
+    fi
+}
+
+main ()
+{
+    verbose true
+    strict true
+    local url
+    local maintainer
+    local tag
+    local tags
+    local versions
+    local index=0
+    local commit
+    local aliases
+    local versionaliases
+    local va
+    local aliases
+
+    CWD="$(pwd)"
+
+    _ required "${MANAGEREPOSITORY}" ||
+        _ die
+
+    cd "${MANAGEREPOSITORY}" ||
+        _die
+
+    [ -f "${MANAGEREPOSITORY}/.manage.yml" ] ||
+        _ die
+
+    git rev-parse --is-inside-work-tree > /dev/null 2>&1 ||
+        _ die
+
+    eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" yml)"
+
+    url="$(yml url || echo "")"
+    maintainer="$(yml maintainer || echo "")"
+
+    if ! _ required "${url}"
+    then
+        url="$(git config --get remote.origin.url || echo "")"
+        _ required "${url}" ||
+            _die "Define the repository url in .manage.yml."
+    fi
+
+    _ required "${maintainer}" ||
+        _ die "Define the repository maintainer in .manage.yml."
+
+    echo "# maintainer: ${maintainer}"
+
+    tags=($(git tag --sort -v:refname))
+    versions=()
+
+    for tag in "${tags[@]}"
+    do
+        if verify "${tag}"
+        then
+            versions+=("${tag}")
+        fi
+    done
+
+    for version in "${versions[@]}"
+    do
+        commit="$(git rev-list "${version}" -n 1 | head -n 1)"
+        version="${version#?}"
+        aliases=($(getversions "${version}"))
+        versionaliases=( "${version}" ${aliases[@]} )
+
+        if [[ "${index}" == "0" ]]
+        then
+            versionaliases+=("latest")
+        fi
+
+        index=$((index+1))
+
+        echo
+        for va in "${versionaliases[@]}"
+        do
+            if [ -n "${va}" ]
+            then
+                echo "${va}: ${url}@${commit} ${version}"
+            fi
+        done
+    done
+}
+
+onexit ()
+{
+    cd "${CWD}" || exit "$1"
+}
+

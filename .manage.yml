@@ -1,6 +1,11 @@
 scripts: script
 tests: test
 default: help
+url: git://github.com/eitherlands/manage.git
+maintainer: "Mark Milstein <mark+github@eitherlands.com> (@epiloque)"
+versions:
+  legacy: 0.1.4
+  stable: 0.1.5
 dependencies:
   - bash
   - awk
@@ -9,5 +14,3 @@ dependencies:
   - head
 env:
   HELLO: "Hello World!"
-  MANAGEURL: "git://github.com/eitherlands/manage"
-  MANAGEMAINTAINER: "Mark Milstein <mark+github@eitherlands.com> (@epiloque)"
