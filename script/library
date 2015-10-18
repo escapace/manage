@@ -23,9 +23,32 @@
 #
 # <dependency>
 #
-# bash
+# git
+# gpg
+# wget
 #
 # </dependency>
+
+importkey () {
+    local key="$1"
+    if _ required "${key}"
+    then
+        if [[ "${key}" =~ ^https://. ]]
+        then
+            wget --https-only          \
+                --secure-protocol=PFS  \
+                -t 5 -nc -qO- "${key}" |
+                gpg --import           \
+                > /dev/null 2>&1       ||
+                return $?
+        else
+            return 1
+        fi
+    else
+        return 1
+    fi
+
+}
 
 verify () {
     _ required "$1" ||
@@ -74,6 +97,7 @@ main ()
     local versionaliases
     local va
     local aliases
+    local key
 
     CWD="$(pwd)"
 
@@ -100,6 +124,10 @@ main ()
         _ required "${url}" ||
             _die "Define the repository url in .manage.yml."
     fi
+
+    key="$(yml key || echo "")"
+    importkey "${key}" ||
+        _ die "Define the repository gpg public key url in .manage.yml."
 
     _ required "${maintainer}" ||
         _ die "Define the repository maintainer in .manage.yml."
@@ -129,7 +157,6 @@ main ()
         then
             versionaliases+=("latest")
         fi
-
 
         echo
         for va in "${versionaliases[@]}"
