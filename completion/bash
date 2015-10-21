@@ -1,0 +1,23 @@
+_manage_completions() {
+    COMPREPLY=()
+    local word="${COMP_WORDS[COMP_CWORD]}"
+
+    if [ "$COMP_CWORD" -eq 1 ]; then
+        COMPREPLY=( $(compgen -W "$(manage completion)" -- "$word") )
+    else
+        local command="${COMP_WORDS[1]}"
+        local completions
+        completions="$(manage completion "${command}" "${COMP_WORDS[@]:3}")"
+
+        [ ! -n "${completions}" ] && return 1
+
+        COMPREPLY=( $(compgen -W "$completions" -- "$word") )
+    fi
+}
+
+__manage_complete ()
+{
+    local _mc="_manage_completions"
+    complete -o bashdefault -o default -o nospace -F "${_mc}" "$1" 2>/dev/null \
+    || complete -o default -o nospace -F "${_mc}" "$1"
+}

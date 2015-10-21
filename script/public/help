@@ -5,20 +5,6 @@
 # Display this help and exit
 #
 # </doc>
-#
-# <import>
-#
-# collection-message
-# collection-shell
-# collection-string
-#
-# </import>
-#
-# <dependencies>
-#
-# wc
-#
-# </dependencies>
 
 title ()
 {
@@ -43,19 +29,8 @@ table () {
 }
 
 description () {
-    local script
-    script="${SCRIPTNAMES[$1]}"
-    if [ "${script:0:1}" == "_" ]
-    then
-        if _ includes MANAGEPUBLIC "${script:8}"
-        then
-            table "${script:8}" \
-                "$(getdoc "${script}")"
-        fi
-    else
-        table "${script}" \
-            "$(getdoc "${script}")"
-    fi
+    table "$(basename "$1")" \
+          "$(getdoc "$1")"
 }
 
 usagestring()
@@ -66,19 +41,31 @@ usagestring()
 usage ()
 {
     usagestring '[ script ]'
-    forscript description
+    forscript filter description
     echo
 }
 
 help ()
 {
-    if exists "$1"
+    local script="$1"
+
+    if exists "${script}"
     then
-        usagestring "$1"
-        description "$1"
+        script="${script}"
+    elif _ includes MANAGEPUBLIC "${script}"
+    then
+        script="_manage_${script}"
+    else
+        script=""
+    fi
+
+    if [ -n "${script}" ]
+    then
+        cache usagestring "$1"
+        cache description "$(getpath "${script}")"
         echo
     else
-        __ cache usage
+        cache usage
         echo -e "${leftmargin}Script \"$1\" does not exist.\n"
         return 1
     fi
@@ -88,25 +75,6 @@ getspace () {
     local len="$1"
     local char="${2:-" "}"
     _ repeat "${len}" echo -n "${char}"
-}
-
-filter () {
-    local script
-    script="${SCRIPTNAMES[$1]}"
-    if [ ! "${script:0:1}" == "_" ]
-    then
-        "$2" "${script}"
-    fi
-}
-
-forscript () {
-    _ forEach SCRIPTNAMES \
-        "$1" "$2"
-}
-
-getnames () {
-    _ join MANAGEPUBLIC
-    forscript filter echo
 }
 
 getlength () {
@@ -136,7 +104,13 @@ main ()
     then
         help "$1"
     else
-        __ cache usage
+        cache usage
     fi
 }
 
+completion () {
+    if (( $# == 0 ))
+    then
+        getnames
+    fi
+}

@@ -53,9 +53,10 @@ main () {
     local name
     local file
     local target
+
     export MANAGEDIRECTORY
     export MANAGEREPOSITORY
-    export MANAGEMANAGETESTDIRECTORY
+    export MANAGETESTDIRECTORY
 
     if [ -d "${MANAGETESTDIRECTORY}" ]
     then
@@ -87,3 +88,21 @@ main () {
     fi
 }
 
+completion () {
+    if (( $# == 0 ))
+    then
+        if [ -d "${MANAGETESTDIRECTORY}" ]
+        then
+            for file in "${MANAGETESTDIRECTORY}"/*.bats
+            do
+                if [   -f "${file}" ] &&
+                   [   -r "${file}" ] &&
+                   [[ "$(basename "${file}")" == *.bats ]]
+                then
+                    name="$(basename "${file}")"
+                    echo "${name::-5}"
+                fi
+            done
+        fi
+    fi
+}

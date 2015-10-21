@@ -4,64 +4,30 @@
 #
 # <doc>
 #
-# Tab completion for manage
+# Manage tab completions
 #
 # </doc>
 
-filter () {
-    local script
-    script="${SCRIPTNAMES[$1]}"
-
-    if [ ! "${script:0:1}" == "_" ]
+getcompletions () {
+    if (( $# == 0 ))
     then
-        "$2" "${script}"
+        getnames
+    else
+        name="$1"
+        #shellcheck disable=SC2034
+        MANAGECOMPLETION="true"
+        if _ includes MANAGEPUBLIC "${name}"
+        then
+            swaprun "$@"
+        elif exists "${name}"
+        then
+            shift
+            prepare "${name}" "$@"
+        fi
     fi
-}
-
-forscript () {
-    _ forEach SCRIPTNAMES \
-        "$1" "$2"
-}
-
-getnames () {
-    echo help
-    forscript filter echo
 }
 
 main ()
 {
-    #TODO: https://github.com/basecamp/sub/blob/master/completions/sub.bash
-    case "$1" in
-        zsh)
-            # shellcheck disable=SC2016
-            echo '
-            function _manage_completion() {
-                compls=$(manage completion)
-                completions=(${=compls})
-                compadd -- $completions
-            }
-
-            compdef _manage_completion manage
-            ' | _ trim
-        ;;
-
-        bash)
-            # shellcheck disable=SC2016
-            echo '
-            function _manage_completions() {
-                local cur="${COMP_WORDS[COMP_CWORD]}"
-                local compls
-                compls=$(manage completion)
-                COMPREPLY=($(compgen -W "$compls" -- "$cur"))
-            }
-
-            complete -o default -F _manage_completions manage
-            ' | _ trim
-            ;;
-        fish)
-            echo 'complete -c manage -a "(manage completion)" -f'
-            ;;
-        *)
-            __ cache getnames
-    esac
+    cache getcompletions "$@"
 }

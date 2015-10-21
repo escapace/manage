@@ -19,8 +19,7 @@ getscript ()
 }
 
 getdoc () {
-    _ tag "doc" \
-        "$(getpath "$1")"
+    _ tag "doc" "$1"
 }
 
 isurl ()
@@ -96,11 +95,31 @@ checkscriptdependencies ()
     checkdependencies "${dependencies[@]}"
 }
 
-cachescripts () {
-    [ -f "${MANAGECACHE}/manifest.scripts" ] &&
-        rm -f "${MANAGECACHE}/manifest.scripts"
-    for file in "${SCRIPTPATHS[@]}"
-    do
-        md5sum "${file}" >> "${MANAGECACHE}/manifest.scripts"
-    done
+filter () {
+    local script
+    local path
+
+    script="${SCRIPTNAMES[$1]}"
+    path="${SCRIPTPATHS[$1]}"
+
+    if [[ "${script:0:1}" == "_" ]]
+    then
+        if _ includes MANAGEPUBLIC "${script:8}"
+        then
+            "$2" "${path}"
+        fi
+    elif [[ "${script}" != "completion" ]]
+    then
+        "$2" "${path}"
+    fi
 }
+
+forscript () {
+    _ forEach SCRIPTNAMES \
+        "$1" "$2"
+}
+
+getnames () {
+    forscript filter basename
+}
+

@@ -25,9 +25,17 @@
 #
 # git
 # gpg
-# wget
+# curl
 #
 # </dependency>
+
+# if exists curl; then
+#     curl='curl -sSL'
+# elif exists wget; then
+#     curl='wget -qO-'
+# elif exists busybox && busybox --list-modules | grep -q wget; then
+#     curl='busybox wget -qO-'
+# fi
 
 importkey () {
     local key="$1"
@@ -35,9 +43,10 @@ importkey () {
     then
         if [[ "${key}" =~ ^https://. ]]
         then
-            wget --https-only          \
-                --secure-protocol=PFS  \
-                -t 5 -nc -qO- "${key}" |
+            # wget --https-only          \
+            #     --secure-protocol=PFS  \
+            #     -t 5 -nc -qO- "${key}" |
+            curl -sSL "${key}"         |
                 gpg --import           \
                 > /dev/null 2>&1       ||
                 return $?
@@ -57,6 +66,8 @@ verify () {
     verify="$(yml verify || echo "false")"
 
     local regex='^v[0-9]\.[0-9]\.[0-9]$'
+    #TODO: script/build is a variable that should be defined in yml
+
     if  [[ "$1" =~ ${regex} ]]                         &&
         git show -q "$1":.manage.yml  > /dev/null 2>&1 &&
         git show -q "$1":script/build > /dev/null 2>&1

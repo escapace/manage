@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# <doc>
+#
+# #TODO: Manage tab completions
+#
+# </doc>
+#
+# <import>
+#
+# collection-shell
+# collection-message
+# collection-string
+#
+# </import>
+#
+# <dependency>
+#
+# bash
+#
+# </dependency>
+
+#
+# Detect profile file if not specified as environment variable
+# (eg: PROFILE=~/.myprofile)
+# The echo'ed path is guaranteed to be an existing file
+# Otherwise, an empty string is returned
+#
+
+getshell ()
+{
+   basename "/${SHELL}"
+}
+
+main ()
+{
+    local shell
+
+    if _ required "$1"
+    then
+        shell="$1"
+    else
+        shell="$(getshell)"
+    fi
+
+    echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
+    case "${shell}" in
+        bash)
+            cat "${MANAGEDIRECTORY}/completion/bash"
+            echo "__manage_complete manage"
+
+            if [[ "$(basename "${MANAGEZERO}")" != "manage" ]]
+            then
+                echo "__manage_complete $(basename "${MANAGEZERO}")"
+            fi
+            ;;
+        zsh)
+            cat "${MANAGEDIRECTORY}/completion/zsh"
+            echo "compctl -K _manage_completions manage"
+
+            if [[ "$(basename "${MANAGEZERO}")" != "manage" ]]
+            then
+                echo "compctl -K _manage_completions $(basename "${MANAGEZERO}")"
+            fi
+            ;;
+
+        *)
+            true
+    esac
+}

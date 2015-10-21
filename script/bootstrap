@@ -66,29 +66,35 @@ main () {
     strict true
     verbose true
 
-    local T_MANAGEDIRECTORY
-    local T_MANAGESCRIPTSDIRECTORY
+    local cwd
+    local test
+    local script
 
-    #shellcheck disable=SC2153
-    T_MANAGEDIRECTORY="$(_managePath "${MANAGEDIRECTORY}")"
-    T_MANAGESCRIPTSDIRECTORY="$(_scriptPath "${T_MANAGEDIRECTORY}" "$(echo "$*" | _ joinLines " ")")"
+    cwd="$(_managePath "${MANAGEDIRECTORY}")"
+    script="$(_scriptPath "${cwd}" "$(echo "$*" | _ joinLines " ")")"
+    test="${script}/test"
 
-    _ info "Absolute path to manage directory $(_ abspath "${T_MANAGEDIRECTORY}")"
-    _ info "Absolute path to script directory $(_ abspath "${T_MANAGESCRIPTSDIRECTORY}")"
+    _ info "Absolute path to manage directory $(_ abspath "${cwd}")"
+    _ info "Absolute path to script directory $(_ abspath "${script}")"
+    _ info "Absolute path to test directory $(_ abspath "${test}")"
 
-    if [ ! -d "${T_MANAGESCRIPTSDIRECTORY}" ];
+    if [ ! -d "${script}" ];
     then
-        _ info "Creating script directory $(_ abspath "${T_MANAGESCRIPTSDIRECTORY}")"
-        mkdir "${T_MANAGESCRIPTSDIRECTORY}"
+        _ info "Creating script directory $(_ abspath "${script}")"
+        mkdir "${script}"
     fi
-    mkdir "${PWD}/test"
 
-    #TODO: do not overwrite
+    if [ ! -d "${test}" ];
+    then
+        _ info "Creating test directory $(_ abspath "${test}")"
+        mkdir "${test}"
+    fi
 
-    cp -Lf "${T_MANAGEDIRECTORY}/template/hello"        "${T_MANAGESCRIPTSDIRECTORY}/hello"
-    cp -Lf  "${T_MANAGEDIRECTORY}/template/manage.yml"  "${PWD}/.manage.yml"
-    cp -Lf  "${T_MANAGEDIRECTORY}/template/helper.bash" "${PWD}/test/helper.bash"
-    cp -Lf  "${T_MANAGEDIRECTORY}/template/hello.bats"  "${PWD}/test/hello.bats"
-    ln -s  "${T_MANAGEDIRECTORY}/libexec/manage"        "${PWD}/manage"
+    cp -Li  "${cwd}/template/hello"        "${script}/hello"
+    cp -Li  "${cwd}/template/gitignore"    "${script}/.gitignore"
+    cp -Li  "${cwd}/template/helper.bash"  "${test}/helper.bash"
+    cp -Li  "${cwd}/template/hello.bats"   "${test}/hello.bats"
+    cp -Li  "${cwd}/template/manage.yml"   "${PWD}/.manage.yml"
+    ln -si  "${cwd}/libexec/manage"        "${PWD}/manage"
 }
 
