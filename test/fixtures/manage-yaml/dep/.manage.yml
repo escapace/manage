@@ -10,10 +10,7 @@ default: help
 # Check for the following dependencies in PATH
 dependencies:
   - bash
-  - awk
-  - sed
-  - tr
-  - head
+  - doesnotexist
 
 # Environment variables
 env:

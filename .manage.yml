@@ -1,6 +1,28 @@
+# Relative path to the script directory
 scripts: script
+
+# Relative path to the test directory
 tests: test
+
+# Default script to execute
 default: help
+
+# Check for the following dependencies in PATH
+dependencies:
+  - bash
+  - awk
+  - sed
+  - tr
+  - head
+
+# Environment variables
+env:
+  HELLO: "Hello World!"
+
+#
+# script/library
+#
+
 url: git://github.com/eitherlands/manage.git
 maintainer: "Mark Milstein <mark+github@eitherlands.com> (@epiloque)"
 key: https://epiloque.github.io/epiloque.pub
@@ -8,11 +30,3 @@ verify: true
 versions:
   legacy: 0.1.4
   stable: 0.1.5
-dependencies:
-  - bash
-  - awk
-  - sed
-  - tr
-  - head
-env:
-  HELLO: "Hello World!"

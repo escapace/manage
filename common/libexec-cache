@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+if [ -n "${MANAGESCRIPTDIRECTORY}" ] &&
+   [ -n "${MANAGEREPOSITORY}" ]
+then
+    MANAGECACHE="${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}/.cache"
+else
+    MANAGECACHE="${MANAGEDIRECTORY}/script/.cache"
+fi
+
+[ -d "${MANAGECACHE}"                  ] || mkdir -p "${MANAGECACHE}"
+
+cachescripts () {
+    [ -f "${MANAGECACHE}/manifest.scripts" ] &&
+        rm -f "${MANAGECACHE}/manifest.scripts"
+    for file in "${SCRIPTPATHS[@]}"
+    do
+        md5sum "${file}" >> "${MANAGECACHE}/manifest.scripts"
+        sed -i '/^$/d' "${MANAGECACHE}"/manifest.* \
+            > /dev/null 2>&1 || true
+    done
+}
+
+cache ()
+{
+    local __key
+    local __value
+    local __code=0
+
+    __key="$(md5sum <<< "${MANAGECACHE}$(caller)$*")"
+    __key="cache.${__key:0:32}"
+    __value="${MANAGECACHE}/${__key}"
+
+    if [ -f "${__value}" ] &&
+       md5sum --status \
+              --strict \
+              -c "${MANAGECACHE}"/manifest.* \
+              > /dev/null 2>&1
+    then
+        cat "${__value}"
+    else
+        ( "$@" ) | tee "${__value}" || __code=$?
+    fi
+
+    return "${__code}"
+}

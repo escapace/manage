@@ -1,0 +1,27 @@
+#!/usr/bin/env manage
+#
+# vim: set ft=sh:
+#
+# <doc>
+#
+# Hello World
+#
+# </doc>
+#
+# <dependency>
+#
+# bash
+#
+# </dependency>
+
+
+main ()
+{
+    verbose true
+    strict true
+
+    echo "${QWE}"
+    echo "${ASD}"
+    echo "${ZXC}"
+}
+

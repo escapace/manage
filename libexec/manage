@@ -87,49 +87,11 @@ __ ()
 
     [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/common")
 
-    if [ -n "${MANAGESCRIPTDIRECTORY}" ] &&
-       [ -n "${MANAGEREPOSITORY}" ]
-    then
-        MANAGECACHE="${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}/.cache"
-    else
-        MANAGECACHE="${MANAGEDIRECTORY}/script/.cache"
-    fi
-
-    [ -d "${MANAGECACHE}"                  ] || mkdir -p "${MANAGECACHE}"
-    [ -f "${MANAGECACHE}/manifest.imports" ] || touch "${MANAGECACHE}/manifest.imports"
-
     case "${___one}" in
         once)
             local __code=0
             "$@" || __code="$?"
             eval "$1"' () { return '"${__code}"'; }'
-            return "${__code}"
-            ;;
-        cache)
-            local __key
-            local __value
-            local __code=0
-
-            __key="$(md5sum <<< "${MANAGECACHE}$(caller)$*")"
-            __key="cache.${__key:0:32}"
-            __value="${MANAGECACHE}/${__key}"
-
-            sed -i '/^$/d' "${MANAGECACHE}"/manifest.* \
-                > /dev/null 2>&1 || true
-
-            if [ -f "${__value}" ] &&
-               md5sum --status \
-                      --strict \
-                      -c "${MANAGECACHE}"/manifest.* \
-                      > /dev/null 2>&1
-            then
-                cat "${__value}"
-            else
-                "$@" || __code=$?
-            fi
-
-            "$@" > "${__value}" &
-
             return "${__code}"
             ;;
         underscore)
@@ -140,7 +102,7 @@ __ ()
             local ___name="$1"
             shift
 
-            ___source="$(__ cache __ getsource "$*")"
+            ___source="$(__ getsource "$*")"
 
             #shellcheck disable=SC2016
             eval '
@@ -174,18 +136,12 @@ __ ()
                 done
             )
             ;;
-        manifest)
-            local file="$1"
-            cache="$(awk "!/$(basename "${file}")/" "${MANAGECACHE}/manifest.imports")"
-            echo "${cache}" > "${MANAGECACHE}/manifest.imports"
-            md5sum "${file}" >> "${MANAGECACHE}/manifest.imports"
-            ;;
         import)
             local i
             local cwd
             local file
             local script
-            local scripts=($1)
+            local scripts=($@)
             local paths=(${MANAGEIMPORTPATHS[@]})
             local bashmagic="^(#!){1}.*(bash){1}.*"
             cwd="$(pwd)"
@@ -203,7 +159,6 @@ __ ()
                        [[ "$(head -n 1 "${file}")" =~ ${bashmagic} ]]
                     then
                         cd "$(dirname "${file}")"         || true
-                        __ manifest "${file}"             || true
                         source "${file}" > /dev/null 2>&1 || true
                     fi
                 done
@@ -259,20 +214,17 @@ else
 
     # shellcheck disable=SC2034
 
-    MANAGEPUBLIC=("help" "test" "library")
+    MANAGEPUBLIC=("help" "test")
 
     LC_ALL=C
 
-    __ import "libexec-manage"
-
-    __ underscore "collection-shell"   \
-                  "collection-array"   \
-                  "collection-string"  \
-                  "collection-message" \
-                  "collection-tag"     \
-                  "collection-yaml"
-
-    __ manifest "${MANAGEDIRECTORY}/libexec/manage"
+    __ import "collection-shell"   \
+              "collection-array"   \
+              "collection-string"  \
+              "collection-message" \
+              "collection-tag"     \
+              "collection-yaml"    \
+              "libexec-manage"
 
     checkscriptdependencies "${MANAGEDIRECTORY}/libexec/manage"
     collectscripts "$@"

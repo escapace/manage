@@ -1,0 +1,15 @@
+# Relative path to the script directory
+scripts: tpircs
+
+# Relative path to the test directory
+tests: bla/test
+
+# Default script to execute
+default: ello
+
+# Environment variables
+env:
+  HELLO: "World Hello!"
+  QWE: "qwe"
+  ASD: "asd"
+  ZXC: "zxc"

@@ -13,10 +13,17 @@ _main ()
 {
     PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
     local _code
-    if declare -f "main" > /dev/null 2>&1
+    local _function
+    if [ -n "${MANAGECOMPLETION}" ]
+    then
+        _function="completion"
+    else
+        _function="main"
+    fi
+    if declare -f "${_function}" > /dev/null 2>&1
     then
         trap '__ once _return $?' INT HUP TERM KILL QUIT EXIT
-        main "$@"
+        "${_function}" "$@"
         _code=$?
         trap - INT HUP TERM KILL QUIT EXIT ERR
     fi
