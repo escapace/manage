@@ -39,6 +39,7 @@ cache ()
     then
         cat "${__value}"
     else
+        rm -f "${MANAGECACHE}/*.cache"
         ( "$@" ) | tee "${__value}" || __code=$?
     fi
 
