@@ -58,11 +58,11 @@ main ()
             ;;
         zsh)
             cat "${MANAGEDIRECTORY}/completion/zsh"
-            echo "compctl -K _manage_completions manage"
+            echo "compdef _manage manage"
 
             if [[ "$(basename "${MANAGEZERO}")" != "manage" ]]
             then
-                echo "compctl -K _manage_completions $(basename "${MANAGEZERO}")"
+                echo "compdef _manage manage $(basename "${MANAGEZERO}")"
             fi
             ;;
 

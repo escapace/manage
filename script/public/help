@@ -111,6 +111,6 @@ main ()
 completion () {
     if (( $# == 0 ))
     then
-        getnames
+        getnamedoc
     fi
 }

@@ -123,3 +123,11 @@ getnames () {
     forscript filter basename
 }
 
+namedoc () {
+    echo "$(basename "$1"):$(getdoc "$1" || echo)"
+}
+
+getnamedoc () {
+    forscript filter namedoc
+}
+
