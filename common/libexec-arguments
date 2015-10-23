@@ -86,6 +86,8 @@ prepare () {
         else
             main "$@" || code=$?
         fi
+
+        cachescripts || true
     else
         local zero
         local exports
@@ -110,18 +112,16 @@ prepare () {
 
         commandstring="$(echo "${exports} && ${libexec}" | tr '\n' ' ' | _ squeeze )"
 
-        (
-            exec -a "${zero}"           \
-                "bash"                  \
-                "--norc"                \
-                "--noprofile"           \
-                "-c" "${commandstring}" \
-                "${zero}"               \
-                "$@"
-        ) || code=$?
+        exec -a "${zero}"           \
+            "bash"                  \
+            "--norc"                \
+            "--noprofile"           \
+            "-c" "${commandstring}" \
+            "${zero}"               \
+            "$@"
+
     fi
 
-    cachescripts || true
     exit "${code}"
 }
 

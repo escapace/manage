@@ -4,7 +4,7 @@
 #
 # <doc>
 #
-# #TODO: Manage tab completions
+# Load manage
 #
 # </doc>
 #
@@ -15,39 +15,35 @@
 # collection-string
 #
 # </import>
-#
-# <dependency>
-#
-# bash
-#
-# </dependency>
-
-#
-# Detect profile file if not specified as environment variable
-# (eg: PROFILE=~/.myprofile)
-# The echo'ed path is guaranteed to be an existing file
-# Otherwise, an empty string is returned
-#
 
 getshell ()
 {
-   basename "/${SHELL}"
+    basename "/${SHELL}"
 }
 
 main ()
 {
+    strict true
+    local init
     local shell
+    local profile
 
     if _ required "$1"
     then
-        shell="$1"
+        if [[ "$1" == "-" ]]
+        then
+            shell="$(getshell)"
+        else
+            shell="$1"
+        fi
     else
-        shell="$(getshell)"
+        shell="help"
     fi
 
-    echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
     case "${shell}" in
         bash)
+            echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
+
             cat "${MANAGEDIRECTORY}/completion/bash"
             echo "__manage_complete manage"
 
@@ -57,6 +53,7 @@ main ()
             fi
             ;;
         zsh)
+            echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
             cat "${MANAGEDIRECTORY}/completion/zsh"
             echo "compdef _manage manage"
 
@@ -65,8 +62,31 @@ main ()
                 echo "compdef _manage manage $(basename "${MANAGEZERO}")"
             fi
             ;;
+        help)
+            case "$(getshell)" in
+                bash)
+                    profile='~/.bash_profile'
+                    init="bash"
+                    ;;
+                zsh)
+                    profile='~/.zshenv'
+                    init="zsh"
+                    ;;
+                *)
+                    profile='your profile'
+                    init="-"
+                    ;;
+            esac
 
+            {   echo "# Load manage by adding the following to ${profile}:"
+                echo
+                echo "eval \"\$(${MANAGEDIRECTORY}/bin/manage init ${init})\""
+                echo
+            } >&2
+
+            exit 1
+            ;;
         *)
-            true
+            echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
     esac
 }
