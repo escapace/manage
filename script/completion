@@ -11,7 +11,7 @@
 getcompletions () {
     if (( $# == 0 ))
     then
-        getnames
+        getnamedoc
     else
         name="$1"
         #shellcheck disable=SC2034

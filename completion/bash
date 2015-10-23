@@ -1,13 +1,21 @@
+#!/usr/bin/env bash
+
 _manage_completions() {
     COMPREPLY=()
     local word="${COMP_WORDS[COMP_CWORD]}"
 
     if [ "$COMP_CWORD" -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "$(manage completion)" -- "$word") )
+        COMPREPLY=( $(compgen -W "$(manage completion | sed 's/:.*//' )" -- "$word") )
     else
         local command="${COMP_WORDS[1]}"
         local completions
-        completions="$(manage completion "${command}" "${COMP_WORDS[@]:3}")"
+
+        if [[ -z "${COMP_WORDS[@]:2}" ]]
+        then
+            completions="$(manage completion "${command}" | sed 's/:.*//' )"
+        else
+            completions="$(manage completion "${command}" "${COMP_WORDS[@]:2}" | sed 's/:.*//' )"
+        fi
 
         [ ! -n "${completions}" ] && return 1
 
