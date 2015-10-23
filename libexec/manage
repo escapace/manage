@@ -2,11 +2,11 @@
 #
 # <doc>
 #
-# manage is a model for setting up shell programs that use
-# subcommands.
+# manage is a convention for setting up shell
+# programs that use subcommands.
 #
-# For more details on how to define your own commands look
-# online at https://github.com/eitherlands/manage
+# For more details on how to define your own commands
+# look online at https://github.com/eitherlands/manage
 #
 # </doc>
 #
