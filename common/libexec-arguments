@@ -248,7 +248,7 @@ collectscripts ()
     local callerdirectory
     local paths
     callerdirectory="$(dirname "$(expandpath "${MANAGEZERO}")")"
-    paths=( "${callerdirectory}" "${MANAGECWD}" "$1" )
+    paths=( "${callerdirectory}" "$1" "${MANAGECWD}" )
 
     if searchpath "${paths[@]}"
     then
