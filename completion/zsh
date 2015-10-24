@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-_manage_fallback () {
+(( $+functions[_manage_fallback] )) || _manage_fallback () {
     if zstyle -T ":completion:${curcontext}:" use-fallback; then
         _path_files
         ret=$?
@@ -8,8 +8,36 @@ _manage_fallback () {
         _message 'Unknown sub-command'
     fi
 }
+(( $+functions[_manage] )) || _manage_execute () {
+    local _manage_result
+    _manage_result="${(@f)$(manage completion "$@" || echo "")}"
+    _cache_invalid "${key}" || true
+    _store_cache "${key}" _manage_result
+}
 
-_manage () {
+(( $+functions[_manage_get] )) || _manage_get () {
+    local _manage_result
+    local key
+
+    key="$(echo "${PWD}${@}" | md5sum)"
+    key="${key[0,32]}"
+
+    if _retrieve_cache "${key}"
+    then
+        true
+    else
+        _manage_execute "$@"
+        _retrieve_cache "${key}"
+    fi
+
+    echo "$_manage_result"
+
+    {
+        _manage_execute "$@" > /dev/null 2>&1 &!
+    }
+}
+
+(( $+functions[_manage] )) || _manage () {
     local curcontext="$curcontext" state line cmds ret=1
 
     _arguments -C \
@@ -19,10 +47,8 @@ _manage () {
     local _script
     local -a _names
     local completions
-    key="$(pwd | md5sum)"
-    key="_manage_zsh_${key[0,32]}"
 
-    scripts=("${(@f)$(manage completion)}")
+    scripts=("${(@f)$(_manage_get)}")
 
     for _script in $scripts[@]
     do
@@ -44,9 +70,9 @@ _manage () {
 
                 if  [[ -z "${prev}" ]]
                 then
-                    completions=("${(@f)$(manage completion "${cmd}")}")
+                    completions=("${(@f)$(_manage_get "${cmd}")}")
                 else
-                    completions=("${(@f)$(manage completion "${cmd}" "${prev}")}")
+                    completions=("${(@f)$(_manage_get "${cmd}" "${prev}")}")
                 fi
 
                 if  [ -z "${completions}" ]
