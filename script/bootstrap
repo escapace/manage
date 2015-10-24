@@ -93,7 +93,6 @@ main () {
     fi
 
     cp -Li  "${cwd}/template/hello"        "${script}/hello"
-    cp -Li  "${cwd}/template/gitignore"    "${script}/.gitignore"
     cp -Li  "${cwd}/template/helper.bash"  "${test}/helper.bash"
     cp -Li  "${cwd}/template/hello.bats"   "${test}/hello.bats"
     cp -Li  "${cwd}/template/manage.yml"   "${PWD}/.manage.yml"
