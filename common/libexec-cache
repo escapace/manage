@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
-if [ -n "${MANAGESCRIPTDIRECTORY}" ] &&
-   [ -n "${MANAGEREPOSITORY}" ]
-then
-    MANAGECACHE="${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}/.cache"
-else
-    MANAGECACHE="${MANAGEDIRECTORY}/script/.cache"
-fi
-
-[ -d "${MANAGECACHE}"                  ] || mkdir -p "${MANAGECACHE}"
+managecache () {
+    if [[ -z "${MANAGECACHE}" ]]
+    then
+        local tmpdir
+        tmpdir="$(dirname "$(mktemp -u)")"
+        mkdir -p "${tmpdir}/.manage"
+        tmpdir="${tmpdir}/.manage"
+        MANAGECACHE="${tmpdir}"
+    fi
+}
 
 cachescripts () {
     [ -f "${MANAGECACHE}/manifest.scripts" ] &&
@@ -24,24 +25,25 @@ cachescripts () {
 cache ()
 {
     local __key
-    local __value
     local __code=0
 
-    __key="$(md5sum <<< "$(pwd)${MANAGECACHE}$(caller)$*")"
+    __key="$(md5sum <<< "$(pwd)${MANAGEREPOSITORY}$(caller)$*")"
     __key="cache.${__key:0:32}"
-    __value="${MANAGECACHE}/${__key}"
+    __key="${MANAGECACHE}/${__key}"
 
-    if [ -f "${__value}" ] &&
+    if [ -f "${__key}" ] &&
        md5sum --status \
               --strict \
               -c "${MANAGECACHE}"/manifest.* \
               > /dev/null 2>&1
     then
-        cat "${__value}"
+        cat "${__key}"
     else
         rm -f "${MANAGECACHE}/*.cache"
-        ( "$@" ) | tee "${__value}" || __code=$?
+        ( "$@" ) | tee "${__key}" || __code=$?
     fi
 
     return "${__code}"
 }
+
+managecache
