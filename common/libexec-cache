@@ -27,7 +27,7 @@ cache ()
     local __value
     local __code=0
 
-    __key="$(md5sum <<< "${MANAGECACHE}$(caller)$*")"
+    __key="$(md5sum <<< "$(pwd)${MANAGECACHE}$(caller)$*")"
     __key="cache.${__key:0:32}"
     __value="${MANAGECACHE}/${__key}"
 
