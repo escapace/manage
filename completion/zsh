@@ -10,10 +10,11 @@ _manage_fallback () {
 }
 
 _manage () {
+    local curcontext="$curcontext" state line cmds ret=1
+
     _arguments -C \
-        '1:script:->scripts' \
-        '*:: :->args' \
-        && ret=0
+        '1: :->cmds' \
+        '*: :->args' && ret=0
 
     local _script
     local -a _names
@@ -30,24 +31,29 @@ _manage () {
     done
 
     case "$state" in
-        (scripts)
+        (cmds)
             _describe -t scripts 'scripts' scripts && ret=0
             ;;
         (args)
             if (( ${_names[(I)${line[1]}]} ))
             then
-                if  [[ -z "${line[@]:1}" ]]
+                local prev
+                local cmd
+                cmd="${line[1]}"
+                prev="${words[CURRENT-1]}"
+
+                if  [[ -z "${prev}" ]]
                 then
-                    completions=("${(@f)$(manage completion "${line[1]}")}")
+                    completions=("${(@f)$(manage completion "${cmd}")}")
                 else
-                    completions=("${(@f)$(manage completion "${line[1]}" "${line[@]:1}")}")
+                    completions=("${(@f)$(manage completion "${cmd}" "${prev}")}")
                 fi
 
                 if  [ -z "${completions}" ]
                 then
                     _manage_fallback
                 else
-                    _describe -t completions "${line[1]}" completions && ret=0
+                    _describe -t completions "${cmd}" completions && ret=0
                 fi
             else
                 _manage_fallback
@@ -55,5 +61,5 @@ _manage () {
             ;;
     esac
 
-    return 1
+    return ret
 }

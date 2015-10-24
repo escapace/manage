@@ -45,16 +45,19 @@ main ()
             echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
 
             cat "${MANAGEDIRECTORY}/completion/bash"
-            echo "__manage_complete manage"
+
+            echo "complete -F _manage -o default manage"
 
             if [[ "$(basename "${MANAGEZERO}")" != "manage" ]]
             then
-                echo "__manage_complete $(basename "${MANAGEZERO}")"
+                echo "complete -F _manage -o default $(basename "${MANAGEZERO}")"
             fi
             ;;
         zsh)
             echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
+
             cat "${MANAGEDIRECTORY}/completion/zsh"
+
             echo "compdef _manage manage"
 
             if [[ "$(basename "${MANAGEZERO}")" != "manage" ]]

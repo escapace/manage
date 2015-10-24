@@ -4,7 +4,7 @@
 #
 # <doc>
 #
-# Hello World
+# Basic manage script
 #
 # </doc>
 #
@@ -47,4 +47,25 @@ onexit ()
     else
         _ error "An error with exit code \"$1\" has occured."
     fi
+}
+
+completion () {
+    case "$1" in
+        robin)
+            echo "Peter"
+            echo "Molly:Leading online fashion boutique."
+            ;;
+        world)
+            echo "Map:World maps, atlases and geography."
+            echo "News"
+            ;;
+        files)
+            # Fallback to file/dir completion.
+            return 1
+            ;;
+        *)
+            echo 'robin:This is a description for zsh tab completion.'
+            echo 'world:This is another description for zsh tab completion.'
+            echo 'files:file/dir completion'
+        esac
 }

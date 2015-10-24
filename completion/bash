@@ -1,31 +1,117 @@
 #!/usr/bin/env bash
 
-_manage_completions() {
-    COMPREPLY=()
-    local word="${COMP_WORDS[COMP_CWORD]}"
+_manage_includes () {
+    local array="$1[@]"
+    local seeking=$2
+    local element
+    for element in "${!array}"; do
+        if [[ "${element}" == "${seeking}" ]]; then
+            return 0
+            break
+        fi
+    done
+    return 1
+}
 
-    if [ "$COMP_CWORD" -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "$(manage completion | sed 's/:.*//' )" -- "$word") )
+# A meta-command completion function for commands like sudo(8), which need to
+# first complete on a command, then complete according to that command's own
+# completion definition.
+
+_manage_command()
+{
+    # rewrite current completion context before invoking
+    # actual command completion
+
+    # find new first word position, then
+    # rewrite COMP_LINE and adjust COMP_POINT
+    local word_offset=$1 i j
+    for (( i=0; i < word_offset; i++ ))
+    do
+        for (( j=0; j <= ${#COMP_LINE}; j++ ))
+        do
+            [[ "$COMP_LINE" == "${COMP_WORDS[i]}"* ]] && break
+            COMP_LINE=${COMP_LINE:1}
+            ((COMP_POINT--))
+        done
+        COMP_LINE=${COMP_LINE#"${COMP_WORDS[i]}"}
+        ((COMP_POINT-=${#COMP_WORDS[i]}))
+    done
+
+    # shift COMP_WORDS elements and adjust COMP_CWORD
+    for (( i=0; i <= COMP_CWORD - word_offset; i++ ))
+    do
+        COMP_WORDS[i]=${COMP_WORDS[i+$word_offset]}
+    done
+
+    for (( i; i <= COMP_CWORD; i++ ))
+    do
+        unset 'COMP_WORDS[i]'
+    done
+
+    ((COMP_CWORD -= word_offset))
+    COMPREPLY=()
+
+    local cur prev words cword
+    _init_completion || return
+
+    if [[ $COMP_CWORD -eq 0 ]]; then
+        local IFS=$'\n'
+        compopt -o filenames
+        COMPREPLY=( $( compgen -d -c -- "$cur" ) )
     else
-        local command="${COMP_WORDS[1]}"
+        local cmd=${COMP_WORDS[0]}
         local completions
 
-        if [[ -z "${COMP_WORDS[@]:2}" ]]
+        if [[ "$cword" -eq 1 ]]
         then
-            completions="$(manage completion "${command}" | sed 's/:.*//' )"
+            completions="$(_manage_get "$cmd")"
         else
-            completions="$(manage completion "${command}" "${COMP_WORDS[@]:2}" | sed 's/:.*//' )"
+            completions="$(_manage_get "$cmd" "${prev}")"
         fi
 
-        [ ! -n "${completions}" ] && return 1
-
-        COMPREPLY=( $(compgen -W "$completions" -- "$word") )
+        [ -n "${completions}" ] &&
+        COMPREPLY=( $(compgen -W "$completions" -- "$cur") )
     fi
 }
 
-__manage_complete ()
+_manage_get ()
 {
-    local _mc="_manage_completions"
-    complete -o bashdefault -o default -o nospace -F "${_mc}" "$1" 2>/dev/null \
-    || complete -o default -o nospace -F "${_mc}" "$1"
+    local result
+    result="$(manage completion "$@" | sed 's/:.*//' || echo "bla")"
+    echo "${result}"
+}
+
+_manage ()
+{
+    local cur prev words cword
+    _init_completion || return
+    local scripts
+
+    scripts=($(_manage_get))
+
+    if [[ "$cword" -eq 1 ]]
+    then
+        COMPREPLY=( $(compgen -W "${scripts[*]}" -- "$cur") )
+    elif _manage_includes scripts "${words[1]}"
+    then
+        local offset i
+
+        # find actual offset, as position of the first non-option
+        offset=1
+        for (( i=1; i <= COMP_CWORD; i++ ))
+        do
+            if [[ "${COMP_WORDS[i]}" != -* ]]
+            then
+                offset=$i
+                break
+            fi
+        done
+
+        _manage_command $offset
+
+        if [[ ${#COMPREPLY[@]} -eq 0 ]]
+        then
+            _minimal
+        fi
+    fi
 }
