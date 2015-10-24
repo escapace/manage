@@ -74,17 +74,52 @@ _manage_command()
     fi
 }
 
+_manage_tmpdir () {
+    if [[ -z "${_MANAGE_TMPDIR}" ]]
+    then
+        local tmpdir
+        tmpdir="$(dirname "$(mktemp -u)")"
+        mkdir -p "${tmpdir}/.manage"
+        tmpdir="${tmpdir}/.manage"
+        _MANAGE_TMPDIR="${tmpdir}"
+    fi
+}
+
+_manage_execute () {
+    local key="$1"
+    shift
+
+    (manage completion "$@" | sed 's/:.*//' || echo) > "${key}.tmp"
+    mv "${key}.tmp" "${key}" > /dev/null 2>&1 || true
+}
+
 _manage_get ()
 {
-    local result
-    result="$(manage completion "$@" | sed 's/:.*//' || echo "bla")"
-    echo "${result}"
+    local key
+    local tmpdir
+    key="$(echo "$(pwd)${*}" | md5sum)"
+    key="${_MANAGE_TMPDIR}/${key:0:32}"
+
+    if [ -f "${key}" ]
+    then
+        true
+    else
+        _manage_execute "${key}" "$@"
+    fi
+
+    cat "${key}"
+
+    if [[ $(( $(date +%s) - $(stat -c '%X' "${key}") )) -gt 5 ]]
+    then
+        ( _manage_execute "${key}" "$@" > /dev/null 2>&1 & disown -h )
+    fi
 }
 
 _manage ()
 {
     local cur prev words cword
     _init_completion || return
+    _manage_tmpdir
     local scripts
 
     scripts=($(_manage_get))

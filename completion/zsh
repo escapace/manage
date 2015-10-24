@@ -10,7 +10,9 @@
 }
 (( $+functions[_manage] )) || _manage_execute () {
     local _manage_result
+
     _manage_result="${(@f)$(manage completion "$@" || echo "")}"
+
     _cache_invalid "${key}" || true
     _store_cache "${key}" _manage_result
 }
@@ -19,7 +21,7 @@
     local _manage_result
     local key
 
-    key="$(echo "${PWD}${@}" | md5sum)"
+    key="$(echo "$(pwd)${@}" | md5sum)"
     key="${key[0,32]}"
 
     if _retrieve_cache "${key}"
@@ -68,8 +70,7 @@
                 cmd="${line[1]}"
                 prev="${words[CURRENT-1]}"
 
-                if  [[ -z "${prev}" ]]
-                then
+                if (( CURRENT == 3 )); then
                     completions=("${(@f)$(_manage_get "${cmd}")}")
                 else
                     completions=("${(@f)$(_manage_get "${cmd}" "${prev}")}")
