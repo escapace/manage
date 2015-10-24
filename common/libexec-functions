@@ -124,7 +124,7 @@ getnames () {
 }
 
 namedoc () {
-    echo "$(basename "$1"):$(getdoc "$1" || echo)"
+    echo "$(basename "$1"):$(getdoc "$1" | tr '\n' ' ' | _squeeze || echo)"
 }
 
 getnamedoc () {
