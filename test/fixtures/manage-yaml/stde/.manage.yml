@@ -2,7 +2,8 @@
 scripts: tpircs
 
 # Relative path to the test directory
-tests: bla/test
+test:
+  tests: bla/test
 
 # Default script to execute
 default: ello

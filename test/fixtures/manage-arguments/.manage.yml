@@ -1,5 +1,4 @@
 scripts: script
-tests: test
 default: help
 dependencies:
   - bash

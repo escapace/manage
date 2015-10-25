@@ -36,6 +36,7 @@ isci () {
         "${TEAMCITY_VERSION}"       # TeamCity (by JetBrains)
         "${BUILDKITE}"              # Buildkite
         "${HUDSON_URL}"             # Hudson
+        "${MANAGE_BUILD}"           # Manage
     )
 
     local code=0

@@ -4,7 +4,7 @@
 #
 # <doc>
 #
-# Create a version manifest
+# Create the repository version manifest
 #
 # </doc>
 #
@@ -24,7 +24,6 @@
 # <dependency>
 #
 # git
-# gpg
 # curl
 #
 # </dependency>
@@ -63,10 +62,9 @@ verify () {
         return 1
     local verify
 
-    verify="$(yml verify || echo "false")"
+    verify="$(yml versions_verify || echo "false")"
 
     local regex='^v[0-9]\.[0-9]\.[0-9]$'
-    #TODO: script/build is a variable that should be defined in yml
 
     if  [[ "$1" =~ ${regex} ]]                         &&
         git show -q "$1":.manage.yml  > /dev/null 2>&1 &&
@@ -93,10 +91,10 @@ getversions ()
         keys="$(yml __keys || echo)"
         for key in ${keys}
         do
-            if [[ "${key}" =~ ^versions_.* ]] &&
+            if [[ "${key}" =~ ^versions_versions_.* ]] &&
                [[ "$(yml "${key}" || echo)" == "$1" ]]
             then
-                echo "${key#versions_}"
+                echo "${key#versions_versions_}"
             fi
         done
     fi
@@ -115,48 +113,52 @@ main ()
     local index
     local verify
     local commit
+    local filter
     local aliases
     local versions
     local maintainer
     local versionaliases
 
     index=0
+    filter=($@)
     CWD="$(pwd)"
 
     _ required "${MANAGEREPOSITORY}"                        ||
         _ die
 
     cd "${MANAGEREPOSITORY}"                                ||
-        _die
+        _ die
 
     [ -f "${MANAGEREPOSITORY}/.manage.yml" ]                ||
-    _ die "${MANAGEREPOSITORY}/.manage.yml does not exist."
+        _ die "${MANAGEREPOSITORY}/.manage.yml does not exist."
 
     git rev-parse --is-inside-work-tree > /dev/null 2>&1    ||
-    _ die "${MANAGEREPOSITORY} is not a git repository."
+        _ die "${MANAGEREPOSITORY} is not a git repository."
 
     eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" yml)"
 
-    key="$(yml key               || echo "")"
-    url="$(yml url               || echo "")"
-    maintainer="$(yml maintainer || echo "")"
+    key="$(yml versions_key               || echo "")"
+    url="$(yml versions_url               || echo "")"
+    maintainer="$(yml versions_maintainer || echo "")"
 
     if ! _ required "${url}"
     then
         url="$(git config --get remote.origin.url || echo "")"
         _ required "${url}"                                 ||
-        _die "Define the repository url in .manage.yml."
+            _ die "Define the repository url in .manage.yml."
     fi
 
-
-    if _ truth "$(yml verify || echo "false")"
+    if _ truth "$(yml versions_verify || echo "false")"
     then
-        importkey "${key}"                                      ||
-        _ die "Define the repository gpg public key url in .manage.yml."
+        _ exists "gpg"                                      ||
+            _ die "gpg (GnuPG) is required for verification."
+
+        importkey "${key}"                                  ||
+            _ die "Define the repository gpg public key url in .manage.yml."
     fi
 
     _ required "${maintainer}"                              ||
-    _ die "Define the repository maintainer in .manage.yml."
+        _ die "Define the repository maintainer in .manage.yml."
 
     tags=($(git tag -l))
     versions=()
@@ -165,7 +167,15 @@ main ()
     do
         if verify "${tag}"
         then
-            versions+=("${tag}")
+            if [ -z "${filter[*]}" ]
+            then
+                versions+=("${tag}")
+            else
+                if _ includes filter "${tag#?}"
+                then
+                    versions+=("${tag}")
+                fi
+            fi
         fi
     done
 
@@ -179,7 +189,8 @@ main ()
         versionaliases=( "${version}" ${aliases[@]} )
 
         index=$((index+1))
-        if [[ "${index}" == "${#versions[@]}" ]]
+        if [[ "${index}" == "${#versions[@]}" ]] &&
+           [[ -z "${filter[*]}" ]]
         then
             versionaliases+=("latest")
         fi

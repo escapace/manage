@@ -61,17 +61,20 @@ __message()
     msg="$*"
     msg=${msg//$HOME/\~}
     # shellcheck disable=SC2016
-    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/  /}')"
+    msg="$(echo "${msg}" | _wrap | sed '2,${s/^/          /}')"
 
     case "${level}" in
         WARN)
             color="yellow"
+            level="WARN "
             ;;
         ERROR)
             color="red"
+            level="ERROR"
             ;;
         INFO)
             color="blue"
+            level="INFO "
             ;;
         *)
             return 0

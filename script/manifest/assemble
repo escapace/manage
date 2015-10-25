@@ -1,0 +1,256 @@
+#!/usr/bin/env manage
+#
+# vim: set ft=sh:
+#
+# <doc>
+#
+# Build every version in
+# the repository manifest
+#
+# </doc>
+#
+# <import>
+#
+# collection-shell
+# collection-message
+# collection-string
+# collection-yaml
+#
+# </import>
+#
+# <dependency>
+#
+# git
+# awk
+#
+# </dependency>
+
+parse () {
+    local url
+    local tag
+    local reference
+    local version
+    local manifest
+    local line
+
+    local _reference
+    local _line
+
+    manifest=($(manage versions | grep -vE '^#|^\s*$'))
+
+    for line in "${manifest[@]}"
+    do
+        tag="$(echo "$line" | awk -F ': +' '{ print $1 }')"
+
+        _line="$(echo "$line" | awk -F ': +' '{ print $2 }')"
+        url="${_line%%@*}"
+        # url="${url#*://}"
+        # url="${url%/}"
+        # url="${url%.git}"
+        # url="${url%/}"
+
+        _reference="${_line#*@}"
+
+        reference="${_reference%% *}"
+        version="${_reference#* }"
+
+        if [ "$version" = "$_reference" ]
+        then
+            version=
+        fi
+
+        "$@" "${url}" "${tag}" "${reference}" "${version}"
+    done
+}
+
+filter () {
+    _ required "$1" "$2" "$3" "$4" "$5" || _ die
+    local cmd="$1"
+    shift
+
+    local builds
+
+    #shellcheck disable=SC2034
+    builds=($(yml assemble_versions || echo ""))
+
+    if _ includes builds "$3"
+    then
+        "${cmd}" "$@"
+    fi
+}
+
+put ()
+{
+    _ required "$1" "$2" "$3" "$4" || _ die
+
+    urls+=($1)
+    tags+=($1)
+    references+=($2)
+    versions+=($3)
+}
+
+setmtimes ()
+(
+    local files
+    local f
+    local stamp
+    local touchFormat
+
+    IFS=$'\n'
+    files=( $({ git ls-files | xargs -n1 dirname | sort -u && git ls-files; } | sort -r) )
+    unset IFS
+
+    for f in "${files[@]}"; do
+        if [ ! -e "$f" ]; then
+            # don't try touching files that don't exist
+            continue
+        fi
+        stamp="$(git --no-pager log -1 --format='format:%ai' -- "$f")"
+        touchFormat="$(date --date="$stamp" +'%Y%m%d%H%M.%S')"
+        touch --no-dereference -t "$touchFormat" "$f"
+    done
+)
+
+clone ()
+{
+    _ required "$1" "$2" "$3" || return 1
+
+    (
+        # set -x # Debug
+
+        cd "$2"    || return 1
+
+        if [[ -d "$2/repository" ]]
+        then
+            rm -rf "$2/repository"
+        fi
+
+        #TODO: depth
+        git clone --quiet --recursive "$1" repository
+        cd "$2/repository" || _ die
+
+        git reset -q HEAD
+        git checkout -q -- .
+        git clean -dfxq
+        git checkout -q "$3" --
+        setmtimes
+    ) > /dev/null 2>&1
+
+}
+
+cleanup ()
+{
+    _ required "$1" || _ die
+
+    [ -d "$1" ] && temporary+=("$1")
+}
+
+build ()
+{
+    local url="${urls[$1]}"
+    local tag="${tags[$1]}"
+    local reference="${references[$1]}"
+    local version="${versions[$1]}"
+    local key
+    local dir
+
+    key="$(echo "${tag}" "${reference}" "${version}" "${url}" | md5sum)"
+    key="manage.${key:0:32}"
+
+    dir="$(tempdir "${key}")"
+    cleanup "${dir}"
+
+    _ required  "${url}"       \
+                "${tag}"       \
+                "${reference}" \
+                "${version}"   ||
+                return 1
+
+    _ info "Cloning '${tag}'."
+
+    clone "${url}" "${dir}" "${reference}" || return 1
+
+    unset MANAGE_BUILD
+    unset MANAGE_BUILD_URL
+    unset MANAGE_BUILD_TAG
+    unset MANAGE_BUILD_VERSION
+    unset MANAGE_BUILD_REFERENCE
+
+    export MANAGE_BUILD="true"
+    export MANAGE_BUILD_URL="${url}"
+    export MANAGE_BUILD_TAG="${tag}"
+    export MANAGE_BUILD_VERSION="${version}"
+    export MANAGE_BUILD_REFERENCE="${reference}"
+
+    if _ truth "$(yml assemble_internal || echo "false")"
+    then
+        _ executeIn "${dir}/repository" "bin/manage build"
+        # Building manage
+    else
+        # Download manage and run the scripts
+        true
+    fi
+
+    # _ executeIn "${dir}/repository" "bin/manage hello"
+    # echo "${tag}" "${reference}" "${version}" "${url}"
+    # echo "${key}"
+    # echo
+    # echo "${dir}"
+    # echo "${temporary[@]}"
+}
+
+tempdir ()
+{
+    local tempdir
+
+    tempdir="$(dirname "$(mktemp -u)")/$1"
+    mkdir -p "${tempdir}"
+
+    if [[ ! -d "${tempdir}" ]]
+    then
+        _die "Could not create temporary directory."
+    fi
+
+    echo "${tempdir}"
+}
+
+main ()
+{
+    strict  true
+    verbose true
+
+    local i
+
+    urls=()
+    tags=()
+    references=()
+    versions=()
+    temporary=()
+
+
+    eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" yml)"
+    parse filter put
+
+    for i in "${!tags[@]}"
+    do
+        build "${i}" || _ error "Failed to assemble ${tags[i]}"
+    done
+}
+
+onexit ()
+{
+    local dir
+    _ info "Removing temporary files and directories."
+    for dir in "${temporary[@]}"
+    do
+        [ -d "$dir" ] && rm -rf "$dir"
+    done
+
+    if (( $1 == 0 ))
+    then
+        _ warn "Exiting!"
+    else
+        _ error "An error with exit code \"$1\" has occured."
+    fi
+}
+

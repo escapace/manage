@@ -1,9 +1,6 @@
 # Relative path to the script directory
 scripts: script
 
-# Relative path to the test directory
-tests: test
-
 # Default script to execute
 default: help
 
@@ -20,13 +17,31 @@ env:
   HELLO: "Hello World!"
 
 #
-# script/library
+# script: test
+#
+# Relative path to the test directory
+test:
+  tests: test
+
+#
+# script: versions
 #
 
-url: git://github.com/eitherlands/manage.git
-maintainer: "Mark Milstein <mark+github@eitherlands.com> (@epiloque)"
-key: https://epiloque.github.io/epiloque.pub
-verify: true
 versions:
-  legacy: 0.1.4
-  stable: 0.1.5
+  url: https://github.com/eitherlands/manage.git
+  maintainer: "Mark Milstein <mark+github@eitherlands.com> (@epiloque)"
+  key: https://epiloque.github.io/epiloque.pub
+  verify: true
+  versions:
+    legacy: 0.1.6
+    stable: 0.1.7
+
+#
+# script: assemble
+#
+
+assemble:
+  internal: true
+  versions:
+    - 0.1.7
+    - 0.1.6

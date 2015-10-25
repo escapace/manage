@@ -31,12 +31,11 @@ main ()
     echo "${HELLO}"
     echo "Script name: $(basename "${BASH_SOURCE[0]}")"
     echo "Caller name: $(basename "$0")"
-    echo "Arguments  : $@"
+    echo "Repository : ${MANAGEREPOSITORY}"
     echo "PWD        : ${PWD}"
     echo "Argument 1 : $1"
     echo "Argument 2 : $2"
     echo "Argument 3 : $3"
-    echo "Repository : ${MANAGEREPOSITORY}"
 }
 
 onexit ()

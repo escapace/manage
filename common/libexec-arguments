@@ -36,9 +36,9 @@ run () {
         if exists "${name}"
         then
             prepare "${name}" "$@"
-        elif [[ "${name}" == "help" ]]
+        elif _ includes MANAGEPUBLIC "${name}"
         then
-            swaprun "help" "$@"
+            swaprun "${name}" "$@"
         else
             _ die "The default script \"${name}\" defined in .manage.yml does not exist."
         fi
@@ -90,7 +90,7 @@ prepare () {
         cachescripts || true
     else
         local zero
-        local exports
+        local exports=""
         local commandstring
 
         checkscriptdependencies "${path}"
@@ -101,14 +101,23 @@ prepare () {
         zero="$(basename "${MANAGEZERO}")"
         libexec="source \"${MANAGEDIRECTORY}/libexec/manage\""
 
-        exports="$(getenv)
-                 MANAGECOMPLETION=\"${MANAGECOMPLETION}\"
-                 MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
-                 MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\"
-                 MANAGETESTDIRECTORY=\"${MANAGETESTDIRECTORY}\"
-                 MANAGESCRIPTPATH=\"${path}\"
-                 MANAGEZERO=\"${MANAGEZERO}\"
-                 MANAGEIMPORT=\"$(_ join imports ' ')\""
+        if [ ! -z "${MANAGETESTDIRECTORY}" ]
+        then
+             exports+="MANAGETESTDIRECTORY=\"${MANAGETESTDIRECTORY}\" "
+        fi
+
+        if [ ! -z "${MANAGECOMPLETION}" ]
+        then
+            exports+="MANAGECOMPLETION=\"${MANAGECOMPLETION}\" "
+        fi
+
+        exports+="$(getenv) "
+
+        exports+="MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
+                  MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\"
+                  MANAGESCRIPTPATH=\"${path}\"
+                  MANAGEZERO=\"${MANAGEZERO}\"
+                  MANAGEIMPORT=\"$(_ join imports ' ')\""
 
         commandstring="$(echo "${exports} && ${libexec}" | tr '\n' ' ' | _ squeeze )"
 
@@ -152,7 +161,7 @@ processscriptordirectory () {
     then
         for file in "$1"/* "$1"/**/*
         do
-            if [[ "$(dirname "${file}")" != "${MANAGETESTDIRECTORY}" ]]
+            if  [[ "$(dirname "${file}")" != "${MANAGETESTDIRECTORY}" ]]
             then
                 processsinglescript "${file}" "$2" || true
             fi
@@ -169,7 +178,13 @@ processyaml () {
     eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" "yml")"
 
     MANAGESCRIPTDIRECTORY="$(yml scripts || echo script)"
-    MANAGETESTDIRECTORY="${MANAGEREPOSITORY}/$(yml tests || echo "script/test")"
+    # shellcheck disable=SC2034
+    MANAGEPUBLIC=($(yml enable || echo -e "help\ntest"))
+
+    if _ includes MANAGEPUBLIC "test"
+    then
+        MANAGETESTDIRECTORY="${MANAGEREPOSITORY}/$(yml test_tests || echo "script/test")"
+    fi
 
     checkdependencies "$(yml dependencies || echo)"
 }
