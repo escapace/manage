@@ -208,7 +208,7 @@ tempdir ()
 
     if [[ ! -d "${tempdir}" ]]
     then
-        _die "Could not create temporary directory."
+        _ die "Could not create temporary directory."
     fi
 
     echo "${tempdir}"

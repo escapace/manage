@@ -57,6 +57,17 @@ importkey () {
     fi
 }
 
+verify_manage_yml ()
+{
+    git show -q "$1":.manage.yml  > /dev/null 2>&1
+}
+
+verify_build_script ()
+{
+    git show -q "$1":script/build > /dev/null 2>&1 ||
+    git show -q "$1":script/build/build > /dev/null 2>&1
+}
+
 verify () {
     _ required "$1" ||
         return 1
@@ -66,9 +77,9 @@ verify () {
 
     local regex='^v[0-9]\.[0-9]\.[0-9]$'
 
-    if  [[ "$1" =~ ${regex} ]]                         &&
-        git show -q "$1":.manage.yml  > /dev/null 2>&1 &&
-        git show -q "$1":script/build > /dev/null 2>&1
+    if  [[ "$1" =~ ${regex} ]] &&
+        verify_manage_yml "$1" &&
+        verify_build_script "$1"
     then
         if _ truth "${verify}"
         then
