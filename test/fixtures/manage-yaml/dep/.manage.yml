@@ -2,7 +2,8 @@
 scripts: script
 
 # Relative path to the test directory
-tests: script/test
+test:
+  tests: script/test
 
 # Default script to execute
 default: help

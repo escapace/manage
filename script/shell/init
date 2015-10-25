@@ -4,7 +4,7 @@
 #
 # <doc>
 #
-# Load manage
+# Load manage into shell
 #
 # </doc>
 #
@@ -44,7 +44,7 @@ main ()
         bash)
             echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
 
-            cat "${MANAGEDIRECTORY}/completion/bash"
+            cat "${MANAGEDIRECTORY}/script/shell/completions/bash"
 
             echo "complete -F _manage -o default manage"
 
@@ -56,7 +56,7 @@ main ()
         zsh)
             echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
 
-            cat "${MANAGEDIRECTORY}/completion/zsh"
+            cat "${MANAGEDIRECTORY}/script/shell/completions/zsh"
 
             echo "compdef _manage manage"
 

@@ -26,7 +26,6 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"            ]
     [ "${lines[1]}" = "Script name: hello"      ]
     [ "${lines[2]}" = "Caller name: manage"     ]
-    [ "${lines[3]}" = "Arguments  : qwe zxc ad" ]
     [ "${lines[4]}" = "PWD        : ${TMP}"     ]
     [ "${lines[5]}" = "Argument 1 : qwe"        ]
     [ "${lines[6]}" = "Argument 2 : zxc ad"     ]
@@ -40,7 +39,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"            ]
     [ "${lines[1]}" = "Script name: hello"      ]
     [ "${lines[2]}" = "Caller name: manage"     ]
-    [ "${lines[8]}" = "Repository : ${TMP}"     ]
+    [ "${lines[3]}" = "Repository : ${TMP}"     ]
 
     cd "${FIXTURE_ROOT}"
     run "${manage}" "${TMP}" hello yeah
@@ -49,9 +48,8 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"                    ]
     [ "${lines[1]}" = "Script name: hello"              ]
     [ "${lines[2]}" = "Caller name: eganam"             ]
-    [ "${lines[3]}" = "Arguments  : yeah"               ]
+    [ "${lines[3]}" = "Repository : ${TMP}"             ]
     [ "${lines[4]}" = "PWD        : ${FIXTURE_ROOT}"    ]
-    [ "${lines[8]}" = "Repository : ${TMP}"             ]
 }
 
 @test "Manage Arguments: Execute external repository script with libexec manage from FIXTURE_ROOT." {
@@ -62,7 +60,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"            ]
     [ "${lines[1]}" = "Script name: hello"      ]
     [ "${lines[2]}" = "Caller name: manage"     ]
-    [ "${lines[8]}" = "Repository : ${TMP}"     ]
+    [ "${lines[3]}" = "Repository : ${TMP}"     ]
 
     cd "${FIXTURE_ROOT}"
     run "${MANAGE}" "${TMP}" hello yeah
@@ -71,9 +69,8 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"                    ]
     [ "${lines[1]}" = "Script name: hello"              ]
     [ "${lines[2]}" = "Caller name: manage"             ]
-    [ "${lines[3]}" = "Arguments  : yeah"               ]
+    [ "${lines[3]}" = "Repository : ${TMP}"             ]
     [ "${lines[4]}" = "PWD        : ${FIXTURE_ROOT}"    ]
-    [ "${lines[8]}" = "Repository : ${TMP}"             ]
 }
 
 @test "Manage Arguments: Execute repository script with linked manage from FIXTURE_ROOT." {
@@ -84,9 +81,8 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"                    ]
     [ "${lines[1]}" = "Script name: aloha"              ]
     [ "${lines[2]}" = "Caller name: eganam"             ]
-    [ "${lines[3]}" = "Arguments  : yeah"               ]
+    [ "${lines[3]}" = "Repository : ${FIXTURE_ROOT}"    ]
     [ "${lines[4]}" = "PWD        : ${FIXTURE_ROOT}"    ]
-    [ "${lines[8]}" = "Repository : ${FIXTURE_ROOT}"    ]
 }
 
 @test "Manage Arguments: Execute repository script with linked manage from TMP." {
@@ -97,9 +93,8 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"                    ]
     [ "${lines[1]}" = "Script name: aloha"              ]
     [ "${lines[2]}" = "Caller name: eganam"             ]
-    [ "${lines[3]}" = "Arguments  : yeah"               ]
+    [ "${lines[3]}" = "Repository : ${FIXTURE_ROOT}"    ]
     [ "${lines[4]}" = "PWD        : ${TMP}"             ]
-    [ "${lines[8]}" = "Repository : ${FIXTURE_ROOT}"    ]
 }
 
 @test "Manage Arguments: Execute repository script with linked manage from TMP, script path as an argument." {
@@ -110,9 +105,8 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"                    ]
     [ "${lines[1]}" = "Script name: aloha"              ]
     [ "${lines[2]}" = "Caller name: eganam"             ]
-    [ "${lines[3]}" = "Arguments  : yeah"               ]
+    [ "${lines[3]}" = "Repository : ${FIXTURE_ROOT}"    ]
     [ "${lines[4]}" = "PWD        : ${TMP}"             ]
-    [ "${lines[8]}" = "Repository : ${FIXTURE_ROOT}"    ]
 }
 
 @test "Manage Arguments: Execute script with libexec manage from FIXTURE_ROOT." {
@@ -123,9 +117,8 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"                    ]
     [ "${lines[1]}" = "Script name: aloha"              ]
     [ "${lines[2]}" = "Caller name: manage"             ]
-    [ "${lines[3]}" = "Arguments  : yeah"               ]
+    [ "${lines[3]}" = "Repository : ${FIXTURE_ROOT}"    ]
     [ "${lines[4]}" = "PWD        : ${FIXTURE_ROOT}"    ]
-    [ "${lines[8]}" = "Repository : ${FIXTURE_ROOT}"    ]
 }
 
 @test "Manage Arguments: Execute repository script with libexec manage from TMP, repository path as an argument." {
@@ -136,9 +129,8 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"                    ]
     [ "${lines[1]}" = "Script name: aloha"              ]
     [ "${lines[2]}" = "Caller name: manage"             ]
-    [ "${lines[3]}" = "Arguments  : yeah"               ]
+    [ "${lines[3]}" = "Repository : ${FIXTURE_ROOT}"    ]
     [ "${lines[4]}" = "PWD        : ${TMP}"             ]
-    [ "${lines[8]}" = "Repository : ${FIXTURE_ROOT}"    ]
 }
 
 @test "Manage Arguments: Execute script with libexec manage from TMP, script path as an argument." {
@@ -149,9 +141,8 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"                    ]
     [ "${lines[1]}" = "Script name: aloha"              ]
     [ "${lines[2]}" = "Caller name: manage"             ]
-    [ "${lines[3]}" = "Arguments  : yeah"               ]
+    [ "${lines[3]}" = "Repository : ${FIXTURE_ROOT}"    ]
     [ "${lines[4]}" = "PWD        : ${TMP}"             ]
-    [ "${lines[8]}" = "Repository : ${FIXTURE_ROOT}"    ]
 }
 
 @test "Manage Arguments: Execute repository script from TMP with libexec manage in PATH." {
@@ -162,9 +153,8 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!"                    ]
     [ "${lines[1]}" = "Script name: aloha"              ]
     [ "${lines[2]}" = "Caller name: manage"             ]
-    [ "${lines[3]}" = "Arguments  : yeah"               ]
+    [ "${lines[3]}" = "Repository : ${FIXTURE_ROOT}"    ]
     [ "${lines[4]}" = "PWD        : ${TMP}"             ]
-    [ "${lines[8]}" = "Repository : ${FIXTURE_ROOT}"    ]
 }
 
 @test "Manage Arguments: Execute script and check stdin." {
@@ -188,8 +178,7 @@ MANAGE="${BATSMANAGELIBEXEC}/manage"
     [ "${lines[0]}" = "Hello World!!!"                      ]
     [ "${lines[1]}" = "Script name: aloha"                  ]
     [ "${lines[2]}" = "Caller name: manage"                 ]
-    [ "${lines[3]}" = "Arguments  : yeah"                   ]
+    [ "${lines[3]}" = "Repository : ${BATSMANAGEDIRECTORY}" ]
     [ "${lines[4]}" = "PWD        : ${TMP}"                 ]
-    [ "${lines[8]}" = "Repository : ${BATSMANAGEDIRECTORY}" ]
 }
 

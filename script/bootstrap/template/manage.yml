@@ -1,12 +1,6 @@
 # Relative path to the script directory
 scripts: script
 
-# Relative path to the test directory
-tests: script/test
-
-# Default script to execute
-default: help
-
 # Check for the following dependencies in PATH
 dependencies:
   - bash
@@ -18,3 +12,19 @@ dependencies:
 # Environment variables
 env:
   HELLO: "Hello World!"
+
+# Enable scripts from manage repository
+enable:
+  - help
+  - test
+
+# Default script to execute
+default: help
+
+#
+# script: test
+#
+# Relative path to the test directory
+test:
+  tests: script/test
+

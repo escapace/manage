@@ -71,6 +71,7 @@ main () {
     local cwd
     local test
     local script
+    local template
 
     cwd="$(_managePath "${MANAGEDIRECTORY}")"
     script="$(_scriptPath "${cwd}" "$(echo "$*" | _ joinLines " ")")"
@@ -92,10 +93,14 @@ main () {
         mkdir "${test}"
     fi
 
-    cp -Li  "${cwd}/template/hello"        "${script}/hello"
-    cp -Li  "${cwd}/template/helper.bash"  "${test}/helper.bash"
-    cp -Li  "${cwd}/template/hello.bats"   "${test}/hello.bats"
-    cp -Li  "${cwd}/template/manage.yml"   "${PWD}/.manage.yml"
-    ln -si  "${cwd}/libexec/manage"        "${PWD}/manage"
+    template="${cwd}/script/bootstrap/template"
+
+    [ -d "${template}" ] || _ die
+
+    cp -Li  "${template}/hello"        "${script}/hello"
+    cp -Li  "${template}/helper.bash"  "${test}/helper.bash"
+    cp -Li  "${template}/hello.bats"   "${test}/hello.bats"
+    cp -Li  "${template}/manage.yml"   "${PWD}/.manage.yml"
+    ln -si  "${cwd}/libexec/manage"    "${PWD}/manage"
 }
 

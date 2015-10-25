@@ -57,6 +57,10 @@ _indexOf () {
 }
 
 _forEach () {
+    #TODO: this runs in a subshell
+    # try
+    # for i in "${!array[@]}"
+    #
     _required "$1" "$2" ||
         return 1
 
@@ -64,7 +68,8 @@ _forEach () {
     local function=$2
     shift 2
     local in=0
-    for element in "${!array}"; do
+    for element in "${!array}"
+    do
         "${function}" "${in}" "$@"
         in=$((in+1))
     done

@@ -5,6 +5,8 @@ fixtures manage-yaml
 
 manage="${FIXTURE_ROOT}/stde/manage"
 
+#TODO: enable
+
 @test "Manage manage.yml: alternate script directory." {
     run "${manage}" ello
     echo "${output}"
