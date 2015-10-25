@@ -33,8 +33,7 @@ versions:
   key: https://epiloque.github.io/epiloque.pub
   verify: true
   versions:
-    legacy: 0.1.6
-    stable: 0.1.7
+    stable: 0.1.9
 
 #
 # script: assemble
@@ -43,5 +42,4 @@ versions:
 assemble:
   internal: true
   versions:
-    - 0.1.7
-    - 0.1.6
+    - 0.1.9

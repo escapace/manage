@@ -73,7 +73,7 @@ filter () {
     #shellcheck disable=SC2034
     builds=($(yml assemble_versions || echo ""))
 
-    if _ includes builds "$3"
+    if _ includes builds "$4"
     then
         "${cmd}" "$@"
     fi
@@ -116,7 +116,7 @@ clone ()
     _ required "$1" "$2" "$3" || return 1
 
     (
-        # set -x # Debug
+        #set -x # Debug
 
         cd "$2"    || return 1
 
@@ -127,13 +127,12 @@ clone ()
 
         #TODO: depth
         git clone --quiet --recursive "$1" repository
-        cd "$2/repository" || _ die
-
-        git reset -q HEAD
-        git checkout -q -- .
-        git clean -dfxq
-        git checkout -q "$3" --
-        setmtimes
+        cd "$2/repository"          || return 1
+        git reset -q HEAD           || return 1
+        git checkout -q -- .        || return 1
+        git clean -dfxq             || return 1
+        git checkout -q "$3" --     || return 1
+        setmtimes > /dev/null 2>&1
     ) > /dev/null 2>&1
 
 }
