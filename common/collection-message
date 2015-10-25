@@ -83,6 +83,8 @@ __message()
     >&2 echo "$(_a bold)${level} $(_c ${color})==>$(_c)$(_a) ${msg}"
 }
 
+#TODO: default messages
+
 _info()
 {
     __message INFO "$@"
