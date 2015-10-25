@@ -79,6 +79,7 @@ checkdependencies () {
     local dependencies=($@)
     local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
 
+    #TODO: wording
     if ! _ exists "${dependencies[@]}"
     then
         echo "Dependency \"${dependencies[$(($?-1))]}\" not satisfied."

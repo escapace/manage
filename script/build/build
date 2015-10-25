@@ -1,0 +1,43 @@
+#!/usr/bin/env manage
+#
+# vim: set ft=sh:
+#
+# <doc>
+#
+# Build manage
+#
+# </doc>
+#
+# <import>
+#
+# collection-shell
+# collection-message
+# collection-string
+#
+# </import>
+#
+# <dependency>
+#
+# bash
+#
+# </dependency>
+
+
+main ()
+{
+    verbose true
+    strict true
+
+    echo "Nothing to build!"
+}
+
+onexit ()
+{
+    true
+    # if (( $1 == 0 ))
+    # then
+    #     _ warn "Exiting."
+    # else
+    #     _ error "An error with exit code \"$1\" has occured."
+    # fi
+}
