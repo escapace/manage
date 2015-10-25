@@ -37,6 +37,7 @@ isci () {
         "${BUILDKITE}"              # Buildkite
         "${HUDSON_URL}"             # Hudson
         "${MANAGE_BUILD}"           # Manage
+        "${container}"              # Container
     )
 
     local code=0
