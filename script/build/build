@@ -21,14 +21,30 @@
 # bash
 #
 # </dependency>
-
+#
+# Environment variables passed by assemble
+#
+# MANAGE_BUILD
+# MANAGE_BUILD_URL
+# MANAGE_BUILD_TAG
+# MANAGE_BUILD_VERSION
+# MANAGE_BUILD_REFERENCE
+#
 
 main ()
 {
     verbose true
     strict true
 
-    echo "Nothing to build!"
+    local cwd
+    cwd="$(pwd)"
+
+    # if _ truth "${MANAGE_BUILD}"
+    # then
+    #     echo "Nothing to build"
+    # else
+    #     _ die "Please refer to 'manage assemble' for running this script."
+    # fi
 }
 
 onexit ()

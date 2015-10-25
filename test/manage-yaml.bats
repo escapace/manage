@@ -5,8 +5,6 @@ fixtures manage-yaml
 
 manage="${FIXTURE_ROOT}/stde/manage"
 
-#TODO: enable
-
 @test "Manage manage.yml: alternate script directory." {
     run "${manage}" ello
     echo "${output}"
@@ -33,5 +31,12 @@ manage="${FIXTURE_ROOT}/stde/manage"
     manage="${FIXTURE_ROOT}/dep/manage"
 
     run "${manage}"
+    [ "${status}"   = "1"   ]
+}
+
+@test "Manage manage.yml: enable." {
+    manage="${FIXTURE_ROOT}/enable/manage"
+
+    run "${manage}" test
     [ "${status}"   = "1"   ]
 }

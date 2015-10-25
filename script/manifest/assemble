@@ -84,9 +84,9 @@ put ()
     _ required "$1" "$2" "$3" "$4" || _ die
 
     urls+=($1)
-    tags+=($1)
-    references+=($2)
-    versions+=($3)
+    tags+=($2)
+    references+=($3)
+    versions+=($4)
 }
 
 setmtimes ()
@@ -183,7 +183,7 @@ build ()
 
     if _ truth "$(yml assemble_internal || echo "false")"
     then
-        _ executeIn "${dir}/repository" "bin/manage build"
+        _ executeIn "${dir}" "repository/bin/manage build"
         # Building manage
     else
         # Download manage and run the scripts
@@ -244,6 +244,13 @@ onexit ()
     do
         [ -d "$dir" ] && rm -rf "$dir"
     done
+
+    _ info "Cleaning environment variables."
+    unset MANAGE_BUILD
+    unset MANAGE_BUILD_URL
+    unset MANAGE_BUILD_TAG
+    unset MANAGE_BUILD_VERSION
+    unset MANAGE_BUILD_REFERENCE
 
     if (( $1 == 0 ))
     then
