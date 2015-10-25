@@ -20,6 +20,7 @@ env:
 # script: test
 #
 # Relative path to the test directory
+
 test:
   tests: test
 
