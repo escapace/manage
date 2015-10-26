@@ -1,0 +1,18 @@
+FROM alpine:3.2
+MAINTAINER Victor Vieux <victor@docker.com>
+
+ENV  CI=true
+COPY bin manage/bin
+COPY common manage/common
+COPY libexec manage/libexec
+COPY script manage/script
+COPY test manage/test
+COPY vendor manage/vendor
+COPY .manage.yml manage/.manage.yml
+
+RUN apk add --update bash && rm -rf /var/cache/apk/*
+
+
+#ENTRYPOINT ["manage/bin/manage"]
+#CMD ["help"]
+
