@@ -10,9 +10,15 @@ COPY test manage/test
 COPY vendor manage/vendor
 COPY .manage.yml manage/.manage.yml
 
-RUN apk add --update bash && rm -rf /var/cache/apk/*
+RUN apk update &&  \
+    apk upgrade && \
+    apk add        \
+    bash           \
+    sed            \
+    gawk           \
+    coreutils      \
+    && rm -rf /var/cache/apk/*
 
-
-#ENTRYPOINT ["manage/bin/manage"]
-#CMD ["help"]
+ENTRYPOINT ["manage/bin/manage"]
+CMD ["help"]
 
