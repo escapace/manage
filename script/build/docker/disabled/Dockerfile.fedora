@@ -1,5 +1,4 @@
-FROM ubuntu:trusty
-MAINTAINER Victor Vieux <victor@docker.com>
+FROM fedora:22
 
 ENV  CI=true
 COPY bin manage/bin

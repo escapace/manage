@@ -1,5 +1,4 @@
 FROM debian:jessie
-MAINTAINER Victor Vieux <victor@docker.com>
 
 ENV  CI=true
 COPY bin manage/bin
