@@ -72,20 +72,23 @@ filter () {
     local cmd="$1"
     shift
 
-    local builds
-
-    #shellcheck disable=SC2034
-    builds=($(yml assemble_versions || echo ""))
-
     if _ includes builds "$4"
     then
-        "${cmd}" "$@"
+        if [[ "${criteria}" == "versions" ]]
+        then
+            if ! _ includes versions "$4"
+            then
+                "${cmd}" "$@"
+            fi
+        else
+            "${cmd}" "$@"
+        fi
     fi
 }
 
 put ()
 {
-    _ required "$1" "$2" "$3" "$4" || _ die
+    _ required "$1" "$2" "$3" "$4"  || _ die
 
     urls+=($1)
     tags+=($2)
@@ -168,16 +171,23 @@ build ()
                 "${version}"   ||
                 return 1
 
-    _ info "Cloning '${tag}'."
-
-    clone "${url}" "${dir}" "${reference}" || return 1
-
     unset MANAGE_BUILD
+    unset MANAGE_BUILD_WIP
     unset MANAGE_BUILD_URL
     unset MANAGE_BUILD_TAG
     unset MANAGE_BUILD_VERSION
     unset MANAGE_BUILD_REFERENCE
     unset MANAGE_BUILD_MAINTAINER
+
+    if [[ "${version}" != "wip" ]]
+    then
+        _ info "Cloning '${url} ${reference}'."
+        clone "${url}" "${dir}" "${reference}" || return 1
+    else
+        export MANAGE_BUILD_WIP="true"
+        _ info "Copying '${url}'."
+        cp -rf "${url}" "${dir}/repository"
+    fi
 
     export MANAGE_BUILD="true"
     export MANAGE_BUILD_URL="${url}"
@@ -215,37 +225,76 @@ tempdir ()
     echo "${tempdir}"
 }
 
+proceed () {
+    local code=0
+    local i="$1"
+
+    build "${i}" || code=$?
+
+    if [[ "${code}" == "0" ]]
+    then
+        _ info "Successfully assembled $2."
+    else
+        _ error "Failed to assemble $2."
+    fi
+
+    return "${code}"
+}
+
 main ()
 {
     strict  true
     verbose true
 
     local i
+    local manageversions
+    local manifest
+    local tries="3"
+    local code=0
 
     urls=()
     tags=()
     references=()
     versions=()
     temporary=()
-
-    local tries="3"
+    criteria=
 
     eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" yml)"
+    criteria="$(yml assemble_by || echo "versions")"
 
-    local manageversions
-    local manifest
+    #shellcheck disable=SC2034
+    builds=($(yml assemble_versions || echo ""))
 
-    manageversions="$(manage versions)"
-    manifest="$(echo "${manageversions}" | grep -vE '^#|^\s*$')"
 
-    MANAGE_BUILD_MAINTAINER="$(echo "${manageversions}" | head -n 1)"
+    if [[ "${criteria}" == "tags"     ]] ||
+       [[ "${criteria}" == "versions" ]]
+    then
+        manageversions="$(manage versions)"
+        manifest="$(echo "${manageversions}" | grep -vE '^#|^\s*$')"
 
-    parse "${manifest}" filter put
+        MANAGE_BUILD_MAINTAINER="$(echo "${manageversions}" | head -n 1)"
 
-    for i in "${!tags[@]}"
-    do
-        build "${i}" || _ error "Failed to assemble ${tags[i]}"
-    done
+        if _ includes builds "wip"
+        then
+            put "${MANAGEREPOSITORY}" "wip" "wip" "wip"
+        fi
+
+        parse "${manifest}" filter put
+
+        local array="${criteria}[@]"
+        local index=0
+
+        for i in "${!array}"
+        do
+            proceed "${index}" "${i}" || code=$(( code + $? ))
+            (( ++index ))
+        done
+    else
+        _ die "Unknown value of 'assemble by:' in .manage.yml."
+    fi
+
+
+    return "${code}"
 }
 
 onexit ()

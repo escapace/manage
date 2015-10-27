@@ -102,10 +102,10 @@ getversions ()
         keys="$(yml __keys || echo)"
         for key in ${keys}
         do
-            if [[ "${key}" =~ ^versions_versions_.* ]] &&
+            if [[ "${key}" =~ ^versions_aliases_.* ]] &&
                [[ "$(yml "${key}" || echo)" == "$1" ]]
             then
-                echo "${key#versions_versions_}"
+                echo "${key#versions_aliases_}"
             fi
         done
     fi
