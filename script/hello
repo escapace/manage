@@ -50,11 +50,11 @@ onexit ()
 
 completion () {
     case "$1" in
-        robin)
+        reginald)
             echo "Peter"
             echo "Molly:Leading online fashion boutique."
             ;;
-        world)
+        dwayne)
             echo "Map:World maps, atlases and geography."
             echo "News"
             ;;
@@ -63,8 +63,8 @@ completion () {
             return 1
             ;;
         *)
-            echo 'robin:This is a description for zsh tab completion.'
-            echo 'world:This is another description for zsh tab completion.'
+            echo 'reginald:This is a description for zsh tab completion.'
+            echo 'dwayne:This is another description for zsh tab completion.'
             echo 'files:file/dir completion'
         esac
 }
