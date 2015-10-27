@@ -36,7 +36,11 @@ parse () {
     local _reference
     local _line
 
-    manifest=($(manage versions | grep -vE '^#|^\s*$'))
+    local OIFS="${IFS}"
+    local IFS=$'\n'
+    manifest=($1)
+    IFS="${OIFS}"
+    shift
 
     for line in "${manifest[@]}"
     do
@@ -125,7 +129,6 @@ clone ()
             rm -rf "$2/repository"
         fi
 
-        #TODO: depth
         _ retry "${tries}" git clone --quiet --recursive "$1" repository
         cd "$2/repository"          || return 1
         git reset -q HEAD           || return 1
@@ -174,28 +177,27 @@ build ()
     unset MANAGE_BUILD_TAG
     unset MANAGE_BUILD_VERSION
     unset MANAGE_BUILD_REFERENCE
+    unset MANAGE_BUILD_MAINTAINER
 
     export MANAGE_BUILD="true"
     export MANAGE_BUILD_URL="${url}"
     export MANAGE_BUILD_TAG="${tag}"
     export MANAGE_BUILD_VERSION="${version}"
     export MANAGE_BUILD_REFERENCE="${reference}"
+    export MANAGE_BUILD_MAINTAINER
 
     if _ truth "$(yml assemble_internal || echo "false")"
     then
-        _ executeIn "${dir}" "repository/bin/manage build"
-        # Building manage
+        (
+            cd "${dir}" || return 1
+            bash --norc --noprofile -c "repository/bin/manage build" || return $?
+        )
     else
         # Download manage and run the scripts
         true
     fi
 
-    # _ executeIn "${dir}/repository" "bin/manage hello"
     # echo "${tag}" "${reference}" "${version}" "${url}"
-    # echo "${key}"
-    # echo
-    # echo "${dir}"
-    # echo "${temporary[@]}"
 }
 
 tempdir ()
@@ -225,13 +227,20 @@ main ()
     references=()
     versions=()
     temporary=()
+
     local tries="3"
 
-
     eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" yml)"
-    #TODO: maintainer
 
-    parse filter put
+    local manageversions
+    local manifest
+
+    manageversions="$(manage versions)"
+    manifest="$(echo "${manageversions}" | grep -vE '^#|^\s*$')"
+
+    MANAGE_BUILD_MAINTAINER="$(echo "${manageversions}" | head -n 1)"
+
+    parse "${manifest}" filter put
 
     for i in "${!tags[@]}"
     do
@@ -254,6 +263,7 @@ onexit ()
     unset MANAGE_BUILD_TAG
     unset MANAGE_BUILD_VERSION
     unset MANAGE_BUILD_REFERENCE
+    unset MANAGE_BUILD_MAINTAINER
 
     if (( $1 == 0 ))
     then
