@@ -45,9 +45,9 @@ importkey () {
             # wget --https-only          \
             #     --secure-protocol=PFS  \
             #     -t 5 -nc -qO- "${key}" |
-            curl -sSL "${key}"         |
-                gpg --import           \
-                > /dev/null 2>&1       ||
+            _ retry 3 curl -sSL "${key}" |
+                gpg --import             \
+                > /dev/null 2>&1         ||
                 return $?
         else
             return 1
