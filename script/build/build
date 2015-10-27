@@ -18,7 +18,7 @@
 #
 # <dependency>
 #
-# bash
+# docker
 #
 # </dependency>
 #
@@ -36,20 +36,38 @@ main ()
     verbose true
     strict true
 
-    local cwd
-    cwd="$(pwd)"
+    local file
+    local tries="3"
 
-    # if _ truth "${MANAGE_BUILD}"
-    # then
-    #     echo "Nothing to build"
-    # else
-    #     _ die "Please refer to 'manage assemble' for running this script."
-    # fi
+    cd "${MANAGEDIRECTORY}" || _ die
+
+    for file in "${MANAGEDIRECTORY}/script/build/docker/Dockerfile".*
+    do
+        [ -f "${MANAGEDIRECTORY}/Dockerfile" ] &&
+        rm -f "${MANAGEDIRECTORY}/Dockerfile"
+        image="$(grep FROM "${file}")"
+        image="${image#FROM }"
+        image="${image//:/-}"
+
+        cp -f "${file}" "${MANAGEDIRECTORY}/Dockerfile"
+
+        _ info "Building '${image}'."
+
+        _ retry "${tries}" docker build -t "manage:${image}" . > /dev/null 2>&1 ||
+            _ error "Failed to build '${image}'."
+
+        _ info "Running '${image}' tests."
+
+        docker run "manage:${image}" test ||
+            _ error "Tests failed for '${image}'"
+    done
 }
 
 onexit ()
 {
-    true
+    [ -f "${MANAGEDIRECTORY}/Dockerfile" ] &&
+    rm -f "${MANAGEDIRECTORY}/Dockerfile"
+
     # if (( $1 == 0 ))
     # then
     #     _ warn "Exiting."

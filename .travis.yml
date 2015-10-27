@@ -1,12 +1,7 @@
 language: bash
-sudo: false
+sudo: 9000
 script:
-  - bin/manage test
-  - cd ..
-  - mkdir project
-  - cd project
-  - ../manage/bin/manage bootstrap
-  - ./manage test
+  - bin/manage build
 notifications:
   email:
     on_success: never

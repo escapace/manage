@@ -1,5 +1,4 @@
 FROM alpine:3.2
-MAINTAINER Victor Vieux <victor@docker.com>
 
 ENV  CI=true
 COPY bin manage/bin

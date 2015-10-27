@@ -1,5 +1,4 @@
-FROM centos:7
-MAINTAINER Victor Vieux <victor@docker.com>
+FROM ubuntu:trusty
 
 ENV  CI=true
 COPY bin manage/bin

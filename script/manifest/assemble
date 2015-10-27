@@ -126,7 +126,7 @@ clone ()
         fi
 
         #TODO: depth
-        git clone --quiet --recursive "$1" repository
+        _ retry "${tries}" git clone --quiet --recursive "$1" repository
         cd "$2/repository"          || return 1
         git reset -q HEAD           || return 1
         git checkout -q -- .        || return 1
@@ -153,7 +153,7 @@ build ()
     local key
     local dir
 
-    key="$(echo "${tag}" "${reference}" "${version}" "${url}" | md5sum)"
+    key="$(echo "${url}" "${tag}" "${reference}" "${version}" | md5sum)"
     key="manage.${key:0:32}"
 
     dir="$(tempdir "${key}")"
@@ -225,6 +225,7 @@ main ()
     references=()
     versions=()
     temporary=()
+    local tries="3"
 
 
     eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" yml)"
