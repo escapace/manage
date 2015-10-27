@@ -1,7 +1,7 @@
 language: bash
 sudo: 9000
 script:
-  - bin/manage build
+  - bin/manage assemble
 notifications:
   email:
     on_success: never
