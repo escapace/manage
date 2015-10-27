@@ -33,8 +33,9 @@ versions:
   maintainer: "Mark Milstein <mark+github@eitherlands.com> (@epiloque)"
   key: https://epiloque.github.io/epiloque.pub
   verify: true
-  versions:
+  aliases:
     stable: 0.2.0
+    legacy: 0.1.9
 
 #
 # script: assemble
@@ -42,5 +43,8 @@ versions:
 
 assemble:
   internal: true
+  by: versions
   versions:
+    - wip
     - 0.2.0
+    - 0.1.9
