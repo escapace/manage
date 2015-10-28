@@ -37,8 +37,6 @@
 
 release () {
     local archive="$1"
-
-
 }
 
 build () {
@@ -92,6 +90,8 @@ archive () (
         > /dev/null 2>&1                        || return 1
 
     [ -f "${archive}" ]                         || return 1
+
+    rm -rf "${MANAGE_BUILD_ARTIFACTS}/manage"   || true
 
     echo "${archive}"
 )
