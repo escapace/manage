@@ -13,6 +13,7 @@
 # collection-shell
 # collection-message
 # collection-string
+# collection-array
 #
 # </import>
 #
@@ -24,19 +25,70 @@
 #
 # Environment variables passed by assemble
 #
-# MANAGE_BUILD
-# MANAGE_BUILD_URL
-# MANAGE_BUILD_TAG
-# MANAGE_BUILD_VERSION
-# MANAGE_BUILD_CRITERIA
-# MANAGE_BUILD_DIRECTORY
-# MANAGE_BUILD_REFERENCE
-# MANAGE_BUILD_ARTIFACTS
-# MANAGE_BUILD_MAINTAINER
+#     MANAGE_BUILD
+#     MANAGE_BUILD_URL
+#     MANAGE_BUILD_TAG
+#     MANAGE_BUILD_WIP
+#     MANAGE_BUILD_VERSION
+#     MANAGE_BUILD_CRITERIA
+#     MANAGE_BUILD_DIRECTORY
+#     MANAGE_BUILD_REFERENCE
+#     MANAGE_BUILD_ARTIFACTS
+#     MANAGE_BUILD_MAINTAINER
+#
 
 
 release () {
-    local archive="$1"
+    local archives=("$1")
+    local cwd
+    local tag
+    local tags
+    cwd="$(dirname "${archives[0]}")"
+    tags=($(echo "${MANAGE_BUILD_TAG}" | _ splitString ' '))
+
+    for tag in "${tags[@]}"
+    do
+        local file="${cwd}/${tag}.tar.gz"
+        cp -f "${archives[0]}"       \
+              "${file}"              \
+              > /dev/null 2>&1       || true
+
+        if  ! _ includes archives "${file}" &&
+            [ -f "${file}" ]
+        then
+            archives+=("${file}")
+        fi
+    done
+
+    for archive in "${archives[@]}"
+    do
+        echo "archive ${archive}"
+    done
+
+    # - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && bash deploy.sh
+    if _ required "${GITHUB_TOKEN}"
+    then
+        (
+            set -x
+
+            cd "${cwd}" || return 1
+            git init
+            git config user.name  "Travis-CI"
+            git config user.email "robots+git@epiloque.com"
+            git remote add upstream "https://${GITHUB_TOKEN}@github.com/eitherlands/manage.git"
+            git fetch upstream
+            git reset upstream/gh-pages
+
+            for archive in "${archives[@]}"
+            do
+                git add -A "${archive}"
+            done
+
+            git commit -m "$(getname) build"
+            git push upstream HEAD:gh-pages
+        )
+    fi
+
 }
 
 build () {
@@ -52,28 +104,28 @@ build () {
 
     _ info "Running '${image}' tests."
 
-    docker run "manage:${image}" test || return 1
+    #TODO: resume tests
+    # docker run "manage:${image}" test || return 1
 }
 
 artifact () {
     _ required "$1" || return 1
 
-    if   _ truth "${MANAGE_BUILD}"       &&
-       # ! _ truth "${MANAGE_BUILD_WIP}"   &&
-       [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
+    #TODO: do something with wip ?
+    # ! _ truth "${MANAGE_BUILD_WIP}"   &&
+
+    if [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
     then
         local id
         local image="$1"
-        _ info "Pushing for release."
         id="$(docker create manage:"${image}")"
         docker cp "${id}:/manage" "${MANAGE_BUILD_ARTIFACTS}/manage"
     fi
+
+    [[ -d "${MANAGE_BUILD_ARTIFACTS}/manage" ]]
 }
 
-archive () (
-    [ -d "${MANAGE_BUILD_ARTIFACTS}/manage" ]   || return 1
-    cd "${MANAGE_BUILD_ARTIFACTS}"              || return 1
-
+getname () {
     local name
 
     if [[ "${MANAGE_BUILD_CRITERIA}" == "tags" ]]
@@ -82,6 +134,16 @@ archive () (
     else
         name="${MANAGE_BUILD_VERSION}"
     fi
+
+    echo "${name}"
+}
+
+archive () (
+    [ -d "${MANAGE_BUILD_ARTIFACTS}/manage" ]   || return 1
+    cd "${MANAGE_BUILD_ARTIFACTS}"              || return 1
+
+    local name
+    name="$(getname)"
 
     local archive="${MANAGE_BUILD_ARTIFACTS}/${name}.tar.gz"
 
@@ -105,7 +167,8 @@ main ()
     local code=0
     local images=()
 
-    cd "${MANAGEDIRECTORY}" || _ die
+    cd "${MANAGEDIRECTORY}"   || _ die
+    _ truth "${MANAGE_BUILD}" || _ die
 
     for file in "${MANAGEDIRECTORY}/script/build/docker/Dockerfile".*
     do
@@ -135,7 +198,7 @@ main ()
 
     if [[ "${code}" = "0" ]]
     then
-        release "${targz}"
+        release "${targz}" || (( ++code ))
     fi
 
     return "${code}"
