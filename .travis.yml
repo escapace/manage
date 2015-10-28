@@ -4,14 +4,16 @@ script:
 - bin/manage assemble
 branches:
   only:
-    - master
-    - /^feature-.*$/
-    - /^hotfix-.*$/
-    - /^test-.*$/
+  - master
+  - "/^feature-.*$/"
+  - "/^hotfix-.*$/"
+  - "/^test-.*$/"
 env:
   global:
-    - MANAGE_BUILD_DEBUG: true
-    - secure: kU2Q/S3UrusoZmQx09fpRbtW+gX6ixwbItHv6jj87xGcGIJjt4TxPdNLDGfTEcmn6kaEvINJryRWpt90m5YFdmYzkxhFXoSVkI2tiyd1Gzs4y81ew/ecq60aHE16zZxWfTK0yLKfQNXtPQ94VFxh0Q667YG0tFoNswbICQWiKC8t+0+y4Qc8Av9S6clnQyTc8vl8tuqU90WsViMAVyEN6JqrS8gL9iQOXYetVUSIRX2lsA98QFWv5JKwHfxWBlRX/P+O1FVZcqXVFXuDV2/g1dH2iBBd3u+gZ+btsPckFzE8TigXgfWWuvjX4/olodf8T5eoGRN8N8HMBi0qaXfMwiPEGlHXFNg+3HwXcEkloiv29gFpssUtmRaFfqtefN3ocSHp8QGxwbmHxCMTUTa0dyg0CF2ADjFjr+URc4Vbl3TznHB2WkCqimh+9AFK+GkucGjLv4L/zYKFguGJ53BEshAKrpHJEJGi9mNvx6cCEW+KyTq4zWy7n/U0LnZRRiZciSjDCFupFub56VtS8dKeC3ycrNwlw1zveo73haVqEnglHlq63waMPzpm+VjPzTUus4HV7rALp/Vo4hGKS7QXr/1Ouo7AiaLgqusVQXlThEt0usChiNYrG9wmVTRzSY1VHsh16Vnx19XKLD2JZzCoFNoFu7BR05PGP9YZ/l6Y94Q=
+  - MANAGE_BUILD_DEBUG: true
+  - secure: kU2Q/S3UrusoZmQx09fpRbtW+gX6ixwbItHv6jj87xGcGIJjt4TxPdNLDGfTEcmn6kaEvINJryRWpt90m5YFdmYzkxhFXoSVkI2tiyd1Gzs4y81ew/ecq60aHE16zZxWfTK0yLKfQNXtPQ94VFxh0Q667YG0tFoNswbICQWiKC8t+0+y4Qc8Av9S6clnQyTc8vl8tuqU90WsViMAVyEN6JqrS8gL9iQOXYetVUSIRX2lsA98QFWv5JKwHfxWBlRX/P+O1FVZcqXVFXuDV2/g1dH2iBBd3u+gZ+btsPckFzE8TigXgfWWuvjX4/olodf8T5eoGRN8N8HMBi0qaXfMwiPEGlHXFNg+3HwXcEkloiv29gFpssUtmRaFfqtefN3ocSHp8QGxwbmHxCMTUTa0dyg0CF2ADjFjr+URc4Vbl3TznHB2WkCqimh+9AFK+GkucGjLv4L/zYKFguGJ53BEshAKrpHJEJGi9mNvx6cCEW+KyTq4zWy7n/U0LnZRRiZciSjDCFupFub56VtS8dKeC3ycrNwlw1zveo73haVqEnglHlq63waMPzpm+VjPzTUus4HV7rALp/Vo4hGKS7QXr/1Ouo7AiaLgqusVQXlThEt0usChiNYrG9wmVTRzSY1VHsh16Vnx19XKLD2JZzCoFNoFu7BR05PGP9YZ/l6Y94Q=
 notifications:
   email:
     on_success: never
+  slack:
+    secure: Xe2s55+x7VvAtRTJqLsJLL+PZqDKR7oUX7AGEAxj6k7WMmlbhvp1C/AW9PEOkkC3jGbkxYyIQtzd8x5PBE2CQ7LaFuCh/FStBBf85Tk0aw4jh6ormYwl+N0vT5hcnUY44+zwTVehqz8MJ6DX233s2eso33kZFL8jtUJA7hI2qTGbQIpIuWwdY5KSsq7taEuMthJdAlDrdks/BvJYml/OcXh3gw49I9AIzCTmz4ZloIBhH42I4t+eVQMsaiG1vIZM66r0b1E3LfNKa8A0lIykJlktnpKfcrTB8vZe/BRXn2y6F9X7fN5NsgrDBf43fhTnQc6qgNMWr7oF0DnvxvIWkACfDhMvQzhwdcAo9jcjdAbG3V/gZ/AUibFgcbHmjtnoKndJ7tcHmzwpyT8XX9fOJI/TZhw1vCtot/h0u0CCXgphQUV8VovUB143nlo0N8Sc94kJ7itG+b13pMMc4yIa5nbZEmXiDebAm2/MUVpjzxBfsAkla2DWOF7rJz7/9Sp7L4JwGaktHLIZZci3UeVu+bBLBW5fYOV4ilBvQnaQUxdnfcFeg8/v7E/RKni/0QHqNzQyjRK4mJUx4SLZI3hld5zzMgCGcTyEvHG/MjX6JS392vzgjuwkGmOWdByWx01H6ouyuAWtC4kDJGTh4bCHnernp5dFzkXDWtoZLKMzgr8=
