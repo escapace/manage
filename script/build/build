@@ -28,18 +28,26 @@
 # MANAGE_BUILD_URL
 # MANAGE_BUILD_TAG
 # MANAGE_BUILD_VERSION
+# MANAGE_BUILD_CRITERIA
 # MANAGE_BUILD_DIRECTORY
 # MANAGE_BUILD_REFERENCE
 # MANAGE_BUILD_ARTIFACTS
 # MANAGE_BUILD_MAINTAINER
 
+
+release () {
+    local archive="$1"
+
+
+}
+
 build () {
     _ required "$1" || return 1
-    image="$1"
+    local image="$1"
 
     _ info "Building '${image}'."
 
-    _ retry "${tries}"    \
+    _ retry "3"           \
       docker build -t     \
       "manage:${image}" . \
       > /dev/null 2>&1    || return 1
@@ -49,18 +57,56 @@ build () {
     docker run "manage:${image}" test || return 1
 }
 
+artifact () {
+    _ required "$1" || return 1
+
+    if   _ truth "${MANAGE_BUILD}"       &&
+       # ! _ truth "${MANAGE_BUILD_WIP}"   &&
+       [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
+    then
+        local id
+        local image="$1"
+        _ info "Pushing for release."
+        id="$(docker create manage:"${image}")"
+        docker cp "${id}:/manage" "${MANAGE_BUILD_ARTIFACTS}/manage"
+    fi
+}
+
+archive () (
+    [ -d "${MANAGE_BUILD_ARTIFACTS}/manage" ]   || return 1
+    cd "${MANAGE_BUILD_ARTIFACTS}"              || return 1
+
+    local name
+
+    if [[ "${MANAGE_BUILD_CRITERIA}" == "tags" ]]
+    then
+        name="${MANAGE_BUILD_TAG}"
+    else
+        name="${MANAGE_BUILD_VERSION}"
+    fi
+
+    local archive="${MANAGE_BUILD_ARTIFACTS}/${name}.tar.gz"
+
+    tar czf "${archive}"                        \
+        -C "${MANAGE_BUILD_ARTIFACTS}/manage" . \
+        > /dev/null 2>&1                        || return 1
+
+    [ -f "${archive}" ]                         || return 1
+
+    echo "${archive}"
+)
+
 main ()
 {
     verbose true
     strict true
 
     local file
-    local tries="3"
+    local code=0
     local images=()
 
     cd "${MANAGEDIRECTORY}" || _ die
 
-    local code=0
     for file in "${MANAGEDIRECTORY}/script/build/docker/Dockerfile".*
     do
         [ -f "${MANAGEDIRECTORY}/Dockerfile" ] &&
@@ -76,12 +122,20 @@ main ()
         build "${image}" || (( ++code ))
     done
 
-    if   _ truth "${MANAGE_BUILD}"       &&
-       ! _ truth "${MANAGE_BUILD_WIP}"   &&
-       [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
-       [[  "${code}" == "0"              ]]
+    if [[ "${code}" = "0" ]]
     then
-        _ info "Pushing for release."
+        artifact "${images[0]}" || (( ++code ))
+    fi
+
+    if [[ "${code}" = "0" ]]
+    then
+        local targz
+        targz="$(archive)" || (( ++code ))
+    fi
+
+    if [[ "${code}" = "0" ]]
+    then
+        release "${targz}"
     fi
 
     return "${code}"

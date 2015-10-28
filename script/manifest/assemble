@@ -76,6 +76,7 @@ filter () {
     then
         if [[ "${criteria}" == "versions" ]]
         then
+            #TODO: the tag $2 for the version should become a space separated list of aliases
             if ! _ includes versions "$4"
             then
                 "${cmd}" "$@"
@@ -195,6 +196,7 @@ build ()
     export MANAGE_BUILD_URL="${url}"
     export MANAGE_BUILD_TAG="${tag}"
     export MANAGE_BUILD_VERSION="${version}"
+    export MANAGE_BUILD_CRITERIA="${criteria}"
     export MANAGE_BUILD_DIRECTORY="${dir}"
     export MANAGE_BUILD_REFERENCE="${reference}"
     export MANAGE_BUILD_ARTIFACTS="${dir}/artifacts"
@@ -225,6 +227,9 @@ tempdir ()
     local tempdir
 
     tempdir="$(dirname "$(mktemp -u)")/$1"
+
+    [[ -d "${tempdir}" ]] && rm -rf "${tempdir}"
+
     mkdir -p "${tempdir}"
 
     if [[ ! -d "${tempdir}" ]]
@@ -252,9 +257,9 @@ main ()
     local manifest
     local artifacts
     local manageversions
-    local tries="3"
     local code=0
 
+    tries="3"
     urls=()
     tags=()
     references=()
@@ -304,7 +309,7 @@ main ()
             then
                 _ info "Done. Build '${i}' exited with 0."
 
-                if _ truth "${hasartifacts}"              &&
+                if _ truth "${hasartifacts}"      &&
                 [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
                 then
                     cp -rf "${MANAGE_BUILD_ARTIFACTS}" "${artifacts}/${i}" || true
@@ -312,7 +317,6 @@ main ()
                     then
                         cp -f "${MANAGE_BUILD_DIRECTORY}/log" "${artifacts}/${i}/.log"
                     fi
-                    # manage artifacts || true
                 fi
             else
                 _ error "Failed to build '${i}'."
@@ -329,8 +333,12 @@ main ()
             (( ++index ))
         done
 
-        _ truth "${hasartifacts}" &&
-        _ info "Build artifacts at: '${artifacts}'"
+        if _ truth "${hasartifacts}"
+        then
+            _ info "Build artifacts at '${artifacts}'"
+        else
+            cleanup "${artifacts}"
+        fi
 
         return "${code}"
     else
@@ -343,6 +351,7 @@ cleanupenv () {
     unset MANAGE_BUILD_URL
     unset MANAGE_BUILD_TAG
     unset MANAGE_BUILD_VERSION
+    unset MANAGE_BUILD_CRITERIA
     unset MANAGE_BUILD_DIRECTORY
     unset MANAGE_BUILD_REFERENCE
     unset MANAGE_BUILD_MAINTAINER

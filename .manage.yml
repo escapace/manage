@@ -35,7 +35,7 @@ versions:
   verify: true
   aliases:
     stable: 0.2.2
-    legacy: 0.1.9
+    # legacy: 0.1.9
 
 #
 # script: assemble
@@ -47,5 +47,5 @@ assemble:
   by: versions
   versions:
     - wip
-    - 0.2.2
-    - 0.1.9
+    # - 0.2.2
+    # - 0.1.9
