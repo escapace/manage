@@ -34,7 +34,7 @@ versions:
   key: https://epiloque.github.io/epiloque.pub
   verify: true
   aliases:
-    stable: 0.2.3
+    stable: 0.2.4
 
 #
 # script: assemble
@@ -46,4 +46,4 @@ assemble:
   preserve: false
   versions:
     - edge
-    - 0.2.3
+    - 0.2.4
