@@ -152,12 +152,17 @@ __exists () {
 
 _exists () {
     _required "$1" || return 0
-    local dependency
-    local index=0
-    for dependency in "$@"
+    local i
+    local code
+    local dependencies=("$@")
+
+    for i in "${!dependencies[@]}"
     do
-        __exists "${dependency}" || return "$((index+1))"
-        index=$((index+1))
+        if ! __exists "${dependencies[i]}"
+        then
+            code=$((i+1))
+            return "${code}"
+        fi
     done
 }
 

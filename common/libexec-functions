@@ -80,9 +80,14 @@ checkdependencies () {
     local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
 
     #TODO: wording
-    if ! _ exists "${dependencies[@]}"
+
+    local code
+    _ exists "${dependencies[@]}" || code=$?
+    if [[ "${code}" -ge 1 ]]
     then
-        echo "Dependency \"${dependencies[$(($?-1))]}\" not satisfied."
+        code=$((code-1))
+        verbose true
+        _ error "Cannot find '${dependencies[code]}' in path."
         exit 1
     fi
 }
