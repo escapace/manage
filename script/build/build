@@ -28,8 +28,26 @@
 # MANAGE_BUILD_URL
 # MANAGE_BUILD_TAG
 # MANAGE_BUILD_VERSION
+# MANAGE_BUILD_DIRECTORY
 # MANAGE_BUILD_REFERENCE
-#
+# MANAGE_BUILD_ARTIFACTS
+# MANAGE_BUILD_MAINTAINER
+
+build () {
+    _required "$1" || return 1
+    image="$1"
+
+    _ info "Building '${image}'."
+
+    _ retry "${tries}"    \
+      docker build -t     \
+      "manage:${image}" . \
+      > /dev/null 2>&1    || return 1
+
+    _ info "Running '${image}' tests."
+
+    docker run "manage:${image}" test || return 1
+}
 
 main ()
 {
@@ -38,29 +56,33 @@ main ()
 
     local file
     local tries="3"
+    local images=()
 
     cd "${MANAGEDIRECTORY}" || _ die
 
+    local code=0
     for file in "${MANAGEDIRECTORY}/script/build/docker/Dockerfile".*
     do
         [ -f "${MANAGEDIRECTORY}/Dockerfile" ] &&
         rm -f "${MANAGEDIRECTORY}/Dockerfile"
+
         image="$(grep FROM "${file}")"
         image="${image#FROM }"
         image="${image//:/-}"
+        images+=("${image}")
 
         cp -f "${file}" "${MANAGEDIRECTORY}/Dockerfile"
 
-        _ info "Building '${image}'."
-
-        _ retry "${tries}" docker build -t "manage:${image}" . > /dev/null 2>&1 ||
-            _ error "Failed to build '${image}'."
-
-        _ info "Running '${image}' tests."
-
-        docker run "manage:${image}" test ||
-            _ error "Tests failed for '${image}'"
+        build "${image}" || (( ++code ))
     done
+
+    if   _ truth "${MANAGE_BUILD}"       &&
+       ! _ truth "${MANAGE_BUILD_WIP}"   &&
+       [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
+       [[  "${code}" == "0"              ]]
+    then
+        _ info "Pushing for release."
+    fi
 }
 
 onexit ()

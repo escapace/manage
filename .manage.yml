@@ -43,6 +43,7 @@ versions:
 
 assemble:
   internal: true
+  artifacts: true
   by: versions
   versions:
     - wip
