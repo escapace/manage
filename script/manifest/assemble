@@ -72,18 +72,9 @@ filter () {
     local cmd="$1"
     shift
 
-    if _ includes builds "$4"
+    if _ includes Builds "$4"
     then
-        if [[ "${criteria}" == "versions" ]]
-        then
-            #TODO: the tag $2 for the version should become a space separated list of aliases
-            if ! _ includes versions "$4"
-            then
-                "${cmd}" "$@"
-            fi
-        else
-            "${cmd}" "$@"
-        fi
+        "${cmd}" "$@"
     fi
 }
 
@@ -124,7 +115,10 @@ clone ()
     _ required "$1" "$2" "$3" || return 1
 
     (
-        # set -x # Debug
+        if _ truth MANAGE_BUILD_DEBUG
+        then
+            set -x # Debug
+        fi
 
         cd "$2"    || return 1
 
@@ -133,7 +127,7 @@ clone ()
             rm -rf "$2/repository"
         fi
 
-        _ retry "${tries}"          \
+        _ retry "3"                 \
           git clone                 \
           --recursive "$1"          \
           repository                || return 1
@@ -152,6 +146,21 @@ cleanup ()
     _ required "$1" || _ die
 
     [ -d "$1" ] && temporary+=("$1")
+}
+
+getsink () {
+    local line
+
+    while read -r line
+    do
+        if _ truth "${MANAGE_BUILD_DEBUG}"
+        then
+            echo "......... ${line}"
+            echo "${line}" >> "${dir}/log"
+        else
+            echo "${line}" >> "${dir}/log"
+        fi
+    done
 }
 
 build ()
@@ -180,38 +189,41 @@ build ()
 
     cleanupenv
 
+    export MANAGE_BUILD="true"
+    export MANAGE_BUILD_URL="${url}"
+    export MANAGE_BUILD_TAG="${tag}"
+    export MANAGE_BUILD_VERSION="${version}"
+    export MANAGE_BUILD_DIRECTORY="${dir}"
+    export MANAGE_BUILD_REFERENCE="${reference}"
+    export MANAGE_BUILD_ARTIFACTS="${dir}/artifacts"
+
     if [[ "${version}" != "wip" ]]
     then
         clone "${url}"              \
               "${dir}"              \
-              "${reference}"        \
-              >> "${dir}/log" 2>&1  ||
+              "${reference}" 2>&1   |
+              getsink              ||
               return 1
     else
         export MANAGE_BUILD_WIP="true"
         cp -rf "${url}" "${dir}/repository"
     fi
 
-    export MANAGE_BUILD="true"
-    export MANAGE_BUILD_URL="${url}"
-    export MANAGE_BUILD_TAG="${tag}"
-    export MANAGE_BUILD_VERSION="${version}"
-    export MANAGE_BUILD_CRITERIA="${criteria}"
-    export MANAGE_BUILD_DIRECTORY="${dir}"
-    export MANAGE_BUILD_REFERENCE="${reference}"
-    export MANAGE_BUILD_ARTIFACTS="${dir}/artifacts"
-    export MANAGE_BUILD_MAINTAINER
-
     if _ truth "$(yml assemble_internal || echo "false")"
     then
         (
-            # set -x # Debug
+            if _ truth MANAGE_BUILD_DEBUG
+            then
+                set -x # Debug
+            fi
+
             cd "${dir}" || return 1
 
             bash --norc                           \
                  --noprofile                      \
                  -c "repository/bin/manage build" \
-                 >> "${dir}/log" 2>&1             ||
+                 2>&1                             |
+                 getsink                         ||
                  return $?
         ) || return "$?"
     else
@@ -240,10 +252,189 @@ tempdir ()
     echo "${tempdir}"
 }
 
-proceed () {
-    local code=0
-    local i="$1"
+getmanifest () {
+    local manifest
+    local manageversions
+    manageversions="$(manage versions)"
+    manifest="$(echo "${manageversions}"   | grep -vE '^#|^\s*$')"
 
+    if [ -z "${manifest}" ]
+    then
+        _ die "Cannot process the version manifets."
+    else
+        echo "${manifest}"
+    fi
+}
+
+getmaintainer () {
+    local manifest="$1"
+
+    MANAGE_BUILD_MAINTAINER="$(echo "${manifest}" | head -n 1)"
+    export MANAGE_BUILD_MAINTAINER
+}
+
+
+getcriteria () {
+    MANAGE_BUILD_CRITERIA="$(yml assemble_by || echo "versions")"
+
+    if [[ "${MANAGE_BUILD_CRITERIA}" == "tags"     ]] ||
+       [[ "${MANAGE_BUILD_CRITERIA}" == "versions" ]]
+    then
+        export MANAGE_BUILD_CRITERIA
+    else
+        _ die "Unknown value of 'assemble by:' in .manage.yml."
+    fi
+}
+
+getartifacts () {
+    local manifest="$1"
+    local key
+    key="$(echo "${manifest}" | md5sum)"
+    key="manage.${key:0:32}"
+    key="$(tempdir "${key}")"
+    if [ -d "${key}" ]
+    then
+        echo "${key}"
+    else
+        _ die "Cannot create temporary directory."
+    fi
+}
+
+processmanifest () {
+    local manifest="$1"
+    if _ includes Builds "wip"
+    then
+        put "${MANAGEREPOSITORY}" "wip" "wip" "wip"
+    fi
+
+    parse "${manifest}" filter put
+
+    if [[ "${MANAGE_BUILD_CRITERIA}" == "versions" ]]
+    then
+
+        local i
+        local t
+        for i in "${!versions[@]}"
+        do
+            local list=()
+            for t in "${!tags[@]}"
+            do
+                if [[ "${versions[i]}" == "${versions[t]}" ]]
+                then
+                    if [ ! -z "${tags[t]}" ]
+                    then
+                        list+=( "${tags[t]}" )
+                    fi
+                fi
+            done
+            tags[i]="$(_ join list ' ')"
+        done
+    fi
+}
+
+processbuild () {
+    local manifest="$1"
+
+    local artifacts
+    local preserve
+
+    artifacts="$(getartifacts "${manifest}")"
+    preserve="$(yml assemble_preserve || echo "false")"
+
+    local array
+    local processed
+    local success
+    local criteria
+    local index
+    local code
+
+    code=0
+    array="${MANAGE_BUILD_CRITERIA}[@]"
+    index=0
+    processed=()
+
+    for criteria in "${!array}"
+    do
+        if _ includes processed "${criteria}"
+        then
+            (( ++index ))
+            continue
+        else
+            processed+=("${criteria}")
+        fi
+
+        success=true
+
+        _ info "Builing '${criteria}'."
+
+        build "${index}" || success=false
+
+        if _ truth "${success}"
+        then
+            _ info "Done. Build '${criteria}' exited with 0."
+
+            buildtrue "${preserve}"              \
+                      "${artifacts}/${criteria}" || true
+        else
+            (( ++code ))
+
+            _ error "Failed to build '${criteria}'."
+
+            buildfalse "${preserve}"              \
+                       "${artifacts}/${criteria}" || true
+        fi
+
+        (( ++index ))
+    done
+
+    if _ truth "${preserve}"
+    then
+        _ info "Build artifacts at '${artifacts}'"
+    else
+        cleanup "${artifacts}"
+    fi
+
+    return "${code}"
+}
+
+preserve () {
+    local target="$1"
+
+    if [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
+    then
+        cp -rf "${MANAGE_BUILD_ARTIFACTS}" "${target}" || true
+        if [ -f "${MANAGE_BUILD_DIRECTORY}/log" ]
+        then
+            cp -f "${MANAGE_BUILD_DIRECTORY}/log" "${target}/.log"
+        fi
+    fi
+}
+
+buildfalse () {
+    local preserve="$1"
+    local target="$2"
+
+    if _ truth "${preserve}"
+    then
+        preserve "$target"
+    fi
+
+    if [ -f "${MANAGE_BUILD_DIRECTORY}/log" ] &&
+       ! _ truth "${MANAGE_BUILD_DEBUG}"
+    then
+        sed "{s/^/......... /}" \
+            "${MANAGE_BUILD_DIRECTORY}/log"
+    fi
+}
+
+buildtrue () {
+    local preserve="$1"
+    local target="$2"
+
+    if _ truth "${preserve}"
+    then
+        preserve "$target"
+    fi
 }
 
 main ()
@@ -251,111 +442,40 @@ main ()
     strict  true
     verbose true
 
-    local dir
-    local key
-    local hasartifacts
-    local manifest
-    local artifacts
-    local manageversions
-    local code=0
-
-    tries="3"
     urls=()
     tags=()
-    references=()
     versions=()
     temporary=()
-    criteria=
+    references=()
 
     eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" yml)"
-    criteria="$(yml assemble_by || echo "versions")"
 
     #shellcheck disable=SC2034
-    builds=($(yml assemble_versions || echo ""))
+    Builds=($(yml assemble_versions   || echo ""))
 
-    if [[ "${criteria}" == "tags"     ]] ||
-       [[ "${criteria}" == "versions" ]]
-    then
-        manageversions="$(manage versions)"
-        manifest="$(echo "${manageversions}" | grep -vE '^#|^\s*$')"
+    local manifest
+    manifest="$(getmanifest)"
 
-        key="$(echo "${manageversions}" | md5sum)"
-        key="manage.${key:0:32}"
-        artifacts="$(tempdir "${key}")"
-        MANAGE_BUILD_MAINTAINER="$(echo "${manageversions}" | head -n 1)"
+    getmaintainer "${manifest}"
+    getcriteria
 
-        hasartifacts="$(yml assemble_artifacts || echo "false")"
+    processmanifest "${manifest}"
+    processbuild "${manifest}"
 
-        if _ includes builds "wip"
-        then
-            put "${MANAGEREPOSITORY}" "wip" "wip" "wip"
-        fi
-
-        parse "${manifest}" filter put
-
-        local i
-        local array="${criteria}[@]"
-        local index=0
-
-        for i in "${!array}"
-        do
-            local success=true
-
-            _ info "Builing '${i}'."
-
-            build "${index}" || success=false
-
-            if _ truth "${success}"
-            then
-                _ info "Done. Build '${i}' exited with 0."
-
-                if _ truth "${hasartifacts}"      &&
-                [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
-                then
-                    cp -rf "${MANAGE_BUILD_ARTIFACTS}" "${artifacts}/${i}" || true
-                    if [ -f "${MANAGE_BUILD_DIRECTORY}/log" ]
-                    then
-                        cp -f "${MANAGE_BUILD_DIRECTORY}/log" "${artifacts}/${i}/.log"
-                    fi
-                fi
-            else
-                _ error "Failed to build '${i}'."
-
-                if [ -f "${MANAGE_BUILD_DIRECTORY}/log" ]
-                then
-                    sed "{s/^/          /}" \
-                        "${MANAGE_BUILD_DIRECTORY}/log"
-                fi
-
-                (( ++code ))
-            fi
-
-            (( ++index ))
-        done
-
-        if _ truth "${hasartifacts}"
-        then
-            _ info "Build artifacts at '${artifacts}'"
-        else
-            cleanup "${artifacts}"
-        fi
-
-        return "${code}"
-    else
-        _ die "Unknown value of 'assemble by:' in .manage.yml."
-    fi
+    ###
 }
 
 cleanupenv () {
     unset MANAGE_BUILD
     unset MANAGE_BUILD_URL
     unset MANAGE_BUILD_TAG
+    unset MANAGE_BUILD_WIP
     unset MANAGE_BUILD_VERSION
     unset MANAGE_BUILD_CRITERIA
     unset MANAGE_BUILD_DIRECTORY
     unset MANAGE_BUILD_REFERENCE
-    unset MANAGE_BUILD_MAINTAINER
     unset MANAGE_BUILD_ARTIFACTS
+    unset MANAGE_BUILD_MAINTAINER
 }
 
 cleanuptmp () {
