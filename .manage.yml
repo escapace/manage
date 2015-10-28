@@ -46,6 +46,6 @@ assemble:
   internal: true
   preserve: true
   versions:
-    - wip
-    - 0.1.9
+    - edge
+    # - 0.1.9
     # - 0.2.2

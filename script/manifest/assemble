@@ -197,7 +197,7 @@ build ()
     export MANAGE_BUILD_REFERENCE="${reference}"
     export MANAGE_BUILD_ARTIFACTS="${dir}/artifacts"
 
-    if [[ "${version}" != "wip" ]]
+    if [[ "${version}" != "edge" ]]
     then
         clone "${url}"              \
               "${dir}"              \
@@ -205,7 +205,7 @@ build ()
               getsink              ||
               return 1
     else
-        export MANAGE_BUILD_WIP="true"
+        export MANAGE_BUILD_EDGE="true"
         cp -rf "${url}" "${dir}/repository"
     fi
 
@@ -302,9 +302,10 @@ getartifacts () {
 
 processmanifest () {
     local manifest="$1"
-    if _ includes Builds "wip"
+    if _ includes Builds "edge"
     then
-        put "${MANAGEREPOSITORY}" "wip" "wip" "wip"
+        put "${MANAGEREPOSITORY}" "edge" "edge" "edge"
+        put "${MANAGEREPOSITORY}" "wip" "edge" "edge"
     fi
 
     parse "${manifest}" filter put
@@ -469,7 +470,7 @@ cleanupenv () {
     unset MANAGE_BUILD
     unset MANAGE_BUILD_URL
     unset MANAGE_BUILD_TAG
-    unset MANAGE_BUILD_WIP
+    unset MANAGE_BUILD_EDGE
     unset MANAGE_BUILD_VERSION
     unset MANAGE_BUILD_CRITERIA
     unset MANAGE_BUILD_DIRECTORY
@@ -484,7 +485,6 @@ cleanuptmp () {
     do
         [ -d "$dir" ] && rm -rf "$dir"
     done
-
 }
 
 onexit ()
