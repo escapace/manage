@@ -75,30 +75,31 @@ release () {
                 _ warn "Not pushing releases on branches."
                 return 0
             fi
-        else
-            _ info "Releasing build artifacts."
-            (
-                cd "${cwd}" || return 1
-                git init
-                git config user.name  "Travis-CI"
-                git config user.email "robots+git@epiloque.com"
-                git remote add upstream \
-                    "https://${GITHUB_TOKEN}@github.com/eitherlands/manage.git" \
-                    > /dev/null 2>&1
-
-                git fetch upstream
-                git reset upstream/releases
-
-                for archive in "${archives[@]}"
-                do
-                    git add -f -A "${archive}"
-                done
-
-                git commit -m "$(getname) build"
-                git push upstream HEAD:releases \
-                    > /dev/null 2>&1
-            )
         fi
+
+        _ info "Releasing build artifacts."
+
+        (
+            cd "${cwd}" || return 1
+            git init
+            git config user.name  "Travis-CI"
+            git config user.email "robots+git@epiloque.com"
+            git remote add upstream \
+                "https://${GITHUB_TOKEN}@github.com/eitherlands/manage.git" \
+                > /dev/null 2>&1
+
+            git fetch upstream
+            git reset upstream/releases
+
+            for archive in "${archives[@]}"
+            do
+                git add -f -A "${archive}"
+            done
+
+            git commit -m "$(getname) build"
+            git push upstream HEAD:releases \
+                > /dev/null 2>&1
+        ) || return $?
     fi
 }
 
