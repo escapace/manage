@@ -211,7 +211,7 @@ build ()
                  -c "repository/bin/manage build" \
                  >> "${dir}/log" 2>&1             ||
                  return $?
-        )
+        ) || return "$?"
     else
         #TODO: Download manage and run the scripts
         true
@@ -302,12 +302,16 @@ main ()
 
             if _ truth "${success}"
             then
-                _ info "Successfully built '${i}'."
+                _ info "Done. Build '${i}' exited with 0."
 
                 if _ truth "${hasartifacts}"              &&
                 [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
                 then
                     cp -rf "${MANAGE_BUILD_ARTIFACTS}" "${artifacts}/${i}" || true
+                    if [ -f "${MANAGE_BUILD_DIRECTORY}/log" ]
+                    then
+                        cp -f "${MANAGE_BUILD_DIRECTORY}/log" "${artifacts}/${i}/.log"
+                    fi
                     # manage artifacts || true
                 fi
             else

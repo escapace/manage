@@ -34,7 +34,7 @@
 # MANAGE_BUILD_MAINTAINER
 
 build () {
-    _required "$1" || return 1
+    _ required "$1" || return 1
     image="$1"
 
     _ info "Building '${image}'."
@@ -83,6 +83,8 @@ main ()
     then
         _ info "Pushing for release."
     fi
+
+    return "${code}"
 }
 
 onexit ()
