@@ -123,7 +123,7 @@ clone ()
     _ required "$1" "$2" "$3" || return 1
 
     (
-        #set -x # Debug
+        # set -x # Debug
 
         cd "$2"    || return 1
 
@@ -132,15 +132,18 @@ clone ()
             rm -rf "$2/repository"
         fi
 
-        _ retry "${tries}" git clone --quiet --recursive "$1" repository
+        _ retry "${tries}"          \
+          git clone                 \
+          --recursive "$1"          \
+          repository                || return 1
+
         cd "$2/repository"          || return 1
         git reset -q HEAD           || return 1
         git checkout -q -- .        || return 1
         git clean -dfxq             || return 1
         git checkout -q "$3" --     || return 1
-        setmtimes > /dev/null 2>&1
-    ) > /dev/null 2>&1
-
+        setmtimes > /dev/null 2>&1  || true
+    )
 }
 
 cleanup ()
@@ -165,27 +168,26 @@ build ()
     dir="$(tempdir "${key}")"
     cleanup "${dir}"
 
+    mkdir "${dir}/artifacts"
+    touch "${dir}/log"
+
     _ required  "${url}"       \
                 "${tag}"       \
                 "${reference}" \
                 "${version}"   ||
                 return 1
 
-    unset MANAGE_BUILD
-    unset MANAGE_BUILD_WIP
-    unset MANAGE_BUILD_URL
-    unset MANAGE_BUILD_TAG
-    unset MANAGE_BUILD_VERSION
-    unset MANAGE_BUILD_REFERENCE
-    unset MANAGE_BUILD_MAINTAINER
+    cleanupenv
 
     if [[ "${version}" != "wip" ]]
     then
-        _ info "Cloning '${url} ${reference}'."
-        clone "${url}" "${dir}" "${reference}" || return 1
+        clone "${url}"              \
+              "${dir}"              \
+              "${reference}"        \
+              >> "${dir}/log" 2>&1  ||
+              return 1
     else
         export MANAGE_BUILD_WIP="true"
-        _ info "Copying '${url}'."
         cp -rf "${url}" "${dir}/repository"
     fi
 
@@ -193,17 +195,25 @@ build ()
     export MANAGE_BUILD_URL="${url}"
     export MANAGE_BUILD_TAG="${tag}"
     export MANAGE_BUILD_VERSION="${version}"
+    export MANAGE_BUILD_DIRECTORY="${dir}"
     export MANAGE_BUILD_REFERENCE="${reference}"
+    export MANAGE_BUILD_ARTIFACTS="${dir}/artifacts"
     export MANAGE_BUILD_MAINTAINER
 
     if _ truth "$(yml assemble_internal || echo "false")"
     then
         (
+            # set -x # Debug
             cd "${dir}" || return 1
-            bash --norc --noprofile -c "repository/bin/manage build" || return $?
+
+            bash --norc                           \
+                 --noprofile                      \
+                 -c "repository/bin/manage build" \
+                 >> "${dir}/log" 2>&1             ||
+                 return $?
         )
     else
-        # Download manage and run the scripts
+        #TODO: Download manage and run the scripts
         true
     fi
 
@@ -229,16 +239,6 @@ proceed () {
     local code=0
     local i="$1"
 
-    build "${i}" || code=$?
-
-    if [[ "${code}" == "0" ]]
-    then
-        _ info "Successfully assembled $2."
-    else
-        _ error "Failed to assemble $2."
-    fi
-
-    return "${code}"
 }
 
 main ()
@@ -246,9 +246,12 @@ main ()
     strict  true
     verbose true
 
-    local i
-    local manageversions
+    local dir
+    local key
+    local hasartifacts
     local manifest
+    local artifacts
+    local manageversions
     local tries="3"
     local code=0
 
@@ -265,14 +268,18 @@ main ()
     #shellcheck disable=SC2034
     builds=($(yml assemble_versions || echo ""))
 
-
     if [[ "${criteria}" == "tags"     ]] ||
        [[ "${criteria}" == "versions" ]]
     then
         manageversions="$(manage versions)"
         manifest="$(echo "${manageversions}" | grep -vE '^#|^\s*$')"
 
+        key="$(echo "${manageversions}" | md5sum)"
+        key="manage.${key:0:32}"
+        artifacts="$(tempdir "${key}")"
         MANAGE_BUILD_MAINTAINER="$(echo "${manageversions}" | head -n 1)"
+
+        hasartifacts="$(yml assemble_artifacts || echo "false")"
 
         if _ includes builds "wip"
         then
@@ -281,44 +288,85 @@ main ()
 
         parse "${manifest}" filter put
 
+        local i
         local array="${criteria}[@]"
         local index=0
 
         for i in "${!array}"
         do
-            proceed "${index}" "${i}" || code=$(( code + $? ))
+            local success=true
+
+            _ info "Builing '${i}'."
+
+            build "${index}" || success=false
+
+            if _ truth "${success}"
+            then
+                _ info "Successfully built '${i}'."
+
+                if _ truth "${hasartifacts}"              &&
+                [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
+                then
+                    cp -rf "${MANAGE_BUILD_ARTIFACTS}" "${artifacts}/${i}" || true
+                    # manage artifacts || true
+                fi
+            else
+                _ error "Failed to build '${i}'."
+
+                if [ -f "${MANAGE_BUILD_DIRECTORY}/log" ]
+                then
+                    sed "{s/^/          /}" \
+                        "${MANAGE_BUILD_DIRECTORY}/log"
+                fi
+
+                (( ++code ))
+            fi
+
             (( ++index ))
         done
+
+        _ truth "${hasartifacts}" &&
+        _ info "Build artifacts at: '${artifacts}'"
+
+        return "${code}"
     else
         _ die "Unknown value of 'assemble by:' in .manage.yml."
     fi
-
-
-    return "${code}"
 }
 
-onexit ()
-{
+cleanupenv () {
+    unset MANAGE_BUILD
+    unset MANAGE_BUILD_URL
+    unset MANAGE_BUILD_TAG
+    unset MANAGE_BUILD_VERSION
+    unset MANAGE_BUILD_DIRECTORY
+    unset MANAGE_BUILD_REFERENCE
+    unset MANAGE_BUILD_MAINTAINER
+    unset MANAGE_BUILD_ARTIFACTS
+}
+
+cleanuptmp () {
     local dir
-    _ info "Removing temporary files and directories."
     for dir in "${temporary[@]}"
     do
         [ -d "$dir" ] && rm -rf "$dir"
     done
 
+}
+
+onexit ()
+{
+    _ info "Removing temporary files and directories."
+    cleanuptmp
+
     _ info "Cleaning environment variables."
-    unset MANAGE_BUILD
-    unset MANAGE_BUILD_URL
-    unset MANAGE_BUILD_TAG
-    unset MANAGE_BUILD_VERSION
-    unset MANAGE_BUILD_REFERENCE
-    unset MANAGE_BUILD_MAINTAINER
+    cleanupenv
 
     if (( $1 == 0 ))
     then
-        _ warn "Exiting!"
+        _ warn "Done. All builds exited with 0."
     else
-        _ error "An error with exit code \"$1\" has occured."
+        _ error "Done. $1 build(s) failed."
     fi
 }
 
