@@ -1,4 +1,4 @@
-#!/usr/bin/env manage
+#!/usr/bin/env bash
 #
 # vim: set ft=sh:
 #
@@ -20,6 +20,8 @@
 # <dependency>
 #
 # docker
+# sha256sum
+# git
 #
 # </dependency>
 #
@@ -60,35 +62,44 @@ release () {
         fi
     done
 
-    for archive in "${archives[@]}"
-    do
-        echo "archive ${archive}"
-    done
-
-    # - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && bash deploy.sh
-    if _ required "${GITHUB_TOKEN}"
+    if   _ required "${GITHUB_TOKEN}"
     then
-        (
-            set -x
+        if _ truth "${TRAVIS_PULL_REQUEST}"
+        then
+            _ warn "Not pushing releases on pull requests."
+            return 0
+        elif _ truth "${TRAVIS}"
+        then
+            if [[ "${TRAVIS_BRANCH}" != "master" ]]
+            then
+                _ warn "Not pushing releases on branches."
+                return 0
+            fi
+        else
+            _ info "Releasing build artifacts."
+            (
+                cd "${cwd}" || return 1
+                git init
+                git config user.name  "Travis-CI"
+                git config user.email "robots+git@epiloque.com"
+                git remote add upstream \
+                    "https://${GITHUB_TOKEN}@github.com/eitherlands/manage.git" \
+                    > /dev/null 2>&1
 
-            cd "${cwd}" || return 1
-            git init
-            git config user.name  "Travis-CI"
-            git config user.email "robots+git@epiloque.com"
-            git remote add upstream "https://${GITHUB_TOKEN}@github.com/eitherlands/manage.git"
-            git fetch upstream
-            git reset upstream/gh-pages
+                git fetch upstream
+                git reset upstream/releases
 
-            for archive in "${archives[@]}"
-            do
-                git add -A "${archive}"
-            done
+                for archive in "${archives[@]}"
+                do
+                    git add -f -A "${archive}"
+                done
 
-            git commit -m "$(getname) build"
-            git push upstream HEAD:gh-pages
-        )
+                git commit -m "$(getname) build"
+                git push upstream HEAD:releases \
+                    > /dev/null 2>&1
+            )
+        fi
     fi
-
 }
 
 build () {
@@ -104,15 +115,11 @@ build () {
 
     _ info "Running '${image}' tests."
 
-    #TODO: resume tests
-    # docker run "manage:${image}" test || return 1
+    docker run "manage:${image}" test || return 1
 }
 
 artifact () {
     _ required "$1" || return 1
-
-    #TODO: do something with wip ?
-    # ! _ truth "${MANAGE_BUILD_WIP}"   &&
 
     if [[ -d "${MANAGE_BUILD_ARTIFACTS}" ]]
     then
@@ -187,11 +194,13 @@ main ()
 
     if [[ "${code}" = "0" ]]
     then
+        _ info "Copying build artifacts."
         artifact "${images[0]}" || (( ++code ))
     fi
 
     if [[ "${code}" = "0" ]]
     then
+        _ info "Compressing build artifacts."
         local targz
         targz="$(archive)" || (( ++code ))
     fi

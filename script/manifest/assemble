@@ -1,4 +1,4 @@
-#!/usr/bin/env manage
+#!/usr/bin/env bash
 #
 # vim: set ft=sh:
 #
@@ -305,7 +305,6 @@ processmanifest () {
     if _ includes Builds "edge"
     then
         put "${MANAGEREPOSITORY}" "edge" "edge" "edge"
-        put "${MANAGEREPOSITORY}" "wip" "edge" "edge"
     fi
 
     parse "${manifest}" filter put
