@@ -9,6 +9,6 @@ COPY test manage/test
 COPY vendor manage/vendor
 COPY .manage.yml manage/.manage.yml
 
-ENTRYPOINT ["manage/bin/manage"]
+WORKDIR /manage
+ENTRYPOINT ["bin/manage"]
 CMD ["help"]
-
