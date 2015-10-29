@@ -18,6 +18,7 @@ RUN apk update &&  \
     coreutils      \
     && rm -rf /var/cache/apk/*
 
-ENTRYPOINT ["manage/bin/manage"]
+WORKDIR /manage
+ENTRYPOINT ["bin/manage"]
 CMD ["help"]
 
