@@ -478,11 +478,9 @@ cleanupenv () {
     unset MANAGE_BUILD_TAG
     unset MANAGE_BUILD_EDGE
     unset MANAGE_BUILD_VERSION
-    unset MANAGE_BUILD_CRITERIA
     unset MANAGE_BUILD_DIRECTORY
     unset MANAGE_BUILD_REFERENCE
     unset MANAGE_BUILD_ARTIFACTS
-    unset MANAGE_BUILD_MAINTAINER
 }
 
 cleanuptmp () {
@@ -500,6 +498,8 @@ onexit ()
 
     _ info "Cleaning environment variables."
     cleanupenv
+    unset MANAGE_BUILD_CRITERIA
+    unset MANAGE_BUILD_MAINTAINER
 
     if (( $1 == 0 ))
     then
