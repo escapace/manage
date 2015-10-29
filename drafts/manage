@@ -7,7 +7,7 @@ set -e
 #   'wget -qO- https://manage.eitherlands.com/get/ | sh'
 #
 
-url='https://manage.eitherlands.com/get/'
+url='https://github.com/eitherlands/manage/raw/releases/'
 
 exists() {
     command -v "$@" > /dev/null 2>&1
