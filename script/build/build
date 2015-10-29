@@ -154,6 +154,7 @@ archive () (
     name="$(getname)"
 
     local archive="${MANAGE_BUILD_ARTIFACTS}/${name}.tar.gz"
+    echo "${name}" > "${MANAGE_BUILD_ARTIFACTS}/manage/version"
 
     tar czf "${archive}"                        \
         -C "${MANAGE_BUILD_ARTIFACTS}/manage" . \
