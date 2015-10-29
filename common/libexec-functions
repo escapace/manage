@@ -79,8 +79,6 @@ checkdependencies () {
     local dependencies=($@)
     local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
 
-    #TODO: wording
-
     local code
     _ exists "${dependencies[@]}" || code=$?
     if [[ "${code}" -ge 1 ]]

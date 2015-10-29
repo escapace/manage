@@ -209,27 +209,34 @@ build ()
         cp -rf "${url}" "${dir}/repository"
     fi
 
-    if _ truth "$(yml assemble_internal || echo "false")"
-    then
         (
             if _ truth MANAGE_BUILD_DEBUG
             then
                 set -x # Debug
             fi
 
-            cd "${dir}" || return 1
+            cd "${dir}/repository" || return 1
 
-            bash --norc                           \
-                 --noprofile                      \
-                 -c "repository/bin/manage build" \
-                 2>&1                             |
-                 getsink                         ||
-                 return $?
+            if _ truth "$(yml assemble_internal || echo "false")"
+            then
+                _ warn "Running internal build."
+
+                bash --norc                           \
+                     --noprofile                      \
+                     -c "bin/manage build"            \
+                     2>&1                             |
+                     getsink                         ||
+                     return $?
+            else
+                bash --norc                             \
+                     --noprofile                        \
+                     -c "${MANAGEDIRECTORY}/bin/manage build" \
+                     2>&1                               |
+                     getsink                           ||
+                     return $?
+            fi
+
         ) || return "$?"
-    else
-        #TODO: Download manage and run the scripts
-        true
-    fi
 
     # echo "${tag}" "${reference}" "${version}" "${url}"
 }

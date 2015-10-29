@@ -20,10 +20,9 @@ swaprun () {
 run () {
     local name="$1"
 
-    if [[ "${name}" == "completion" ]]
-    then
-        swaprun "$@"
-    elif _ includes MANAGEPUBLIC "${name}"
+    if [[ "${name}" == "completion" ]] ||
+       [[ "${name}" == "init"       ]] ||
+       _ includes MANAGEPUBLIC "${name}"
     then
         swaprun "$@"
     elif exists "${name}"
@@ -178,8 +177,9 @@ processyaml () {
     eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" "yml")"
 
     MANAGESCRIPTDIRECTORY="$(yml scripts || echo script)"
-    # shellcheck disable=SC2034
-    MANAGEPUBLIC=($(yml enable || echo -e "help\ntest"))
+
+    [ -z "${MANAGEPUBLIC}" ] &&
+        MANAGEPUBLIC=($(yml enable || echo -e "help\ntest"))
 
     if _ includes MANAGEPUBLIC "test"
     then
@@ -204,15 +204,15 @@ proceedwithrepository ()
             shift
         fi
 
-        if [[ ! ${MANAGEREPOSITORY} == "${MANAGEDIRECTORY}" ]]
-        then
-            processscriptordirectory "${MANAGEDIRECTORY}/script" "_manage_"
-        fi
+        processscriptordirectory "${MANAGEDIRECTORY}/script" "_manage_"
 
         processyaml
 
-        processscriptordirectory "${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}" ||
-            _ die "Cannot find ${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}, aborting."
+        if [[ ${MANAGEREPOSITORY} != "${MANAGEDIRECTORY}" ]]
+        then
+            processscriptordirectory "${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}" ||
+                _ die "Cannot find ${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}, aborting."
+        fi
 
         run "$@"
     fi
@@ -258,6 +258,30 @@ searchpath ()
     return "${code}"
 }
 
+proceedwithmanage () {
+    if [[ "${MANAGECWD}" == "${MANAGEDIRECTORY}" ]]
+    then
+        MANAGEPUBLIC=(
+                       "help"
+                       "test"
+                       "init"
+                       "build"
+                       "assemble"
+                       "versions"
+                     )
+    else
+        # TODO: help message
+        MANAGEPUBLIC=(
+                       "bootstrap"
+                       "help"
+                       "init"
+                     )
+    fi
+
+    MANAGEREPOSITORY="${MANAGEDIRECTORY}"
+    proceedwithrepository "$@"
+}
+
 collectscripts ()
 {
     local callerdirectory
@@ -272,7 +296,6 @@ collectscripts ()
     then
         proceedwithurl "$@"
     else
-        MANAGEREPOSITORY="${MANAGEDIRECTORY}"
-        proceedwithrepository "$@"
+        proceedwithmanage "$@"
     fi
 }
