@@ -83,21 +83,19 @@ __message()
     >&2 echo "$(_a bold)${level} $(_c ${color})==>$(_c)$(_a) ${msg}"
 }
 
-#TODO: default messages
-
 _info()
 {
-    __message INFO "$@"
+    __message INFO "$@"  || true
 }
 
 _warn()
 {
-    __message WARN "$@"
+    __message WARN "$@"  || true
 }
 
 _error()
 {
-    __message ERROR "$@"
+    __message ERROR "$@" || true
 }
 
 COLLECTION_MESSAGE_LOADED=1
