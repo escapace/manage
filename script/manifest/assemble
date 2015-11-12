@@ -267,7 +267,7 @@ getmanifest () {
 
     if [ -z "${manifest}" ]
     then
-        _ die "Cannot process the version manifets."
+        _ warn "Cannot process the version manifest."
     else
         echo "${manifest}"
     fi
