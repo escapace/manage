@@ -1,5 +1,5 @@
 language: bash
-sudo: 9000
+services: docker
 script:
 - bin/manage assemble
 branches:
