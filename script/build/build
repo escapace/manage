@@ -85,7 +85,7 @@ release () {
             git config user.name  "Travis-CI"
             git config user.email "robots+git@epiloque.com"
             git remote add upstream \
-                "https://${GITHUB_TOKEN}@github.com/eitherlands/manage.git" \
+                "https://${GITHUB_TOKEN}@github.com/epiloque/manage.git" \
                 > /dev/null 2>&1
 
             git fetch upstream
