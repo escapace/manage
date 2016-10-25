@@ -1,21 +1,21 @@
 <p align="right">
-    <a href="https://travis-ci.org/eitherlands/manage">
-        <img src="https://travis-ci.org/eitherlands/manage.svg?branch=master"
+    <a href="https://travis-ci.org/epiloque/manage">
+        <img src="https://travis-ci.org/epiloque/manage.svg?branch=master"
              alt="build status">
     </a>
 </p>
 
-# [manage](https://github.com/eitherlands/manage)
+# [manage](https://github.com/epiloque/manage)
 
 manage is a convention for setting up shell programs that use subcommands.
 
-# [License](https://github.com/eitherlands/manage#License)
+# [License](https://github.com/epiloque/manage#License)
 
 Manage is released under the terms of the MIT and GPL
 licenses. You may use the software under the terms of
 the MIT and/or GPL licenses which can be found in
-[LICENSE-MIT](https://github.com/eitherlands/manage/blob/master/LICENSE-MIT)
-and [LICENSE-GPL](https://github.com/eitherlands/manage/blob/master/LICENSE-GPL), respectively.
+[LICENSE-MIT](https://github.com/epiloque/manage/blob/master/LICENSE-MIT)
+and [LICENSE-GPL](https://github.com/epiloque/manage/blob/master/LICENSE-GPL), respectively.
 
 Manage includes or is derivative of works distributed
 under the licenses listed below. Please refer to the
