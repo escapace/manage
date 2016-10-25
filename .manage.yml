@@ -29,8 +29,8 @@ test:
 #
 
 versions:
-  url: https://github.com/eitherlands/manage.git
-  maintainer: "Mark Milstein <mark+github@eitherlands.com> (@epiloque)"
+  url: https://github.com/epiloque/manage.git
+  maintainer: "Mark Milstein <mark+github@epiloque.com> (@epiloque)"
   key: https://epiloque.github.io/epiloque.pub
   verify: true
   aliases:
