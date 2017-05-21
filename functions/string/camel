@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# @dependency sed
+
+camel ()
+{
+    #
+    # Make text from stdin camel case.
+    #
+
+    sed 's/_/ /g' |
+    sed 's/\<\(.\)/\U\1/g' |
+    sed 's/ //g'
+}
