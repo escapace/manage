@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# @import string/trim
+
+split()
+{
+    #
+    # Split text from stdin into a list.
+    #
+    # DELIMITER defaults to ",".
+    #
+    # Usage: split [DELIMITER]
+    #
+    # Usage examples:
+    #     echo "foo, bar, baz" | split      #==> foo\nbar\nbaz
+    #     echo "foo|bar|baz"   | split "|"  #==> foo\nbar\nbaz
+    #
+
+    local delim=${1:-,}
+    local str
+
+    while read -r; do
+        OIFS=$IFS; IFS=$delim
+        for str in $REPLY; do
+            IFS=$OIFS
+            trim <<<"$str"
+        done
+    done
+}

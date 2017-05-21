@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# @dependency sed
+
+trimEnd()
+{
+    #
+    # Removes all trailing whitespace (from the right).
+    #
+
+    local char=${1:-[:space:]}
+    sed "s%[${char//%/\\%}]*$%%"
+}

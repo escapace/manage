@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# @dependency tr
+
+upper()
+{
+    #
+    # Convert stdin to uppercase.
+    #
+
+    tr '[:lower:]' '[:upper:]'
+}
+

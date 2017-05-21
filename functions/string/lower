@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# @dependency tr
+
+lower()
+{
+    #
+    # Convert stdin to lowercase.
+    #
+
+    tr '[:upper:]' '[:lower:]'
+}

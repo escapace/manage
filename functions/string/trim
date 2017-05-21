@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# @import string/trimEnd
+# @import string/trimStart
+
+trim()
+{
+    #
+    # Removes all leading/trailing whitespace
+    #
+    # Usage examples:
+    #     echo "  foo  bar baz " | trim  #==> "foo  bar baz"
+    #
+
+    trimStart "$1" | trimEnd "$1"
+}
+

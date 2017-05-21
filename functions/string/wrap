@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# @import string/squeezeLines
+# @import string/squeeze
+# @dependency sed
+# @dependency tr
+
+wrap()
+{
+    local width=${1:-55}
+    squeezeLines  |
+    squeeze       |
+    tr -s ' ' ' ' |
+    tr '\012' ' ' |
+    sed "s/ $/@/; s/   */@@/g; s/[^@]\{${width}\} /&@/g" |
+    tr '@' '\012'
+}
