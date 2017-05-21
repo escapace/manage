@@ -1,13 +1,37 @@
 language: bash
 services: docker
 script:
+- shellcheck common/*
+- shellcheck libexec/manage
 - bin/manage assemble
 branches:
   only:
-  - master
-  - "/^feature-.*$/"
-  - "/^hotfix-.*$/"
-  - "/^test-.*$/"
+    - master
+    - staging
+    - development
+    - /^v?\d+\.\d+\.\d+$/
+    - /^\d+\.\d+\.\d+$/
+    - /^new-.*$/
+    - /^feat-.*$/
+    - /^add-.*$/
+    - /^change-.*$/
+    - /^breaking-.*$/
+    - /^deprecate-.*$/
+    - /^remove-.*$/
+    - /^fix-.*$/
+    - /^sec-.*$/
+    - /^security-.*$/
+    - /^perf-.*$/
+    - /^performance-.*$/
+    - /^test-.*$/
+    - /^tests-.*$/
+language: bash
+addons:
+  apt:
+    sources:
+    - debian-sid
+    packages:
+    - shellcheck
 env:
   global:
   - MANAGE_BUILD_DEBUG: true
@@ -16,5 +40,3 @@ notifications:
   email:
     on_success: change
     on_failure: always
-  slack:
-    secure: Xe2s55+x7VvAtRTJqLsJLL+PZqDKR7oUX7AGEAxj6k7WMmlbhvp1C/AW9PEOkkC3jGbkxYyIQtzd8x5PBE2CQ7LaFuCh/FStBBf85Tk0aw4jh6ormYwl+N0vT5hcnUY44+zwTVehqz8MJ6DX233s2eso33kZFL8jtUJA7hI2qTGbQIpIuWwdY5KSsq7taEuMthJdAlDrdks/BvJYml/OcXh3gw49I9AIzCTmz4ZloIBhH42I4t+eVQMsaiG1vIZM66r0b1E3LfNKa8A0lIykJlktnpKfcrTB8vZe/BRXn2y6F9X7fN5NsgrDBf43fhTnQc6qgNMWr7oF0DnvxvIWkACfDhMvQzhwdcAo9jcjdAbG3V/gZ/AUibFgcbHmjtnoKndJ7tcHmzwpyT8XX9fOJI/TZhw1vCtot/h0u0CCXgphQUV8VovUB143nlo0N8Sc94kJ7itG+b13pMMc4yIa5nbZEmXiDebAm2/MUVpjzxBfsAkla2DWOF7rJz7/9Sp7L4JwGaktHLIZZci3UeVu+bBLBW5fYOV4ilBvQnaQUxdnfcFeg8/v7E/RKni/0QHqNzQyjRK4mJUx4SLZI3hld5zzMgCGcTyEvHG/MjX6JS392vzgjuwkGmOWdByWx01H6ouyuAWtC4kDJGTh4bCHnernp5dFzkXDWtoZLKMzgr8=
