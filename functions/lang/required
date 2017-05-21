@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+required() {
+    local i
+    for i in "$@"
+    do
+        [ -z "${i// }" ] && return 1
+    done
+    return 0
+}
+

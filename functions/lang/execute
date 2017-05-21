@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+execute()
+{
+    #
+    # Execute a given command.
+    #
+    # Usage: execute [ARGUMENT...]
+    #
+
+    bash --norc --noprofile -c "$@" || return $?
+}
+

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# @dependency seq
+# @import lang/required
+
+retry ()
+{
+    required "$1" "$2" || return 1
+
+    local tries="$1"
+    shift
+    local code="1"
+    local result
+
+    (
+        strict false
+        while true
+        do
+            result="$("$@")"
+            code="$?"
+
+            (( tries-- )) || true
+            if [[ "${tries}" -le 0 ]] ||
+               [[ "${code}" == "0" ]]
+            then
+                break
+            fi
+        done
+
+        [[ "${code}" == "0" ]] &&
+        [[ ! -z "${result}" ]] &&
+        echo "${result}"
+
+        return "${code}"
+    )
+}
