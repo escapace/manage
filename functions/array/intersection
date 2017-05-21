@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# @import lang/required
+# @import array/join
+
+intersection () {
+    required "$1" "$2" ||
+        return 1
+
+    local A="$1[@]"
+    local B="$2[@]"
+    local AiB=()
+    local itema
+    local itemb
+
+    for itema in "${!A}"; do
+        for itemb in "${!B}"; do
+            if [[ "${itema}" == "${itemb}" ]]; then
+                AiB+=( "$itema" )
+                break
+            fi
+        done
+    done
+
+    join AiB "$3"
+}
+
