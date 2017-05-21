@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# @dependency seq
+# @import lang/required
+
+_exists () {
+    command -v "$@" > /dev/null 2>&1
+}
+
+exists () {
+    required "$1" || return 0
+    local i
+    local code
+    local dependencies=("$@")
+
+    for i in "${!dependencies[@]}"
+    do
+        if ! _exists "${dependencies[i]}"
+        then
+            code=$((i+1))
+            return "${code}"
+        fi
+    done
+}

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# @dependency seq
+
+repeat()
+{
+    #
+    # Repeat a command a given number of times.
+    #
+
+    local count=$1; shift
+    local i
+    for i in $(seq 1 "${count}"); do
+        "$@"
+    done
+}

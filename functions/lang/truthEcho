@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# @import lang/truth
+
+truthEcho()
+{
+    #
+    # Depending on the "truthiness" of the given value, echo the first (true)
+    # or second (false) value.
+    #
+
+    if truth "$1"; then
+        [[ $2 ]] && echo "$2"
+    else
+        [[ $3 ]] && echo "$3"
+    fi
+}
+
