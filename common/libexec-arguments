@@ -133,12 +133,6 @@ prepare () {
     exit "${code}"
 }
 
-
-proceedwithurl () {
-    #TODO: parse git urls
-    true
-}
-
 processsinglescript ()
 {
     local file
@@ -268,6 +262,7 @@ proceedwithmanage () {
                        "build"
                        "assemble"
                        "versions"
+                       "shellcheck"
                      )
     else
         # TODO: help message
@@ -292,9 +287,6 @@ collectscripts ()
     if searchpath "${paths[@]}"
     then
         proceedwithrepository "$@"
-    elif isurl "$1"
-    then
-        proceedwithurl "$@"
     else
         proceedwithmanage "$@"
     fi

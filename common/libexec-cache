@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 managecache () {
+    # TODO: Prefix with repository
     if [[ -z "${MANAGECACHE}" ]]
     then
         local tmpdir

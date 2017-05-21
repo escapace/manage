@@ -1,8 +1,7 @@
 language: bash
 services: docker
 script:
-- shellcheck common/*
-- shellcheck libexec/manage
+- bin/manage shellcheck
 - bin/manage assemble
 branches:
   only:
