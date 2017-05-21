@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# @import lang/required
+# @import array/join
+
+union () {
+    required "$1" "$2" ||
+        return 1
+
+    local A="$1[@]"
+    local B="$2[@]"
+    local itema
+    local itemb
+
+    for itema in "${!A}"; do
+        AuB+=( "$itema" )
+    done
+
+    for itemb in "${!B}"; do
+        AuB+=( "$itemb" )
+    done
+
+    join AuB "$3"
+}
