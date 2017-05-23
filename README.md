@@ -7,29 +7,30 @@
 
 # [manage](https://github.com/epiloque/manage)
 
-manage is a convention for setting up shell programs that use subcommands.
+`manage` is a convention for setting up shell programs that use subcommands.
 
-# [License](https://github.com/epiloque/manage#License)
+## Module Specification
 
-Manage is released under the terms of the MIT and GPL
-licenses. You may use the software under the terms of
-the MIT and/or GPL licenses which can be found in
-[LICENSE-MIT](https://github.com/epiloque/manage/blob/master/LICENSE-MIT)
-and [LICENSE-GPL](https://github.com/epiloque/manage/blob/master/LICENSE-GPL), respectively.
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
+interpreted as described in [RFC 2119](http://tools.ietf.org/html/rfc2119).
 
-Manage includes or is derivative of works distributed
-under the licenses listed below. Please refer to the
-specific files and/or packages for more detailed information
-about the authors, copyright notices, and licenses.
+## Thanks
 
-* [Bashful](https://github.com/jmcantrell/bashful)  
-  Copyright (c) Jeremy Cantrell  
-  GNU General Public License v3  
+We'd like to thank those people who assisted directly and indirectly in the
+development of this software.
 
-* [Bats](https://github.com/sstephenson/bats)  
-  Copyright (c) Sam Stephenson  
-  The MIT License (MIT)  
+* [Jeremy Cantrell](https://github.com/jmcantrell) for the
+  [Bashful](https://github.com/jmcantrell/bashful) collection of libraries that
+  simplify writing bash scripts.
 
-* [Shml](https://github.com/MaxCDN/shml)  
-  Copyright (c) Justin Dorfman && Joshua Mervine  
-  The MIT License (MIT)  
+* [Sam Stephenson](https://github.com/sstephenson/) for the
+  [Bats](https://github.com/sstephenson/bats) bash testing framework.
+
+* [Justin Dorfman](https://github.com/jdorfman) &
+  [Joshua Mervine](https://github.com/jmervine) for the
+  [Shml](https://github.com/MaxCDN/shml) terminal style framework.
+
+## [License](https://github.com/epiloque/manage#License)
+
+`manage` is released under the terms of the MIT license.
