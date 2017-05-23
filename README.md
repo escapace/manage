@@ -21,15 +21,15 @@ We'd like to thank those people who assisted directly and indirectly in the
 development of this software.
 
 * [Jeremy Cantrell](https://github.com/jmcantrell) for the
-  [Bashful](https://github.com/jmcantrell/bashful) collection of libraries that
+  [bashful](https://github.com/jmcantrell/bashful) collection of libraries that
   simplify writing bash scripts.
 
 * [Sam Stephenson](https://github.com/sstephenson/) for the
-  [Bats](https://github.com/sstephenson/bats) bash testing framework.
+  [bats](https://github.com/sstephenson/bats) bash testing framework.
 
 * [Justin Dorfman](https://github.com/jdorfman) &
   [Joshua Mervine](https://github.com/jmervine) for the
-  [Shml](https://github.com/MaxCDN/shml) terminal style framework.
+  [shml](https://github.com/MaxCDN/shml) terminal style framework.
 
 ## [License](https://github.com/epiloque/manage#License)
 
