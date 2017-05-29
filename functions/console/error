@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# @import console/message
+
+error()
+{
+    message ERROR "$@" || true
+}
