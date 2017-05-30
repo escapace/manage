@@ -2,6 +2,8 @@
 # @import lang/required
 # @import console/attribute
 # @import console/fgcolor
+# @import string/wrap
+# @dependency sed
 
 # TODO: stdout/stderr and verbose handling
 

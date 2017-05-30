@@ -1,16 +1,17 @@
 # Relative path to the script directory
 scripts: script
+modules: modules
 
 # Default script to execute
 default: help
 
 # Check for the following dependencies in PATH
-dependencies:
-  - bash
-  - awk
-  - sed
-  - tr
-  - head
+# dependencies:
+#   - bash
+#   - awk
+#   - sed
+#   - tr
+#   - head
 
 # Environment variables
 env:
