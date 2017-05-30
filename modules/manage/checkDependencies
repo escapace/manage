@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# @import console/die
+# @import lang/exists
+
+checkDependencies () {
+    local dependencies=($@)
+    local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
+
+    local code
+    exists "${dependencies[@]}" || code=$?
+    if [[ "${code}" -ge 1 ]]
+    then
+        code=$((code-1))
+        die "Cannot find '${dependencies[code]}' in path."
+    fi
+}
+

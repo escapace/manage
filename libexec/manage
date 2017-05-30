@@ -1,26 +1,15 @@
 #!/usr/bin/env bash
 #
-# <doc>
-#
-# manage is a convention for setting up shell
-# programs that use subcommands.
+# @doc manage is a convention for setting up shell programs that use subcommands.
 #
 # For more details on how to define your own commands
 # look online at https://github.com/epiloque/manage
 #
-# </doc>
-#
-# <dependency>
-#
-# awk
-# sed
-# tr
-# head
-# grep
-# comm
-# md5sum
-#
-# </dependency>
+# @dependency tr
+# @dependency head
+# @dependency comm
+# @dependency sed
+# @dependency find
 
 if ((BASH_VERSINFO[0] >= 4)) &&
    ((BASH_VERSINFO[1] >= 2))
@@ -85,95 +74,267 @@ __ ()
     local ___one="$1"
     shift
 
-    [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/common")
 
     case "${___one}" in
+        tag)
+                local s=${1//\//\\/}; shift
+                local e=${1//\//\\/}; shift
+                local c="^[[:space:]]*#[[:space:]]*"
+
+                sed -n "/$c$s/,/$c$e/p" "$@" | sed '1d;$d' | sed "s/$c//"
+            ;;
         once)
-            local __code=0
-            "$@" || __code="$?"
-            eval "$1"' () { return '"${__code}"'; }'
-            return "${__code}"
             ;;
         underscore)
             __ namespace "_" "$*"
             ;;
         namespace)
-            local ___source
-            local ___name="$1"
-            shift
-
-            ___source="$(__ getsource "$*")"
-
-            #shellcheck disable=SC2016
-            eval '
-                '"${___name}"' () (
-                    strict true
-
-                    '"${___source}"'
-
-                    local ___one="$1"
-                    shift
-
-                    _"${___one}" "$@" || return $?
-                    return $?
-                )'
             ;;
         getsource)
-            (
-                local f
-                local fns
-                local fone
-                local ftwo
-                local scripts=($1)
-                fone="$(compgen -A function | sort)"
-                __ import "${scripts[*]}"
-                ftwo="$(compgen -A function | sort)"
-                fns=($(comm -13 <(echo "${fone}") <(echo "${ftwo}")))
+            ;;
+        includes)
+            ;;
+        process)
+            ;;
+        local)
+            local files
+            files=($(__ process "$@"))
 
-                for f in "${fns[@]}"
-                do
-                    declare -f "${f}"
-                done
-            )
+            # for file in "${files[@]}"
+            # do
+            # done
+
+            # for module in "${modules[@]}"
+            # do
+            # done
+
             ;;
         import)
-            local i
-            local cwd
-            local file
-            local script
-            local scripts=($@)
-            local paths=(${MANAGEIMPORTPATHS[@]})
-            local bashmagic="^(#!){1}.*(bash){1}.*"
-            cwd="$(pwd)"
-
-            for ((i=0;i<${#paths[@]};i++))
-            do
-                paths[i]="${paths[i]}/*"
-            done
-
-            for file in ${paths[*]}
-            do
-                for script in ${scripts[*]}
-                do
-                    if [[ "${script}" == "$(basename "${file}")"   ]] &&
-                       [[ "$(head -n 1 "${file}")" =~ ${bashmagic} ]]
-                    then
-                        cd "$(dirname "${file}")"         || true
-                        source "${file}" > /dev/null 2>&1 || true
-                    fi
-                done
-            done
-
-            cd "${cwd}" || exit
+            __ process "$@"
+            ;;
         esac
+}
+
+
+MANAGE_MODULES=()
+declare -A MANAGE_NAMESPACES
+
+MANAGE_BOOTSTRAP () {
+    local namespace
+    for namespace in "${!MANAGE_NAMESPACES[@]}"
+    do
+        MANAGE_CREATE_NAMESPACE "${namespace}" "${MANAGE_NAMESPACES[$namespace]}"
+    done
+}
+
+_ () {
+    local manage_namespace
+    if [[ "$1" =~ ^@ ]]
+    then
+        true
+        shift
+    else
+        manage_namespace="MANAGE_NAMESPACE_DEFAULT"
+    fi
+
+    "${manage_namespace}" "$@"
+}
+
+MANAGE_CREATE_NAMESPACE () {
+    local manage_namespace="$1"
+    local manage_namespace_source="$2"
+
+    echo "${manage_namespace_source}"
+    # "${manage_namespace}" "$@" || return $?
+    # return $?
+
+    eval '
+        '"${manage_namespace}"' () (
+            strict true
+
+            '"${manage_namespace_source}"'
+
+            local ___func="$1"
+            shift
+
+            "${___func}" "$@" || return $?
+            return $?
+        )'
+}
+
+MANAGE_SOURCE () {
+    (
+        local f
+        local fns
+        local fone
+        local ftwo
+        local script="$1"
+        fone="$(compgen -A function | sort)"
+        source "${script}"
+        ftwo="$(compgen -A function | sort)"
+        fns=($(comm -13 <(echo "${fone}") <(echo "${ftwo}")))
+
+        for f in "${fns[@]}"
+        do
+            declare -f "${f}"
+        done
+    )
+}
+
+MANAGE_NAMESPACE () {
+    local module_source
+    local module_namespace="$1"
+    local module_file="$2"
+
+    MANAGE_NAMESPACES[$module_namespace]+="$(MANAGE_SOURCE "$module_file")"$'\n'
+}
+
+MANAGE_IMPORTED () {
+    local seeking=$1
+    local element
+    for element in "${MANAGE_MODULES[@]}"
+    do
+        if [[ "${element}" == "${seeking}" ]]; then
+            return 0
+            break
+        fi
+    done
+    return 1
+}
+
+MANAGE_TAG ()
+{
+
+    local s=${1//\//\\/}; shift
+    local re="^[#]\+[ \t]*@$s "
+    local c="#[[:space:]]*#[[:space:]]*"
+
+    sed -n "/$re/p" "$@" |
+    sed "s/$re//" |
+    sed '/^[[:space:]]\+$/s/.*//g' | cat -s |
+    sed ':a;$!{N;ba;};s/^[[:space:]]*\n//;s/\n[[:space:]]*$//'
+}
+
+MANAGE_IMPORT () {
+    [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/modules")
+
+    local bashmagic="^(#!){1}.*(bash){1}.*"
+    local cwd="$(pwd)"
+    local file
+    local import
+    local imports=()
+    local mode="$1"
+    shift
+    local paths=(${MANAGEIMPORTPATHS[@]})
+    local script
+    local scripts=($@)
+    local namespace
+
+    while read -d '' -r file
+    do
+        for script in ${scripts[*]}
+        do
+            if [[ "${file}" =~ ${script}$ ]] &&
+               [[ "$(head -n 1 "${file}")" =~ ${bashmagic} ]] &&
+               [[ -f "${file}" ]]
+            then
+                if ! MANAGE_IMPORTED "${file}"
+                then
+                    imports+=($(MANAGE_TAG import "${file}"))
+                    MANAGE_MODULES+=("${file}")
+                    cd "$(dirname "${file}")"
+
+                    if [[ "${mode}" == "underscore" ]]
+                    then
+                        if [[ "${file}" =~ ^${MANAGEDIRECTORY}/modules ]]
+                        then
+                            #TODO: other namespaces
+                            namespace="MANAGE_NAMESPACE_DEFAULT"
+                        fi
+
+                        MANAGE_NAMESPACE "${namespace}" "${file}" || ( echo "Failed to import \'${file}\'" && exit 1 )
+                    elif [[ "${mode}" == "local" ]]
+                    then
+                        source "${file}" || ( echo "Failed to import \'${file}\'" && exit 1 )
+                    fi
+                fi
+            fi
+        done
+    done < <(find "${paths[*]}" -type f -print0)
+
+    if [ ! ${#imports[@]} -eq 0 ]
+    then
+        MANAGE_IMPORT "${mode}" "${imports[@]}"
+    fi
+
+    cd "${cwd}" || exit
+}
+
+MANAGE_LOCAL () {
+    MANAGE_IMPORT local "$@"
+}
+
+MANAGE_UNDERSCORE () {
+    MANAGE_IMPORT underscore "$@"
+}
+
+manage () {
+    if [ "${MANAGEREPOSITORY}" == "${MANAGEDIRECTORY}" ]
+    then
+        "${MANAGEDIRECTORY}/libexec/manage" "$@"
+    else
+        "${MANAGEDIRECTORY}/libexec/manage" "${MANAGEREPOSITORY}" "$@"
+    fi
+}
+
+MANAGE_ONCE () {
+    local __code=0
+    "$@" || __code="$?"
+    eval "$1"' () { return '"${__code}"'; }'
+    return "${__code}"
+}
+
+MANAGE_MAIN ()
+{
+    PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
+    local _code
+    local _function
+    if [ -n "${MANAGECOMPLETION}" ]
+    then
+        _function="completion"
+    else
+        _function="main"
+    fi
+    if declare -f "${_function}" > /dev/null 2>&1
+    then
+        trap 'MANAGE_ONCE MANAGE_RETURN $?' INT HUP TERM KILL QUIT EXIT
+        "${_function}" "$@"
+        _code=$?
+        trap - INT HUP TERM KILL QUIT EXIT ERR
+    fi
+
+    MANAGE_ONCE MANAGE_RETURN "${_code}"
+    return $?
+}
+
+MANAGE_RETURN ()
+{
+    local _code=${1:-0}
+    if declare -f "onexit" > /dev/null 2>&1
+    then
+        onexit "${_code}" || true
+    fi
+
+    return "${_code}"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
 then
-    __ underscore "${MANAGEIMPORT[*]}"
-    __ import "libexec-payload"
+    strict true
+    MANAGE_UNDERSCORE "${MANAGEIMPORT[*]}"
+    MANAGE_BOOTSTRAP
     [ -n "${MANAGESCRIPTPATH}" ] && source "${MANAGESCRIPTPATH}"
-    _main "$@"
+    MANAGE_MAIN "$@"
 else
     strict true
 
@@ -214,14 +375,8 @@ else
 
     LC_ALL=C
 
-    __ import "collection-shell"   \
-              "collection-array"   \
-              "collection-string"  \
-              "collection-message" \
-              "collection-tag"     \
-              "collection-yaml"    \
-              "libexec-manage"
+    MANAGE_LOCAL manage/checkFileDependencies
 
-    checkscriptdependencies "${MANAGEDIRECTORY}/libexec/manage"
-    collectscripts "$@"
+    checkFileDependencies "${MANAGEDIRECTORY}/libexec/manage"
+    # collectscripts "$@"
 fi

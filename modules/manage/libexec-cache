@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+managecache () {
+    # TODO: Prefix with repository
+    if [[ -z "${MANAGECACHE}" ]]
+    then
+        local tmpdir
+        tmpdir="$(dirname "$(mktemp -u)")"
+        mkdir -p "${tmpdir}/.manage"
+        tmpdir="${tmpdir}/.manage"
+        MANAGECACHE="${tmpdir}"
+    fi
+}
+
+cachescripts () {
+    [ -f "${MANAGECACHE}/manifest.scripts" ] &&
+        rm -f "${MANAGECACHE}/manifest.scripts"
+
+    if [ -f "${MANAGEREPOSITORY}/.manage.yml" ]
+    then
+        md5sum "${MANAGEREPOSITORY}/.manage.yml" >> "${MANAGECACHE}/manifest.scripts"
+    fi
+
+    for file in "${SCRIPTPATHS[@]}"
+    do
+        md5sum "${file}" >> "${MANAGECACHE}/manifest.scripts"
+        sed -i '/^$/d' "${MANAGECACHE}"/manifest.* \
+            > /dev/null 2>&1 || true
+    done
+}
+
+cache ()
+{
+    local __key
+    local __code=0
+
+    __key="$(md5sum <<< "$(pwd)${MANAGEREPOSITORY}$(caller)$*")"
+    __key="cache.${__key:0:32}"
+    __key="${MANAGECACHE}/${__key}"
+
+    if [ -f "${__key}" ] &&
+       md5sum --status \
+              --strict \
+              -c "${MANAGECACHE}"/manifest.* \
+              > /dev/null 2>&1
+    then
+        cat "${__key}"
+    else
+        rm -f "${MANAGECACHE}/*.cache"
+        ( "$@" ) | tee "${__key}" || __code=$?
+    fi
+
+    return "${__code}"
+}
+
+managecache
