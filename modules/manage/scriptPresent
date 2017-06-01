@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# @import array/includes
+
+scriptPresent () {
+    includes SCRIPTNAMES "$1"
+}

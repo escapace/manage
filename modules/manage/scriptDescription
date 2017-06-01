@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# @import string/squeeze
+
+scriptDescription () {
+    echo "$(basename "$1"):$(MANAGE_TAG description "$1" | tr '\n' ' ' | squeeze || echo)"
+}
+

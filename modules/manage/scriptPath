@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# @import manage/scriptIndex
+
+scriptPath ()
+{
+    echo "${SCRIPTPATHS["$(scriptIndex "$1")"]}"
+}
+

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# @import array/forEach
+
+scriptEach () {
+    forEach SCRIPTNAMES "$1" "$2"
+}
