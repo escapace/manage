@@ -1,116 +1,16 @@
 #!/usr/bin/env bash
-#
-# <doc>
-#
-# Display this help and exit
-#
-# </doc>
-
-title ()
-{
-    local lspace
-    local length
-    local adjustment
-
-    length="$(getlength "$1")"
-    adjustment="$((length+separatorlength))"
-    lspace="${paragraph:${adjustment}}"
-
-    echo -n "$(_ a bold)${lspace}$1${separator}$(_ a)"
-}
-
-table () {
-    title "$1"
-    echo  "$2"           |
-    _ wrap "${textwidth}" |
-    tr -s '\n'           |
-    sed   "2,\${s/^/${paragraph}/}"
-
-}
-
-description () {
-    table "$(basename "$1")" \
-          "$(getdoc "$1")"
-}
-
-usagestring()
-{
-    echo -e "\n${leftmargin}$(_a bold)Usage:$(_a)" "$(basename "$0") $1 [ arguments ... ]\n"
-}
-
-usage ()
-{
-    usagestring '[ script ]'
-    forscript filter description
-    echo
-}
-
-help ()
-{
-    local script="$1"
-
-    if exists "${script}"
-    then
-        script="${script}"
-    elif _ includes MANAGEPUBLIC "${script}"
-    then
-        script="_manage_${script}"
-    else
-        script=""
-    fi
-
-    if [ -n "${script}" ]
-    then
-        cache usagestring "$1"
-        cache description "$(getpath "${script}")"
-        echo
-    else
-        cache usage
-        echo -e "${leftmargin}Script \"$1\" does not exist.\n"
-        return 1
-    fi
-}
-
-getspace () {
-    local len="$1"
-    local char="${2:-" "}"
-    _ repeat "${len}" echo -n "${char}"
-}
-
-getlength () {
-    echo "$1" |
-    wc -L
-}
+# @description Display this help and exit
 
 main ()
 {
     strict true
 
-    maximumwidth="75"
-    separatorlength="3"
-    leftmarginlength="2"
-    longnamelength="$(getlength "$(getnames)")"
-    paragraphlength="$((leftmarginlength +
-        longnamelength +
-        separatorlength))"
-
-    textwidth="$((maximumwidth - paragraphlength))"
-
-    leftmargin="$(getspace "${leftmarginlength}")"
-    paragraph="$(getspace "${paragraphlength}")"
-    separator="$(getspace "${separatorlength}")"
-
-    if _ required "$1"
-    then
-        help "$1"
-    else
-        cache usage
-    fi
+    help "$1"
 }
 
 completion () {
     if (( $# == 0 ))
     then
-        getnamedoc
+        scriptEach filter scriptDescription
     fi
 }
