@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# @description Lint script & modules
+
+main ()
+{
+    verbose true
+    strict true
+
+    local file
+    local paths
+    local exitCode=0
+
+    if [[ "${MANAGEREPOSITORY}" == "${MANAGEDIRECTORY}" ]]
+    then
+        paths=(${MANAGEIMPORTPATHS[@]} "${MANAGESCRIPTDIRECTORY}")
+    else
+        # TODO: lint non manage repositories
+        paths=(${MANAGEIMPORTPATHS[@]}/"${MANAGEDIRECTORY}/modules")
+    fi
+
+    while read -d '' -r file
+    do
+        isScript "${file}" && shellcheck "${file}" || exitCode=$?
+    done < <(find "${paths[@]}" -type f -print0)
+
+    exit "${exitCode}"
+}
