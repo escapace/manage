@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# @import array/includes
+
+scriptFilter () {
+    local script
+    local path
+
+    script="${SCRIPTNAMES[$1]}"
+    path="${SCRIPTPATHS[$1]}"
+
+    if [[ "${script:0:1}" == "_" ]]
+    then
+        if includes MANAGEPUBLIC "${script:8}"
+        then
+            "$2" "${path}"
+        fi
+    elif [[ "${script}" != "completion" ]]
+    then
+        "$2" "${path}"
+    fi
+}

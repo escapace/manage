@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+# @import console/die
+# @import lang/required
+# @import manage/isDirectory
+# @import manage/isFile
+# @import manage/isRepository
+# @import manage/isScript
+# @import manage/parseYAML
+# @import manage/run
+
+collectScripts ()
+{
+    local callerdirectory
+    local paths
+    callerdirectory="$(dirname "$(expandpath "${MANAGEZERO}")")"
+    paths=( "${callerdirectory}" "$1" "${MANAGECWD}" )
+
+    if searchPath "${paths[@]}"
+    then
+        proceedWithRepository "$@"
+    else
+        proceedWithManage "$@"
+    fi
+}
+
+searchPath ()
+{
+    required "$1" || return 1
+    local path
+    local code=1
+
+    for path in "$@"
+    do
+        while [ -n "${path}"     ] &&
+              [ "${path}" != "/" ] &&
+              [ "${path}" != "." ]
+        do
+            if isRepository "${path}"
+            then
+                code=0
+                break
+            else
+                path="$(dirname "${path}")"
+            fi
+        done
+        [ "${code}" == "0" ] && break
+    done
+
+    return "${code}"
+}
+
+proceedWithRepository ()
+{
+    if isScript "$1"
+    then
+        searchPath "$1" && parseYAML
+
+        processScriptOrDirectory "$1"
+        shift
+        run "${SCRIPTNAMES[0]}" "$@"
+    else
+        if isRepository "$1"
+        then
+            shift
+        fi
+
+        processScriptOrDirectory "${MANAGEDIRECTORY}/script" "_manage_"
+
+        parseYAML
+
+        if [[ ${MANAGEREPOSITORY} != "${MANAGEDIRECTORY}" ]]
+        then
+            processScriptOrDirectory "${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}" ||
+                die "Cannot find ${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}, aborting."
+        fi
+
+        run "$@"
+    fi
+}
+
+processScriptOrDirectory () {
+    local file
+
+    if isDirectory "$1"
+    then
+        for file in "$1"/* "$1"/**/*
+        do
+            if  [[ "$(dirname "${file}")" != "${MANAGETESTDIRECTORY}" ]]
+            then
+                processSingleScript "${file}" "$2" || true
+            fi
+        done
+    elif isFile "$1"
+    then
+        processSingleScript "$1" "$2" || return 1
+    else
+        return 1
+    fi
+}
+
+processSingleScript ()
+{
+    local file
+
+    if isScript "${1}"
+    then
+        file="$(expandpath "$1")"
+        SCRIPTPATHS+=("${file}")
+        SCRIPTNAMES+=("${2}$(basename "${file}")")
+    else
+        return 1
+    fi
+}
+
+proceedWithManage () {
+    if [[ "${MANAGECWD}" == "${MANAGEDIRECTORY}" ]]
+    then
+        MANAGEPUBLIC=(
+                       "help"
+                       "test"
+                       "init"
+                       "build"
+                       "assemble"
+                       "versions"
+                       "shellcheck"
+                     )
+    else
+        # TODO: help message
+        MANAGEPUBLIC=(
+                       "bootstrap"
+                       "help"
+                       "init"
+                     )
+    fi
+
+    MANAGEREPOSITORY="${MANAGEDIRECTORY}"
+    proceedWithRepository "$@"
+}

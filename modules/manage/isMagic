@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+isMagic () {
+    local manage="^(#!){1}.*(manage){1}.*"
+    local bash="^(#!){1}.*(bash){1}.*"
+
+    {
+        read -r line
+    } < "$1"
+
+    [[ "${line}" =~ ${manage} ]] ||
+    [[ "${line}" =~ ${bash}   ]]
+}

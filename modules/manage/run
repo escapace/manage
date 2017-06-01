@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+# @import array/includes
+# @import array/join
+# @import console/die
+# @import manage/checkFileDependencies
+# @import manage/isInternal
+# @import manage/scriptPresent
+# @import manage/scriptPath
+# @import string/squeeze
+# @import string/upper
+
+# @import manage/help
+
+swapRun () {
+    local name
+    local names
+    names=("$1" "_manage_$1")
+    shift
+
+    for name in "${names[@]}"
+    do
+        if scriptPresent "${name}"
+        then
+            break
+        fi
+    done
+
+    executeScript "${name}" "$@"
+}
+
+run () {
+    local name="$1"
+
+    if [[ "${name}" == "completion" ]] ||
+       [[ "${name}" == "init"       ]] ||
+       includes MANAGEPUBLIC "${name}"
+    then
+        swapRun "$@"
+    elif scriptPresent "${name}"
+    then
+        shift
+        executeScript "${name}" "$@"
+    else
+        name="$(yml default || echo help)"
+
+        if scriptPresent "${name}"
+        then
+            executeScript "${name}" "$@"
+        elif includes MANAGEPUBLIC "${name}"
+        then
+            swapRun "${name}" "$@"
+        else
+            die "The default script \"${name}\" defined in .manage.yml does not exist."
+        fi
+    fi
+}
+
+scriptEnvironment ()
+{
+    if declare -f "yml" > /dev/null 2>&1
+    then
+        local keys
+        local key
+        keys="$(yml __keys || echo)"
+        for key in ${keys}
+        do
+            if [[ "${key}" =~ ^env_.* ]]
+            then
+                echo "$(upper <<< "${key#env_}")=\"$(yml "${key}" || echo)\""
+            fi
+        done
+    fi
+}
+
+executeScript () {
+    local name
+    local path
+    local imports
+    local code=0
+
+    name="${1}"
+    path="$(scriptPath "${name}")"
+    shift || true
+
+    if isInternal "${name}"
+    then
+        source "${path}"
+
+        if [ -n "${MANAGECOMPLETION}" ]
+        then
+            if declare -f "completion" > /dev/null 2>&1
+            then
+                completion "$@" || code=$?
+                MANAGECOMPLETION=""
+            fi
+        else
+            main "$@" || code=$?
+        fi
+
+        # TODO: cache
+        # cachescripts || true
+    else
+        local zero
+        local exports=""
+        local commandstring
+
+        checkFileDependencies "${path}"
+
+        # shellcheck disable=SC2034
+        imports=($(MANAGE_TAG "import" "${path}"))
+
+        zero="$(basename "${MANAGEZERO}")"
+        libexec="source \"${MANAGEDIRECTORY}/libexec/manage\""
+
+        if [ ! -z "${MANAGETESTDIRECTORY}" ]
+        then
+            exports+="MANAGETESTDIRECTORY=\"${MANAGETESTDIRECTORY}\" "
+        fi
+
+        if [ ! -z "${MANAGECOMPLETION}" ]
+        then
+            exports+="MANAGECOMPLETION=\"${MANAGECOMPLETION}\" "
+        fi
+
+        exports+="$(scriptEnvironment) "
+
+        exports+="MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
+                  MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\"
+                  MANAGESCRIPTPATH=\"${path}\"
+                  MANAGEZERO=\"${MANAGEZERO}\"
+                  MANAGEIMPORT=\"$(join imports ' ')\""
+
+        commandstring="$(echo "${exports} && ${libexec}" | tr '\n' ' ' | squeeze )"
+
+        exec -a "${zero}"           \
+            "bash"                  \
+            "--norc"                \
+            "--noprofile"           \
+            "-c" "${commandstring}" \
+            "${zero}"               \
+            "$@"
+
+    fi
+
+    exit "${code}"
+}

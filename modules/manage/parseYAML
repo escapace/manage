@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# @import array/includes
+# @import yaml/yaml
+# @import manage/checkDependencies
+
+parseYAML () {
+    eval "$(yaml "${MANAGEREPOSITORY}/.manage.yml" "yml")"
+
+    MANAGESCRIPTDIRECTORY="$(yml scripts || echo script)"
+
+    [ -z "${MANAGEPUBLIC}" ] &&
+        MANAGEPUBLIC=($(yml enable || echo -e "help\ntest"))
+
+    if includes MANAGEPUBLIC "test"
+    then
+        MANAGETESTDIRECTORY="${MANAGEREPOSITORY}/$(yml test_tests || echo "script/test")"
+    fi
+
+    checkDependencies "$(yml dependencies || echo)"
+}

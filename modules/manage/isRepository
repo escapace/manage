@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# @import manage/isFile
+# @import manage/isDirectory
+# @import lang/required
+
+isRepository ()
+{
+    required "$1" ||
+        return 1
+
+    [[ "$1" == "${MANAGELIBEXEC}"   ]] && return 1
+    [[ "$1" == "${MANAGEDIRECTORY}" ]] && return 1
+
+    isDirectory "$1" || return 1
+    isFile "$1/.manage.yml" || return 1
+
+    MANAGEREPOSITORY="$(expandpath "$1")"
+}
