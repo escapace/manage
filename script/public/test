@@ -2,26 +2,34 @@
 #
 # vim: set ft=sh:
 #
-# <doc>
-#
-# Run the test suite
-#
-# </doc>
-#
-# <import>
-#
-# collection-shell
-# collection-message
-#
-# </import>
-#
-# <dependency>
-#
-# bats
-#
-# </dependency>
+# @description Run the test suite
+# @import lang/required
+# @import array/join
+# @import lang/exists
+# @import console/die
+# @import console/hr
+# @import console/attribute
+# @import console/fgcolor
+# @import manage/isMagic
+# @import string/squeeze
 
-isci () {
+CLEANUP_DIRECTORIES=()
+FAILED_TESTS=()
+FIXED_NUMBER=0
+SUCCESS_NUMBER=0
+FAILED_NUMBER=0
+BROKEN_NUMBER=0
+TOTAL_NUMBER=0
+EXIT_CODE=0
+
+testName () {
+    local name
+    name="$(basename "${1}")"
+    name=${name%%.*}
+    echo "${name}"
+}
+
+isCi () {
 
     # Returns 0 if the current environment
     # is a Continuous Integration server.
@@ -51,60 +59,172 @@ isci () {
     [[ ! "${#ci[@]}" == "${code}" ]]
 }
 
-main () {
+aggregate_results () {
+    local file="$1"
+    local name="$2"
+    while IFS=' ' read type value
+    do
+        case $type in
+            '')
+                continue
+            ;;
+            fixed)
+                FIXED_NUMBER=$((FIXED_NUMBER + value))
+            ;;
+            success)
+                SUCCESS_NUMBER=$((SUCCESS_NUMBER + value))
+            ;;
+            failed)
+                FAILED_NUMBER=$((FAILED_NUMBER + value))
+                if test "${value}" != 0; then
+                    FAILED_TESTS+=("${name}")
+                fi
+            ;;
+            broken)
+                BROKEN_NUMBER=$((BROKEN_NUMBER + value))
+            ;;
+            total)
+                TOTAL_NUMBER=$((TOTAL_NUMBER + value))
+            ;;
+        esac
+    done < "${file}"
+}
+
+test_runtime () {
+    local file="$1"
+    local sharness
+    local testSource
+    local exports
+    local commandString
+    local flags=()
+    local tmpDir
+    local result
+    local resultFile
+    local name
+
+    name="$(testName "${file}")"
+
+    tmpDir="$(mktemp -d)"
+    CLEANUP_DIRECTORIES+=("${tmpDir}")
+    resultFile="${tmpDir}/${name}.counts"
+
+    isCi && flags+=("--no-color")
+
+    sharness="source \"${MANAGEDIRECTORY}/vendor/sharness/sharness.sh\" ${flags[@]}"
+    testSource="source \"${file}\""
+
+    if [ ! -z "${MANAGETESTDIRECTORY}" ]
+    then
+        exports+="MANAGETESTDIRECTORY=\"${MANAGETESTDIRECTORY}\" "
+        exports+="SHARNESS_TEST_DIRECTORY=\"${MANAGETESTDIRECTORY}\" "
+        exports+="SHARNESS_RESULT=\"${resultFile}\" "
+    fi
+
+    exports+="MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
+    MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\""
+
+    commandString="$(echo "${exports} && ${sharness} && ${testSource}" | tr '\n' ' ' | _ squeeze )"
+
+    "bash"                  \
+    "--norc"                \
+    "--noprofile"           \
+    "-c" "${commandString}" || EXIT_CODE=$?
+
+    aggregate_results "${resultFile}" "${name}"
+}
+
+test_suite () {
     local name
     local file
-    local target
-
-    export MANAGEDIRECTORY
-    export MANAGEREPOSITORY
-    export MANAGETESTDIRECTORY
+    local targets=()
 
     if [ -d "${MANAGETESTDIRECTORY}" ]
     then
         if _ required "${1}"
         then
-            for file in "${MANAGETESTDIRECTORY}"/*.bats
+            for file in "${MANAGETESTDIRECTORY}"/*.spec.sh
             do
                 if [   -f "${file}" ] &&
                    [   -r "${file}" ] &&
-                   [[ "$(basename "${file}")" == *.bats ]]
+                   _ isMagic "${file}"
                 then
-                    name="$(basename "${file}")"
-                    if [[ "${1}" == "${name::-5}" ]]
+                    name="$(testName "${file}")"
+
+                    if [[ "${1}" == "${name}" ]]
                     then
-                        target="${file}"
+                        targets=("${file}")
                     fi
                 fi
             done
             cd "${OPWD}" || exit
         else
-            target="${MANAGETESTDIRECTORY}"
+            for file in "${MANAGETESTDIRECTORY}"/*.{spec.sh,t,t.sh}
+            do
+                if [   -f "${file}" ] &&
+                   [   -r "${file}" ] &&
+                   _ isMagic "${file}"
+                then
+                    targets+=("${file}")
+                fi
+            done
         fi
 
-        [ -n "${target}" ] &&
-            bats "$(isci && echo --tap || echo --pretty)" "${target}"
+        if [ ! "${#targets[@]}" -eq 0 ]
+        then
+            for target in "${targets[@]}"
+            do
+                echo
+                echo "#" "$(_ attribute bold "$(testName "${target}")") $(_ attribute end)"
+                echo
+                test_runtime "${target}"
+            done
 
+            printf "\n# %s tests, %s passed, %s fixed, %s broken, %s failed\n" \
+                "$(_ attribute bold "${TOTAL_NUMBER}")$(_ attribute end)"    \
+                "$(_ attribute bold "${SUCCESS_NUMBER}")$(_ attribute end)"  \
+                "$(_ attribute bold "${FIXED_NUMBER}")$(_ attribute end)"    \
+                "$(_ attribute bold "${BROKEN_NUMBER}")$(_ attribute end)"   \
+                "$(_ attribute bold "${FAILED_NUMBER}")$(_ attribute end)"
+        fi
     else
         _ die "The directory ${MANAGETESTDIRECTORY} does not exist."
     fi
 }
 
-completion () {
-    if (( $# == 0 ))
-    then
-        if [ -d "${MANAGETESTDIRECTORY}" ]
-        then
-            for file in "${MANAGETESTDIRECTORY}"/*.bats
-            do
-                if [   -f "${file}" ] &&
-                   [   -r "${file}" ] &&
-                   [[ "$(basename "${file}")" == *.bats ]]
-                then
-                    name="$(basename "${file}")"
-                    echo "${name::-5}"
-                fi
-            done
-        fi
-    fi
+main () {
+    strict true
+    verbose true
+
+    test_suite "$@"
 }
+
+onexit ()
+{
+    for directory in "${CLEANUP_DIRECTORIES[@]}"
+    do
+        [ -d "${directory}" ] && rm -rf "${directory}"
+    done
+
+    exit "${EXIT_CODE}"
+}
+
+# TODO: completion
+
+# completion () {
+#     if (( $# == 0 ))
+#     then
+#         if [ -d "${MANAGETESTDIRECTORY}" ]
+#         then
+#             for file in "${MANAGETESTDIRECTORY}"/*.bats
+#             do
+#                 if [   -f "${file}" ] &&
+#                    [   -r "${file}" ] &&
+#                    [[ "$(basename "${file}")" == *.bats ]]
+#                 then
+#                     name="$(basename "${file}")"
+#                     echo "${name::-5}"
+#                 fi
+#             done
+#         fi
+#     fi
+# }
