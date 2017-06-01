@@ -33,6 +33,23 @@
     lodash "^4.17.4"
     lodash-es "^4.17.4"
 
+"@epiloque/weaver-readme@^5.6.0":
+  version "5.6.0"
+  resolved "https://registry.yarnpkg.com/@epiloque/weaver-readme/-/weaver-readme-5.6.0.tgz#1121f1c0fb105858f19aa70243bd74e230cf2106"
+  dependencies:
+    "@epiloque/weaver-origin-url" "^5.6.0"
+    babel-runtime "^6.23.0"
+    lodash "^4.17.4"
+    meow "^3.7.0"
+    path "^0.12.7"
+    remark "^7.0.0"
+    remark-github "^7.0.0"
+    remark-reference-links "^3.0.1"
+    remark-textr "^3.0.0"
+    remark-toc "^4.0.0"
+    typographic-base "^1.0.4"
+    unified-stream "^1.0.0"
+
 abbrev@1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.0.tgz#d0554c2256636e2f56e7c2e5ad183f859428d81f"
