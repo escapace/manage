@@ -69,55 +69,9 @@ verbose()
     fi
 }
 
-__ ()
-{
-    local ___one="$1"
-    shift
-
-
-    case "${___one}" in
-        tag)
-                local s=${1//\//\\/}; shift
-                local e=${1//\//\\/}; shift
-                local c="^[[:space:]]*#[[:space:]]*"
-
-                sed -n "/$c$s/,/$c$e/p" "$@" | sed '1d;$d' | sed "s/$c//"
-            ;;
-        once)
-            ;;
-        underscore)
-            __ namespace "_" "$*"
-            ;;
-        namespace)
-            ;;
-        getsource)
-            ;;
-        includes)
-            ;;
-        process)
-            ;;
-        local)
-            local files
-            files=($(__ process "$@"))
-
-            # for file in "${files[@]}"
-            # do
-            # done
-
-            # for module in "${modules[@]}"
-            # do
-            # done
-
-            ;;
-        import)
-            __ process "$@"
-            ;;
-        esac
-}
-
-
-MANAGE_MODULES=()
+# MANAGE_MODULES=()
 declare -A MANAGE_NAMESPACES
+declare -A MANAGE_MODULES
 
 MANAGE_BOOTSTRAP () {
     local namespace
@@ -144,7 +98,7 @@ MANAGE_CREATE_NAMESPACE () {
     local manage_namespace="$1"
     local manage_namespace_source="$2"
 
-    echo "${manage_namespace_source}"
+    # echo "${manage_namespace_source}"
     # "${manage_namespace}" "$@" || return $?
     # return $?
 
@@ -189,30 +143,13 @@ MANAGE_NAMESPACE () {
     MANAGE_NAMESPACES[$module_namespace]+="$(MANAGE_SOURCE "$module_file")"$'\n'
 }
 
-MANAGE_IMPORTED () {
-    local seeking=$1
-    local element
-    for element in "${MANAGE_MODULES[@]}"
-    do
-        if [[ "${element}" == "${seeking}" ]]; then
-            return 0
-            break
-        fi
-    done
-    return 1
-}
-
 MANAGE_TAG ()
 {
 
-    local s=${1//\//\\/}; shift
-    local re="^[#]\+[ \t]*@$s "
-    local c="#[[:space:]]*#[[:space:]]*"
-
-    sed -n "/$re/p" "$@" |
-    sed "s/$re//" |
-    sed '/^[[:space:]]\+$/s/.*//g' | cat -s |
-    sed ':a;$!{N;ba;};s/^[[:space:]]*\n//;s/\n[[:space:]]*$//'
+    #TODO: import name regex
+    local tag=${1//\//\\/}; shift
+    local regex="^[#]\+[ \t]*@${tag} \(.*\)$"
+    sed -n "s/${regex}/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
 }
 
 MANAGE_IMPORT () {
@@ -230,37 +167,41 @@ MANAGE_IMPORT () {
     local scripts=($@)
     local namespace
 
+    # TODO: performance
+    # TODO: other namespaces
     while read -d '' -r file
     do
-        for script in ${scripts[*]}
+        for script in "${scripts[@]}"
         do
-            if [[ "${file}" =~ ${script}$ ]] &&
+            if [[ -z "${MANAGE_MODULES["${script}"]}" ]] &&
+               [[ "${file}" =~ ${script}$ ]] &&
                [[ "$(head -n 1 "${file}")" =~ ${bashmagic} ]] &&
-               [[ -f "${file}" ]]
+               [[ "$(basename "${file}")" =~ ^[-a-zA-Z_]*$ ]]
             then
-                if ! MANAGE_IMPORTED "${file}"
+                imports+=($(MANAGE_TAG import "${file}"))
+                MANAGE_MODULES["${script}"]="${file}"
+                cd "$(dirname "${file}")"
+
+                if [[ "${mode}" == "underscore" ]]
                 then
-                    imports+=($(MANAGE_TAG import "${file}"))
-                    MANAGE_MODULES+=("${file}")
-                    cd "$(dirname "${file}")"
-
-                    if [[ "${mode}" == "underscore" ]]
+                    if [[ "${file}" =~ ^${MANAGEDIRECTORY}/modules ]]
                     then
-                        if [[ "${file}" =~ ^${MANAGEDIRECTORY}/modules ]]
-                        then
-                            #TODO: other namespaces
-                            namespace="MANAGE_NAMESPACE_DEFAULT"
-                        fi
-
-                        MANAGE_NAMESPACE "${namespace}" "${file}" || ( echo "Failed to import \'${file}\'" && exit 1 )
-                    elif [[ "${mode}" == "local" ]]
-                    then
-                        source "${file}" || ( echo "Failed to import \'${file}\'" && exit 1 )
+                        namespace="MANAGE_NAMESPACE_DEFAULT"
                     fi
+
+                    MANAGE_NAMESPACE "${namespace}" "${file}" || ( echo "Failed to import '${file}'" && exit 1 )
+                elif [[ "${mode}" == "local" ]]
+                then
+                    source "${file}" || ( echo "Failed to import '${file}'" && exit 1 )
                 fi
             fi
         done
     done < <(find "${paths[*]}" -type f -print0)
+
+    for script in "${scripts[@]}"
+    do
+        [ -z "${MANAGE_MODULES["${script}"]}" ] && ( echo "Failed to import '${script}'" && exit 1 )
+    done
 
     if [ ! ${#imports[@]} -eq 0 ]
     then
@@ -319,6 +260,7 @@ MANAGE_MAIN ()
 
 MANAGE_RETURN ()
 {
+    # TODO: rename to onExit
     local _code=${1:-0}
     if declare -f "onexit" > /dev/null 2>&1
     then
@@ -330,10 +272,18 @@ MANAGE_RETURN ()
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
 then
+    MANAGE_IMPORT_ARRAY=(${MANAGEIMPORT})
+
     strict true
-    MANAGE_UNDERSCORE "${MANAGEIMPORT[*]}"
-    MANAGE_BOOTSTRAP
-    [ -n "${MANAGESCRIPTPATH}" ] && source "${MANAGESCRIPTPATH}"
+
+    if [ ! ${#MANAGE_IMPORT_ARRAY[@]} -eq 0 ]
+    then
+        MANAGE_UNDERSCORE "${MANAGE_IMPORT_ARRAY[@]}"
+        MANAGE_BOOTSTRAP
+    fi
+
+    [ -n "${MANAGESCRIPTPATH}" ] &&
+    source "${MANAGESCRIPTPATH}"
     MANAGE_MAIN "$@"
 else
     strict true
@@ -375,8 +325,11 @@ else
 
     LC_ALL=C
 
-    MANAGE_LOCAL manage/checkFileDependencies
+    SCRIPTPATHS=()
+    SCRIPTNAMES=()
+
+    MANAGE_LOCAL manage/checkFileDependencies manage/collectScripts
 
     checkFileDependencies "${MANAGEDIRECTORY}/libexec/manage"
-    # collectscripts "$@"
+    collectScripts "$@"
 fi
