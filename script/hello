@@ -2,12 +2,7 @@
 #
 # vim: set ft=sh:
 #
-# <doc>
-#
-# Basic manage script
-#
-# </doc>
-#
+# @description Hello World
 # @import console/warn
 # @import console/error
 #
