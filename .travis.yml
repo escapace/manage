@@ -1,8 +1,7 @@
 language: bash
 services: docker
 script:
-- bin/manage shellcheck
-- bin/manage assemble
+- bin/manage lint
 branches:
   only:
     - master
