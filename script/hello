@@ -8,20 +8,10 @@
 #
 # </doc>
 #
-# <import>
+# @import console/warn
+# @import console/error
 #
-# collection-shell
-# collection-message
-# collection-string
-#
-# </import>
-#
-# <dependency>
-#
-# bash
-#
-# </dependency>
-
+# @dependency bash
 
 main ()
 {
