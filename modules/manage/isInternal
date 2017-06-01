@@ -9,6 +9,6 @@ isInternal ()
 
     local internal
     # shellcheck disable=SC2034
-    internal=("help" "_manage_help" "completion" "_manage_completion" "shellcheck" "_manage_shellcheck")
+    internal=("help" "_manage_help" "completion" "_manage_completion" "lint" "_manage_lint")
     includes internal "$1"
 }
