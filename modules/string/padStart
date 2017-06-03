@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# @import lang/required
+# @import string/createPadding
+
+padStart ()
+{
+    required "$1" || return 1
+
+    local string="$1"
+    local length="${2-"4"}"
+    local chars=${3:-" "}
+    local stringLength="${#string}"
+    local padding
+
+    if [[ "${stringLength}" -ge "${length}" ]]
+    then
+        echo "${string}"
+    else
+        padding="$(createPadding $(( length - stringLength  )) "${chars}")"
+        echo "${padding}${string}"
+    fi
+}

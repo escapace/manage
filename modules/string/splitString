@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @import string/trim
 
-split()
+splitString ()
 {
     #
     # Split text from stdin into a list.
@@ -15,14 +15,15 @@ split()
     #     echo "foo|bar|baz"   | split "|"  #==> foo\nbar\nbaz
     #
 
-    local delim=${1:-,}
+    local defaultDelimter=$','
+    local delimiter=${1:-${defaultDelimter}}
     local str
 
     while read -r; do
-        OIFS=$IFS; IFS=$delim
+        OIFS=$IFS; IFS=$delimiter
         for str in $REPLY; do
             IFS=$OIFS
-            trim <<<"$str"
+            trim "${str}"
         done
     done
 }

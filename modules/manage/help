@@ -57,10 +57,15 @@ help () (
 
     table () {
         title "$1"
-        echo  "$2"           |
-        wrap "${textWidth}" |
-        tr -s '\n'           |
-        sed   "2,\${s/^/${paragraph}/}"
+        local desc
+
+        desc="$(
+            wrap "${2}" "${textWidth}" |
+            tr -s '\n' |
+            sed   "2,\${s/^/${paragraph}/}"
+        )"
+
+        echo "${desc}"
     }
 
     description () {

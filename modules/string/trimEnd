@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # @dependency sed
+# @import lang/required
+# shellcheck disable=SC2001
 
 trimEnd()
 {
     #
     # Removes all trailing whitespace (from the right).
     #
+    required "$1" || return 1
 
-    local char=${1:-[:space:]}
-    sed "s%[${char//%/\\%}]*$%%"
+    local char=${2:-[:space:]}
+    echo "${1}" | sed "s%[${char//%/\\%}]*$%%"
 }

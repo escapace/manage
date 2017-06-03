@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# @dependency sed
+# @import array/join
+# @import lang/required
+# @import string/upper
+# @import string/words
+# shellcheck disable=SC2034
+
+upperCase ()
+{
+    #
+    # Converts string to camel case.
+    #
+    required "$1" || return 1
+
+    local OIFS="${IFS}"
+    local arguments=("$@")
+    local string
+    local words=()
+    local i
+    local result
+
+    IFS=$' -_'
+
+    string=($(words "$(join arguments ' ')" | sed 's/\([a-z0-9]\)\([A-Z]\)/\1_\L\2/g'))
+
+    for word in "${string[@]}"
+    do
+        [ -n "${word}" ] && words+=("$(upper "${word}")")
+    done
+
+    IFS="${OIFS}"
+
+    join words " "
+}

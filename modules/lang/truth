@@ -15,7 +15,7 @@ truth()
     #     truth spam   #==> false
     #
 
-    case $(lower <<<"$1") in
+    case $(lower "$1") in
         yes|y|true|t|on|1) return 0 ;;
     esac
     return 1

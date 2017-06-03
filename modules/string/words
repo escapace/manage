@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# @dependency sed
+# @import lang/required
+# @import string/squeeze
+# shellcheck disable=SC2001
+
+words ()
+{
+    #
+    # Converts string to camel case.
+    #
+    required "$1" || return 1
+
+    squeeze "$(echo "$1" | sed 's/[^a-zA-Z.]/ /g')"
+}
