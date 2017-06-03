@@ -1,0 +1,11 @@
+scripts: script
+strict: true
+default: help
+dependencies:
+  - bash
+  - awk
+env:
+  bla: bla
+  ipi: ipa
+one: asd zxc qwe
+two: "asd" "zxc" "qwe"
