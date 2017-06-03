@@ -8,6 +8,7 @@ branches:
     - master
     - staging
     - development
+    - next
     - /^v?\d+\.\d+\.\d+$/
     - /^\d+\.\d+\.\d+$/
     - /^new-.*$/
