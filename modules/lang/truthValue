@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @import string/truthEcho
+# @import lang/truthEcho
 
 truthValue()
 {

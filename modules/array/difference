@@ -8,10 +8,8 @@ difference () {
         return 1
 
     local A="$1[@]"
-    local B="$2[@]"
     local AcB=()
     local itema
-    local itemb
 
     for itema in "${!A}"; do
         if ! includes "$2" "${itema}"

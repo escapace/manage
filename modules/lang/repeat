@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # @dependency seq
+# @import lang/required
+# shellcheck disable=SC2034
 
 repeat()
 {
@@ -7,8 +9,11 @@ repeat()
     # Repeat a command a given number of times.
     #
 
+    required "${1}" || return 1
+
     local count=$1; shift
     local i
+
     for i in $(seq 1 "${count}"); do
         "$@"
     done

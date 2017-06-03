@@ -136,7 +136,6 @@ MANAGE_SOURCE () {
 }
 
 MANAGE_NAMESPACE () {
-    local module_source
     local module_namespace="$1"
     local module_file="$2"
 
@@ -156,9 +155,8 @@ MANAGE_IMPORT () {
     [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/modules")
 
     local bashmagic="^(#!){1}.*(bash){1}.*"
-    local cwd="$(pwd)"
+    local cwd
     local file
-    local import
     local imports=()
     local mode="$1"
     shift
@@ -166,6 +164,8 @@ MANAGE_IMPORT () {
     local script
     local scripts=($@)
     local namespace
+
+    cwd="$(pwd)"
 
     # TODO: performance
     # TODO: other namespaces
@@ -248,10 +248,10 @@ MANAGE_MAIN ()
     fi
     if declare -f "${_function}" > /dev/null 2>&1
     then
-        trap 'MANAGE_ONCE MANAGE_RETURN $?' INT HUP TERM KILL QUIT EXIT
+        trap 'MANAGE_ONCE MANAGE_RETURN $?' INT HUP TERM QUIT EXIT
         "${_function}" "$@"
         _code=$?
-        trap - INT HUP TERM KILL QUIT EXIT ERR
+        trap - INT HUP TERM QUIT EXIT ERR
     fi
 
     MANAGE_ONCE MANAGE_RETURN "${_code}"
