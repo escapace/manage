@@ -11,7 +11,6 @@ MANAGE_UNDERSCORE \
     array/indexOf \
     array/intersection \
     array/join \
-    array/union \
     array/union
 
 MANAGE_BOOTSTRAP
