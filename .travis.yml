@@ -1,6 +1,7 @@
 language: bash
 services: docker
 script:
+- bin/manage test
 - bin/manage lint
 branches:
   only:
