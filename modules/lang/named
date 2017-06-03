@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# @import lang/required
 
 named()
 {
@@ -22,6 +23,8 @@ named()
     #
     # Which eliminates the need for an intermediate variable.
     #
+
+    required "$1" || return 1
 
     echo "${!1}"
 }

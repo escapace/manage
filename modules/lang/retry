@@ -7,29 +7,18 @@ retry ()
     required "$1" "$2" || return 1
 
     local tries="$1"
-    shift
-    local code="1"
-    local result
+    local func="$2"
+    shift 2
+    local code
 
-    (
-        strict false
-        while true
-        do
-            result="$("$@")"
-            code="$?"
+    while [ "${tries}" != 0 ]
+    do
+        "${func}" "$@" && code=$? || code=$?
 
-            (( tries-- )) || true
-            if [[ "${tries}" -le 0 ]] ||
-               [[ "${code}" == "0" ]]
-            then
-                break
-            fi
-        done
+        [[ "${code}" = 0 ]] && break
 
-        [[ "${code}" == "0" ]] &&
-        [[ ! -z "${result}" ]] &&
-        echo "${result}"
+        tries=$((tries - 1))
+    done
 
-        return "${code}"
-    )
+    return "${code}"
 }

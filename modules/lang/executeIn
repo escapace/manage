@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # @import lang/execute
+# @import lang/required
 
 executeIn()
 {
@@ -8,6 +9,7 @@ executeIn()
     #
     # Usage: executeIn DIRECTORY [COMMAND...]
     #
+    required "${1}" "${2}" || return 1
 
     local error
     local OPWD=$PWD

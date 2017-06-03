@@ -13,6 +13,9 @@ main ()
     local paths
     local exitCode=0
 
+    # if required "$1"
+    # then
+    #     paths=($@)
     if [[ "${MANAGEREPOSITORY}" == "${MANAGEDIRECTORY}" ]]
     then
         paths=(${MANAGEIMPORTPATHS[@]} "${MANAGESCRIPTDIRECTORY}")

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# @import lang/required
 
 execute()
 {
@@ -7,6 +8,7 @@ execute()
     #
     # Usage: execute [ARGUMENT...]
     #
+    required "${1}" || return 1
 
     bash --norc --noprofile -c "$@" || return $?
 }
