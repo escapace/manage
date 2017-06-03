@@ -8,9 +8,9 @@ main ()
     help "$1"
 }
 
-completion () {
-    if (( $# == 0 ))
-    then
-        scriptEach filter scriptDescription
-    fi
-}
+# completion () {
+#     if (( $# == 0 ))
+#     then
+#         scriptEach filter scriptDescription
+#     fi
+# }

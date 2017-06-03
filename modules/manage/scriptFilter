@@ -5,17 +5,17 @@ scriptFilter () {
     local script
     local path
 
-    script="${SCRIPTNAMES[$1]}"
-    path="${SCRIPTPATHS[$1]}"
+    script="${SCRIPTNAMES[$2]}"
+    path="${SCRIPTPATHS[$2]}"
 
     if [[ "${script:0:1}" == "_" ]]
     then
         if includes MANAGEPUBLIC "${script:8}"
         then
-            "$2" "${path}"
+            "$3" "${path}"
         fi
     elif [[ "${script}" != "completion" ]]
     then
-        "$2" "${path}"
+        "$3" "${path}"
     fi
 }
