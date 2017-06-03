@@ -118,12 +118,14 @@ test_runtime () {
         exports+="MANAGETESTDIRECTORY=\"${MANAGETESTDIRECTORY}\" "
         exports+="SHARNESS_TEST_DIRECTORY=\"${MANAGETESTDIRECTORY}\" "
         exports+="SHARNESS_RESULT=\"${resultFile}\" "
+        exports+="SHARNESS_TRASH_DIRECTORY=\"${tmpDir}/trash\" "
     fi
 
     exports+="MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
     MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\""
 
-    commandString="$(echo "${exports} && ${sharness} && ${testSource}" | tr '\n' ' ' | _ squeeze )"
+    commandString="$(echo "${exports} && ${sharness} && ${testSource}" | tr '\n' ' ')"
+    commandString="$(_ squeeze "${commandString}")"
 
     "bash"                  \
     "--norc"                \
