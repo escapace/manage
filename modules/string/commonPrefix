@@ -28,7 +28,7 @@ commonPrefix()
         unset compare
         while true; do
             [[ ${REPLY:$i:1} || ${prefix:$i:1} ]] || break
-            [[ ${REPLY:$i:1} != ${prefix:$i:1} ]] && break
+            [[ ${REPLY:$i:1} != "${prefix:$i:1}" ]] && break
             compare+=${REPLY:$((i++)):1}
         done
         prefix=$compare

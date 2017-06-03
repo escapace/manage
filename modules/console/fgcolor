@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# @import string/lower
-# @dependency sed
 
 fgcolor() {
   local __end='\033[39m'

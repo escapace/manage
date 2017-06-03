@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# @import string/trimLines
 # @dependency sed cat
+# @import array/join
+# @import lang/required
+# @import string/trimLines
+# shellcheck disable=SC2034
 
 squeezeLines()
 {
@@ -9,5 +12,9 @@ squeezeLines()
     # consecutive blank lines into a single blank line.
     #
 
-    sed '/^[[:space:]]\+$/s/.*//g' | cat -s | trimLines
+    required "$1" || return 1
+
+    local arguments=("$@")
+
+    trimLines "$(join arguments '\n')" | sed '/^[[:space:]]\+$/s/.*//g' | cat -s
 }

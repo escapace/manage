@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 # @dependency tr
+# @import array/join
+# @import lang/required
+# shellcheck disable=SC2034
 
 lower()
 {
     #
-    # Convert stdin to lowercase.
+    # Convert string to lowercase.
     #
+    required "$1" || return 1
 
-    tr '[:upper:]' '[:lower:]'
+    local arguments=("$@")
+
+    join arguments ' ' | tr '[:upper:]' '[:lower:]'
 }

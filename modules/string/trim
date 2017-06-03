@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # @import string/trimEnd
 # @import string/trimStart
+# @import lang/required
 
 trim()
 {
@@ -10,7 +11,10 @@ trim()
     # Usage examples:
     #     echo "  foo  bar baz " | trim  #==> "foo  bar baz"
     #
+    required "$1" || return 1
 
-    trimStart "$1" | trimEnd "$1"
+    local char=${2:-[:space:]}
+
+    trimStart "$(trimEnd "$1" "${char}")" "${char}"
 }
 

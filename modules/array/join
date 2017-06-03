@@ -17,3 +17,27 @@ join ()
     echo "${!array}"
     IFS="${OIFS}"
 }
+
+# join ()
+# {
+#     # required "$1" ||
+#     #     return 1
+#
+#     local i
+#     local currentArrayName="$1[*]"
+#     local currentArray=(${!currentArrayName})
+#     local currentArrayLength="${#currentArray[@]}" 
+#     local lastIndex=$((currentArrayLength - 1))
+#     local delimiter
+#     delimiter="$(echo -ne "${2:-$'\n'}")"
+#
+#     for ((i = 0; i < "${currentArrayLength}"; ++i))
+#     do
+#         if [[ "${i}" = "${lastIndex}" ]]
+#         then
+#             echo -ne "${currentArray[$i]}"
+#         else
+#             echo -ne "${currentArray[$i]}${delimiter}"
+#         fi
+#     done
+# }

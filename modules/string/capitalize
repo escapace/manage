@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
-# @import string/lower
 # @dependency sed
+# @import array/join
+# @import string/lower
+# @import lang/required
+# shellcheck disable=SC2034
 
 capitalize ()
 {
     #
-    # Convert stdin to titlecase.
+    # Converts the first character of string to upper case and the remaining to lower case.
     #
+    required "$1" || return 1
 
-    lower | sed 's/\<./\u&/g' |
-    sed "s/'[[:upper:]]/\L&\l/g"
-
+    local arguments=("$@")
+    local string
+    string="$(lower "$(join arguments ' ')")"
+    echo "${string^}"
 }
 
