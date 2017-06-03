@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # @import array/includes
-# @import yaml/yaml
-# @import manage/checkDependencies
+# @import manage/yaml
 
 parseYAML () {
     eval "$(yaml "${MANAGEREPOSITORY}/.manage.yml" "yml")"

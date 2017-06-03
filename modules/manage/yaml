@@ -46,6 +46,7 @@ yaml() {
         sed 's/[a-zA-Z0-9_]\+[\+\=]/\L&/g'
     )"
 
+    local variables
     local variable
     local result
 
@@ -54,10 +55,12 @@ yaml() {
                 sed 's/=.*$//'  |
                 sort -u))
 
-
     result="$(
-        echo "${2} () {" \
-        'local __keys=('"$(join variables ' ')"')'
+        echo "${2} () (" &&
+        echo -e "$(declare -f required)" "\n" \
+        "$(declare -f join)" "\n" &&
+        echo 'local __keys=('"$(join variables ' ')"')'
+        echo
         if (( ${#variables[@]} != 0 ))
         then
             for variable in "${variables[@]}"
@@ -70,7 +73,8 @@ yaml() {
         # shellcheck disable=SC2016
         echo '[[ ! -v "$1" ]] && return 1'
         echo "join \"\$1\" \"\$2\""
-        echo '}'
+        echo ')'
     )"
+
     echo "${result}"
 }
