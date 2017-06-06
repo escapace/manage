@@ -10,6 +10,7 @@
 # @dependency comm
 # @dependency sed
 # @dependency find
+# shellcheck disable=SC1090,SC2016
 
 if ((BASH_VERSINFO[0] >= 4)) &&
    ((BASH_VERSINFO[1] >= 2))
@@ -69,78 +70,54 @@ verbose()
     fi
 }
 
-# MANAGE_MODULES=()
+declare -A MANAGE_MODULE_NAMES
 declare -A MANAGE_NAMESPACES
 declare -A MANAGE_MODULES
 
 MANAGE_BOOTSTRAP () {
     local namespace
-    for namespace in "${!MANAGE_NAMESPACES[@]}"
-    do
-        MANAGE_CREATE_NAMESPACE "${namespace}" "${MANAGE_NAMESPACES[$namespace]}"
-    done
-}
 
-_ () {
-    local manage_namespace
-    if [[ "$1" =~ ^@ ]]
-    then
-        true
-        shift
-    else
-        manage_namespace="MANAGE_NAMESPACE_DEFAULT"
-    fi
+    eval "$(
+        echo 'MANAGE_RUNTIME () (
+        strict true
+        '
 
-    "${manage_namespace}" "$@"
-}
+        for namespace in "${!MANAGE_NAMESPACES[@]}"
+        do
+            echo "${MANAGE_NAMESPACES[$namespace]}"
+        done
 
-MANAGE_CREATE_NAMESPACE () {
-    local manage_namespace="$1"
-    local manage_namespace_source="$2"
-
-    # echo "${manage_namespace_source}"
-    # "${manage_namespace}" "$@" || return $?
-    # return $?
-
-    eval '
-        '"${manage_namespace}"' () (
-            strict true
-
-            '"${manage_namespace_source}"'
-
+        echo '
             local ___func="$1"
             shift
 
-            "${___func}" "$@" || return $?
-            return $?
-        )'
+            if [[ "$(type -t "${___func}")" = "function" ]]
+            then
+                "${___func}" "$@" || return $?
+                return $?
+            else
+                return 1
+            fi
+        )
+        '
+    )"
 }
 
-MANAGE_SOURCE () {
-    (
-        local f
-        local fns
-        local fone
-        local ftwo
-        local script="$1"
-        fone="$(compgen -A function | sort)"
-        source "${script}"
-        ftwo="$(compgen -A function | sort)"
-        fns=($(comm -13 <(echo "${fone}") <(echo "${ftwo}")))
-
-        for f in "${fns[@]}"
-        do
-            declare -f "${f}"
-        done
-    )
+_ () {
+    if [[ -n "${1}" ]] &&
+       [[ -n "${MANAGE_MODULE_NAMES["${1}"]}" ]]
+    then
+        MANAGE_RUNTIME "$@"
+    else
+        # TODO: error message ?
+        return 1
+    fi
 }
 
-MANAGE_NAMESPACE () {
-    local module_namespace="$1"
-    local module_file="$2"
-
-    MANAGE_NAMESPACES[$module_namespace]+="$(MANAGE_SOURCE "$module_file")"$'\n'
-}
+MANAGE_SOURCE () (
+    source "${1}"
+    declare -f "${2}"
+)
 
 MANAGE_TAG ()
 {
@@ -154,6 +131,7 @@ MANAGE_TAG ()
 MANAGE_IMPORT () {
     [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/modules")
 
+    local name
     local bashmagic="^(#!){1}.*(bash){1}.*"
     local cwd
     local file
@@ -168,7 +146,6 @@ MANAGE_IMPORT () {
     cwd="$(pwd)"
 
     # TODO: performance
-    # TODO: other namespaces
     while read -d '' -r file
     do
         for script in "${scripts[@]}"
@@ -184,15 +161,24 @@ MANAGE_IMPORT () {
 
                 if [[ "${mode}" == "underscore" ]]
                 then
-                    if [[ "${file}" =~ ^${MANAGEDIRECTORY}/modules ]]
+                    name="$(basename "${script}")"
+
+                    if [[ -z "${MANAGE_MODULE_NAMES["${name}"]}" ]]
                     then
-                        namespace="MANAGE_NAMESPACE_DEFAULT"
+                        MANAGE_MODULE_NAMES["${name}"]="${script}"
+                    else
+                        echo "Namespace collision '${script}' & '${MANAGE_MODULE_NAMES["${name}"]}'" && exit 1
                     fi
 
-                    MANAGE_NAMESPACE "${namespace}" "${file}" || ( echo "Failed to import '${file}'" && exit 1 )
+                    # TODO: other namespaces
+                    if [[ "${file}" =~ ^${MANAGEDIRECTORY}/modules ]]
+                    then
+                        MANAGE_NAMESPACES["manage"]+="$(MANAGE_SOURCE "${file}" "${name}")"$'\n' ||
+                            ( echo "Failed to import '${script}'" && exit 1 )
+                    fi
                 elif [[ "${mode}" == "local" ]]
                 then
-                    source "${file}" || ( echo "Failed to import '${file}'" && exit 1 )
+                    source "${file}" || ( echo "Failed to import '${script}'" && exit 1 )
                 fi
             fi
         done

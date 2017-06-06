@@ -209,44 +209,4 @@ expectSuccess 'wrap' '
     [ "$result" = "${expected}" ]
 '
 
-# letters="[a-zA-Z]"
-# numbers='[0-9]'
-#
-# MYVAR=ho02123ware38384you443d34o3434ingtod38384day
-# MYVAR="${MYVAR//${letters}/X}"
-# echo ${MYVAR//${numbers}/N}
-
-
-#
-# @test "Collection-string: Common Suffix" {
-#   result="$(echo -e "foobar\nbabar" | _ commonsuffix)"
-#   [ "$result" = "bar" ]
-# }
-
-# @test "Collection-string: Detox" {
-#   result="$(echo -e " qwe%&^" | _ detox)"
-#   [ "$result" = "qwe" ]
-# }
-#
-
-# expectSuccess "Success is reported like this" "
-#     echo hello world | grep hello
-# "
-#
-# expectSuccess "Commands are chained this way" "
-#     test x = 'x' &&
-#     test 2 -gt 1 &&
-#     echo success
-# "
-#
-# return_42() {
-#     echo "Will return soon"
-#     return 42
-# }
-#
-#
-# expectFailure "We expect this to fail" "
-#     test 1 = 2
-# "
-
 finish

@@ -1,18 +1,36 @@
 #!/usr/bin/env bash
+# @import lang/required
+# @import string/wrap
+# @import console/fgcolor
+# @dependency sed
+# shellcheck disable=SC2034,SC2016
 
-log()
+log ()
 {
     #
     # Will only echo the first argument if verbose mode is disabled.
     # Otherwise, echo the all arguments.
     #
-    # Usage: log [TRUE_VALUE] [FALSE_VALUE]
-    #
+
+    required "$1" || return 1
+
+    local message
+    local arrow
+    local level
+
+    arrow="$(attribute bold "$(fgcolor blue '>')$(fgcolor)")$(attribute)"
+    level="$(attribute bold "$(fgcolor blue 'LOG')$(fgcolor)")$(attribute)"
 
     if verbose
     then
-        echo "$@"
+        local arguments=("$@")
+        message="$(join arguments $'\n\n')"
     else
-        echo "$1"
+        message="$1"
     fi
+
+    message="${message//$HOME/\~}"
+
+    echo -n "${level} "
+    wrap "${message}" 76 | sed "2,\${s/^/${arrow} /}"
 }
