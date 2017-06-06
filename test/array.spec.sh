@@ -15,11 +15,15 @@ MANAGE_UNDERSCORE \
 
 MANAGE_BOOTSTRAP
 
+
 expectSuccess "join" '
     arr=("a sd" "qwe" "z xc")
     expected="a sd|qwe|z xc"
+    expectedTwo="a sd||qwe||z xc"
     result="$(_ join arr "|")"
-    [ "${result}" = "${expected}" ]
+    resultTwo="$(_ join arr "||")"
+    [ "${result}" = "${expected}" ] &&
+    [ "${resultTwo}" = "${expectedTwo}" ]
 '
 
 expectSuccess "includes" '

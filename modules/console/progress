@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # @dependency tput
 # @dependency seq
+# shellcheck disable=SC2154
 
 progress() {
-  [[ -z $SHML_PROGRESS_WIDTH ]]    && SHML_PROGRESS_WIDTH=60
-  [[ -z $SHML_PROGRESS_BREAK ]]    && SHML_PROGRESS_BREAK=true
-  [[ -z $SHML_PROGRESS_CLEAR ]]    && SHML_PROGRESS_CLEAR=false
-  [[ -z $SHML_PROGRESS_NOCURSOR ]] && SHML_PROGRESS_NOCURSOR=true
+  [[ -z $MANAGE_PROGRESS_WIDTH ]]    && MANAGE_PROGRESS_WIDTH=60
+  [[ -z $MANAGE_PROGRESS_BREAK ]]    && MANAGE_PROGRESS_BREAK=true
+  [[ -z $MANAGE_PROGRESS_CLEAR ]]    && MANAGE_PROGRESS_CLEAR=false
+  [[ -z $MANAGE_PROGRESS_NOCURSOR ]] && MANAGE_PROGRESS_NOCURSOR=true
   # defaults
   local __title="Progress"
   local __steps=10
@@ -17,10 +18,10 @@ progress() {
   [[ ! -z $2 ]] && __steps=$2
   [[ ! -z $3 ]] && __char="$3"
 
-  local __width=${SHML_PROGRESS_WIDTH}
-  local __break=${SHML_PROGRESS_BREAK}
-  local __clear=${SHML_PROGRESS_CLEAR}
-  local __ncursor=${SHML_PROGRESS_NOCURSOR}
+  local __width=${MANAGE_PROGRESS_WIDTH}
+  local __break=${MANAGE_PROGRESS_BREAK}
+  local __clear=${MANAGE_PROGRESS_CLEAR}
+  local __ncursor=${MANAGE_PROGRESS_NOCURSOR}
   local __pct=0
   local __num=0
   local __len=0
@@ -39,7 +40,7 @@ progress() {
     fi
   fi
 
-  while read __value; do
+  while read -r __value; do
     # compute pct
     __pct=$(( __value * 100 / __steps ))
 
@@ -68,4 +69,5 @@ progress() {
 
   # show cursor again
   test "$(which tput)" && $__ncursor && tput cnorm
+  return 0
 }

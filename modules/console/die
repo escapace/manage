@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @import console/error
 
-die()
+die ()
 {
     #
     # Displays an error message and exits with the given error code.
