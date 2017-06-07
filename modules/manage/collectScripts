@@ -66,14 +66,14 @@ proceedWithRepository ()
             shift
         fi
 
-        processScriptOrDirectory "${MANAGE_DIRECTORY}/script" "_manage_"
+        processScriptOrDirectory "${MANAGE_DIRECTORY}/scripts" "_manage_"
 
         parseYAML
 
         if [[ ${MANAGE_REPOSITORY} != "${MANAGE_DIRECTORY}" ]]
         then
-            processScriptOrDirectory "${MANAGE_REPOSITORY}/${MANAGE_SCRIPT_DIRECTORY}" ||
-                die "Cannot find ${MANAGE_REPOSITORY}/${MANAGE_SCRIPT_DIRECTORY}, aborting."
+            processScriptOrDirectory "${MANAGE_SCRIPT_DIRECTORY}" ||
+                die "Cannot find ${MANAGE_SCRIPT_DIRECTORY}, aborting."
         fi
 
         run "$@"
@@ -87,7 +87,8 @@ processScriptOrDirectory () {
     then
         for file in "$1"/* "$1"/**/*
         do
-            if  [[ "$(dirname "${file}")" != "${MANAGE_TEST_DIRECTORY}" ]]
+            if [[ "$(dirname "${file}")" != "${MANAGE_TEST_DIRECTORY}" &&
+                  "$(dirname "${file}")" != "${MANAGE_MODULE_DIRECTORY}" ]]
             then
                 processSingleScript "${file}" "$2" || true
             fi
