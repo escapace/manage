@@ -5,15 +5,14 @@
 parseYAML () {
     eval "$(yaml "${MANAGE_REPOSITORY}/.manage.yml" "yml")"
 
-    MANAGE_SCRIPT_DIRECTORY="$(yml scripts || echo script)"
+    MANAGE_SCRIPT_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_script || echo scripts)"
+    MANAGE_MODULE_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_module || echo "scripts/modules")"
 
     [ -z "${MANAGEPUBLIC}" ] &&
         MANAGEPUBLIC=($(yml enable || echo -e "help\ntest"))
 
     if includes MANAGEPUBLIC "test"
     then
-        MANAGE_TEST_DIRECTORY="${MANAGE_REPOSITORY}/$(yml test_tests || echo "script/test")"
+        MANAGE_TEST_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_test || echo "scripts/tests")"
     fi
-
-    checkDependencies "$(yml dependencies || echo)"
 }

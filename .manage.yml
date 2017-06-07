@@ -1,29 +1,14 @@
-# Relative path to the script directory
-scripts: script
-modules: modules
+directories:
+  script: scripts
+  module: modules
+  test: test
 
 # Default script to execute
 default: help
 
-# Check for the following dependencies in PATH
-# dependencies:
-#   - bash
-#   - awk
-#   - sed
-#   - tr
-#   - head
-
 # Environment variables
 env:
   HELLO: "Hello World!"
-
-#
-# script: test
-#
-# Relative path to the test directory
-
-test:
-  tests: test
 
 #
 # script: versions
