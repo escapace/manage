@@ -15,7 +15,7 @@ getcompletions () {
     else
         name="$1"
         #shellcheck disable=SC2034
-        MANAGECOMPLETION="true"
+        MANAGE_COMPLETION="true"
         if _ includes MANAGEPUBLIC "${name}"
         then
             swaprun "$@"

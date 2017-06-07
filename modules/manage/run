@@ -86,12 +86,12 @@ executeScript () {
     then
         source "${path}"
 
-        if [ -n "${MANAGECOMPLETION}" ]
+        if [ -n "${MANAGE_COMPLETION}" ]
         then
             if declare -f "completion" > /dev/null 2>&1
             then
                 completion "$@" || code=$?
-                MANAGECOMPLETION=""
+                MANAGE_COMPLETION=""
             fi
         else
             main "$@" || code=$?
@@ -117,18 +117,18 @@ executeScript () {
             exports+="MANAGE_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
         fi
 
-        if [ ! -z "${MANAGECOMPLETION}" ]
+        if [ ! -z "${MANAGE_COMPLETION}" ]
         then
-            exports+="MANAGECOMPLETION=\"${MANAGECOMPLETION}\" "
+            exports+="MANAGE_COMPLETION=\"${MANAGE_COMPLETION}\" "
         fi
 
         exports+="$(scriptEnvironment) "
 
         exports+="MANAGE_DIRECTORY=\"${MANAGE_DIRECTORY}\"
                   MANAGE_REPOSITORY=\"${MANAGE_REPOSITORY}\"
-                  MANAGESCRIPTPATH=\"${path}\"
+                  MANAGE_SCRIPT_PATH=\"${path}\"
                   MANAGE_ZERO=\"${MANAGE_ZERO}\"
-                  MANAGEIMPORT=\"$(join imports ' ')\""
+                  MANAGE_IMPORT=\"$(join imports ' ')\""
 
         commandstring="$(echo "${exports} && ${libexec}" | tr '\n' ' ')"
         commandstring="$(squeeze "${commandstring}")"

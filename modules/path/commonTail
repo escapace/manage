@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# @import path/absolutePath
+# @import string/commonSuffix
+# shellcheck disable=SC2119,SC2120
+
+commonTail()
+{
+    #
+    # Gets the common tails of the paths passed on stdin.
+    # Alternatively, paths can be passed as arguments.
+    #
+
+    local path
+
+    # Make sure command line args go to stdin
+    if (( $# > 0 )); then
+        for path in "$@"; do
+            echo "$path"
+        done | commonTail
+        return
+    fi
+
+    local suffix
+    suffix=$(
+        while read -r; do
+            # shellcheck disable=SC2005
+            echo "$(absolutePath "$REPLY")"
+        done | commonSuffix
+    )
+
+    echo "${suffix#*/}"
+}
