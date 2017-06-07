@@ -217,7 +217,7 @@ main ()
     done
 }
 
-onexit ()
+onExit ()
 {
     cd "${CWD}" || exit "$1"
 }
