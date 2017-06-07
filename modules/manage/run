@@ -109,12 +109,12 @@ executeScript () {
         # shellcheck disable=SC2034
         imports=($(MANAGE_TAG "import" "${path}"))
 
-        zero="$(basename "${MANAGEZERO}")"
-        libexec="source \"${MANAGEDIRECTORY}/libexec/manage\""
+        zero="$(basename "${MANAGE_ZERO}")"
+        libexec="source \"${MANAGE_DIRECTORY}/libexec/manage\""
 
-        if [ ! -z "${MANAGETESTDIRECTORY}" ]
+        if [ ! -z "${MANAGE_TEST_DIRECTORY}" ]
         then
-            exports+="MANAGETESTDIRECTORY=\"${MANAGETESTDIRECTORY}\" "
+            exports+="MANAGE_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
         fi
 
         if [ ! -z "${MANAGECOMPLETION}" ]
@@ -124,10 +124,10 @@ executeScript () {
 
         exports+="$(scriptEnvironment) "
 
-        exports+="MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
-                  MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\"
+        exports+="MANAGE_DIRECTORY=\"${MANAGE_DIRECTORY}\"
+                  MANAGE_REPOSITORY=\"${MANAGE_REPOSITORY}\"
                   MANAGESCRIPTPATH=\"${path}\"
-                  MANAGEZERO=\"${MANAGEZERO}\"
+                  MANAGE_ZERO=\"${MANAGE_ZERO}\"
                   MANAGEIMPORT=\"$(join imports ' ')\""
 
         commandstring="$(echo "${exports} && ${libexec}" | tr '\n' ' ')"

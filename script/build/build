@@ -176,20 +176,20 @@ main ()
     local code=0
     local images=()
 
-    cd "${MANAGEDIRECTORY}"   || _ die
+    cd "${MANAGE_DIRECTORY}"   || _ die
     _ truth "${MANAGE_BUILD}" || _ die
 
-    for file in "${MANAGEDIRECTORY}/script/build/docker/Dockerfile".*
+    for file in "${MANAGE_DIRECTORY}/script/build/docker/Dockerfile".*
     do
-        [ -f "${MANAGEDIRECTORY}/Dockerfile" ] &&
-        rm -f "${MANAGEDIRECTORY}/Dockerfile"
+        [ -f "${MANAGE_DIRECTORY}/Dockerfile" ] &&
+        rm -f "${MANAGE_DIRECTORY}/Dockerfile"
 
         image="$(grep FROM "${file}")"
         image="${image#FROM }"
         image="${image//:/-}"
         images+=("${image}")
 
-        cp -f "${file}" "${MANAGEDIRECTORY}/Dockerfile"
+        cp -f "${file}" "${MANAGE_DIRECTORY}/Dockerfile"
 
         build "${image}" || (( ++code ))
     done
@@ -217,8 +217,8 @@ main ()
 
 onexit ()
 {
-    [ -f "${MANAGEDIRECTORY}/Dockerfile" ] &&
-    rm -f "${MANAGEDIRECTORY}/Dockerfile"
+    [ -f "${MANAGE_DIRECTORY}/Dockerfile" ] &&
+    rm -f "${MANAGE_DIRECTORY}/Dockerfile"
 
     # if (( $1 == 0 ))
     # then

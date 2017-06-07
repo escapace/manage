@@ -4,9 +4,8 @@
 
 checkDependencies () {
     local dependencies=($@)
-    local PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
-
     local code
+
     exists "${dependencies[@]}" || code=$?
     if [[ "${code}" -ge 1 ]]
     then

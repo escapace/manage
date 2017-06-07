@@ -110,19 +110,19 @@ test_runtime () {
 
     isCi && flags+=("--no-color")
 
-    sharness="source \"${MANAGEDIRECTORY}/vendor/sharness/sharness.sh\" ${flags[@]}"
+    sharness="source \"${MANAGE_DIRECTORY}/vendor/sharness/sharness.sh\" ${flags[@]}"
     testSource="source \"${file}\""
 
-    if [ ! -z "${MANAGETESTDIRECTORY}" ]
+    if [ ! -z "${MANAGE_TEST_DIRECTORY}" ]
     then
-        exports+="MANAGETESTDIRECTORY=\"${MANAGETESTDIRECTORY}\" "
-        exports+="SHARNESS_TEST_DIRECTORY=\"${MANAGETESTDIRECTORY}\" "
+        exports+="MANAGE_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
+        exports+="SHARNESS_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
         exports+="SHARNESS_RESULT=\"${resultFile}\" "
         exports+="SHARNESS_TRASH_DIRECTORY=\"${tmpDir}/trash\" "
     fi
 
-    exports+="MANAGEDIRECTORY=\"${MANAGEDIRECTORY}\"
-    MANAGEREPOSITORY=\"${MANAGEREPOSITORY}\""
+    exports+="MANAGE_DIRECTORY=\"${MANAGE_DIRECTORY}\"
+    MANAGE_REPOSITORY=\"${MANAGE_REPOSITORY}\""
 
     commandString="$(echo "${exports} && ${sharness} && ${testSource}" | tr '\n' ' ')"
     commandString="$(_ squeeze "${commandString}")"
@@ -140,11 +140,11 @@ test_suite () {
     local file
     local targets=()
 
-    if [ -d "${MANAGETESTDIRECTORY}" ]
+    if [ -d "${MANAGE_TEST_DIRECTORY}" ]
     then
         if _ required "${1}"
         then
-            for file in "${MANAGETESTDIRECTORY}"/*.spec.sh
+            for file in "${MANAGE_TEST_DIRECTORY}"/*.spec.sh
             do
                 if [   -f "${file}" ] &&
                    [   -r "${file}" ] &&
@@ -160,7 +160,7 @@ test_suite () {
             done
             cd "${OPWD}" || exit
         else
-            for file in "${MANAGETESTDIRECTORY}"/*.{spec.sh,t,t.sh}
+            for file in "${MANAGE_TEST_DIRECTORY}"/*.{spec.sh,t,t.sh}
             do
                 if [   -f "${file}" ] &&
                    [   -r "${file}" ] &&
@@ -189,7 +189,7 @@ test_suite () {
                 "$(_ attribute bold "${FAILED_NUMBER}")$(_ attribute end)"
         fi
     else
-        _ die "The directory ${MANAGETESTDIRECTORY} does not exist."
+        _ die "The directory ${MANAGE_TEST_DIRECTORY} does not exist."
     fi
 }
 
@@ -215,9 +215,9 @@ onexit ()
 # completion () {
 #     if (( $# == 0 ))
 #     then
-#         if [ -d "${MANAGETESTDIRECTORY}" ]
+#         if [ -d "${MANAGE_TEST_DIRECTORY}" ]
 #         then
-#             for file in "${MANAGETESTDIRECTORY}"/*.bats
+#             for file in "${MANAGE_TEST_DIRECTORY}"/*.bats
 #             do
 #                 if [   -f "${file}" ] &&
 #                    [   -r "${file}" ] &&

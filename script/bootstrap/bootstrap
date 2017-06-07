@@ -73,7 +73,7 @@ main () {
     local script
     local template
 
-    cwd="$(_managePath "${MANAGEDIRECTORY}")"
+    cwd="$(_managePath "${MANAGE_DIRECTORY}")"
     script="$(_scriptPath "${cwd}" "$(echo "$*" | _ joinLines " ")")"
     test="${script}/test"
 

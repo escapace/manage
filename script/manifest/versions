@@ -134,19 +134,19 @@ main ()
     filter=($@)
     CWD="$(pwd)"
 
-    _ required "${MANAGEREPOSITORY}"                        ||
+    _ required "${MANAGE_REPOSITORY}"                        ||
         _ die
 
-    cd "${MANAGEREPOSITORY}"                                ||
+    cd "${MANAGE_REPOSITORY}"                                ||
         _ die
 
-    [ -f "${MANAGEREPOSITORY}/.manage.yml" ]                ||
-        _ die "${MANAGEREPOSITORY}/.manage.yml does not exist."
+    [ -f "${MANAGE_REPOSITORY}/.manage.yml" ]                ||
+        _ die "${MANAGE_REPOSITORY}/.manage.yml does not exist."
 
     git rev-parse --is-inside-work-tree > /dev/null 2>&1    ||
-        _ die "${MANAGEREPOSITORY} is not a git repository."
+        _ die "${MANAGE_REPOSITORY} is not a git repository."
 
-    eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" yml)"
+    eval "$(_ yaml "${MANAGE_REPOSITORY}/.manage.yml" yml)"
 
     key="$(yml versions_key               || echo "")"
     url="$(yml versions_url               || echo "")"

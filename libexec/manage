@@ -129,7 +129,7 @@ MANAGE_TAG ()
 }
 
 MANAGE_IMPORT () {
-    [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGEDIRECTORY}/modules")
+    [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGE_DIRECTORY}/modules")
 
     local name
     local bashmagic="^(#!){1}.*(bash){1}.*"
@@ -171,7 +171,7 @@ MANAGE_IMPORT () {
                     fi
 
                     # TODO: other namespaces
-                    if [[ "${file}" =~ ^${MANAGEDIRECTORY}/modules ]]
+                    if [[ "${file}" =~ ^${MANAGE_DIRECTORY}/modules ]]
                     then
                         MANAGE_NAMESPACES["manage"]+="$(MANAGE_SOURCE "${file}" "${name}")"$'\n' ||
                             ( echo "Failed to import '${script}'" && exit 1 )
@@ -206,11 +206,11 @@ MANAGE_UNDERSCORE () {
 }
 
 manage () {
-    if [ "${MANAGEREPOSITORY}" == "${MANAGEDIRECTORY}" ]
+    if [ "${MANAGE_REPOSITORY}" == "${MANAGE_DIRECTORY}" ]
     then
-        "${MANAGEDIRECTORY}/libexec/manage" "$@"
+        "${MANAGE_DIRECTORY}/libexec/manage" "$@"
     else
-        "${MANAGEDIRECTORY}/libexec/manage" "${MANAGEREPOSITORY}" "$@"
+        "${MANAGE_DIRECTORY}/libexec/manage" "${MANAGE_REPOSITORY}" "$@"
     fi
 }
 
@@ -223,7 +223,7 @@ MANAGE_ONCE () {
 
 MANAGE_MAIN ()
 {
-    PATH="${MANAGEDIRECTORY}/vendor/bats/libexec:$PATH"
+    PATH="${MANAGE_DIRECTORY}/vendor/bats/libexec:$PATH"
     local _code
     local _function
     if [ -n "${MANAGECOMPLETION}" ]
@@ -304,10 +304,10 @@ else
 
     # shellcheck disable=SC2034
 
-    MANAGECWD="$(absolutedirectorypath .)"
-    MANAGEZERO="$(expandpath "$0")"
-    MANAGELIBEXEC="$(absolutedirectorypath "${MANAGEZERO}")"
-    MANAGEDIRECTORY="$(absolutedirectorypath "${MANAGELIBEXEC}")"
+    MANAGE_CWD="$(absolutedirectorypath .)"
+    MANAGE_ZERO="$(expandpath "$0")"
+    MANAGE_LIBEXEC="$(absolutedirectorypath "${MANAGE_ZERO}")"
+    MANAGE_DIRECTORY="$(absolutedirectorypath "${MANAGE_LIBEXEC}")"
 
     LC_ALL=C
 
@@ -316,6 +316,6 @@ else
 
     MANAGE_LOCAL manage/checkFileDependencies manage/collectScripts
 
-    checkFileDependencies "${MANAGEDIRECTORY}/libexec/manage"
+    checkFileDependencies "${MANAGE_DIRECTORY}/libexec/manage"
     collectScripts "$@"
 fi

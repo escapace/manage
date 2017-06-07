@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2016,SC1090,SC2034
 
-source "${MANAGEDIRECTORY}/bin/manage"
+source "${MANAGE_DIRECTORY}/bin/manage"
 FIXTURES="${SHARNESS_TEST_DIRECTORY}/fixtures"
 
 MANAGE_UNDERSCORE \

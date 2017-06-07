@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 manage () {
-    "${MANAGEDIRECTORY}/libexec/manage" "${MANAGEREPOSITORY}" "$@"
+    "${MANAGE_DIRECTORY}/libexec/manage" "${MANAGE_REPOSITORY}" "$@"
 }
 
 setup() {

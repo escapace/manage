@@ -230,7 +230,7 @@ build ()
             else
                 bash --norc                             \
                      --noprofile                        \
-                     -c "${MANAGEDIRECTORY}/bin/manage build" \
+                     -c "${MANAGE_DIRECTORY}/bin/manage build" \
                      2>&1                               |
                      getsink                           ||
                      return $?
@@ -311,7 +311,7 @@ processmanifest () {
     local manifest="$1"
     if _ includes Builds "edge"
     then
-        put "${MANAGEREPOSITORY}" "edge" "edge" "edge"
+        put "${MANAGE_REPOSITORY}" "edge" "edge" "edge"
     fi
 
     parse "${manifest}" filter put
@@ -455,7 +455,7 @@ main ()
     temporary=()
     references=()
 
-    eval "$(_ yaml "${MANAGEREPOSITORY}/.manage.yml" yml)"
+    eval "$(_ yaml "${MANAGE_REPOSITORY}/.manage.yml" yml)"
 
     #shellcheck disable=SC2034
     Builds=($(yml assemble_versions   || echo ""))
