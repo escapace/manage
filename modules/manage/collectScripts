@@ -12,8 +12,8 @@ collectScripts ()
 {
     local callerdirectory
     local paths
-    callerdirectory="$(dirname "$(expandpath "${MANAGEZERO}")")"
-    paths=( "${callerdirectory}" "$1" "${MANAGECWD}" )
+    callerdirectory="$(dirname "$(expandpath "${MANAGE_ZERO}")")"
+    paths=( "${callerdirectory}" "$1" "${MANAGE_CWD}" )
 
     if searchPath "${paths[@]}"
     then
@@ -64,14 +64,14 @@ proceedWithRepository ()
             shift
         fi
 
-        processScriptOrDirectory "${MANAGEDIRECTORY}/script" "_manage_"
+        processScriptOrDirectory "${MANAGE_DIRECTORY}/script" "_manage_"
 
         parseYAML
 
-        if [[ ${MANAGEREPOSITORY} != "${MANAGEDIRECTORY}" ]]
+        if [[ ${MANAGE_REPOSITORY} != "${MANAGE_DIRECTORY}" ]]
         then
-            processScriptOrDirectory "${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}" ||
-                die "Cannot find ${MANAGEREPOSITORY}/${MANAGESCRIPTDIRECTORY}, aborting."
+            processScriptOrDirectory "${MANAGE_REPOSITORY}/${MANAGE_SCRIPT_DIRECTORY}" ||
+                die "Cannot find ${MANAGE_REPOSITORY}/${MANAGE_SCRIPT_DIRECTORY}, aborting."
         fi
 
         run "$@"
@@ -85,7 +85,7 @@ processScriptOrDirectory () {
     then
         for file in "$1"/* "$1"/**/*
         do
-            if  [[ "$(dirname "${file}")" != "${MANAGETESTDIRECTORY}" ]]
+            if  [[ "$(dirname "${file}")" != "${MANAGE_TEST_DIRECTORY}" ]]
             then
                 processSingleScript "${file}" "$2" || true
             fi
@@ -113,7 +113,7 @@ processSingleScript ()
 }
 
 proceedWithManage () {
-    if [[ "${MANAGECWD}" == "${MANAGEDIRECTORY}" ]]
+    if [[ "${MANAGE_CWD}" == "${MANAGE_DIRECTORY}" ]]
     then
         MANAGEPUBLIC=(
                        "help"
@@ -133,6 +133,6 @@ proceedWithManage () {
                      )
     fi
 
-    MANAGEREPOSITORY="${MANAGEDIRECTORY}"
+    MANAGE_REPOSITORY="${MANAGE_DIRECTORY}"
     proceedWithRepository "$@"
 }

@@ -16,7 +16,7 @@ main ()
     echo "${HELLO}"
     echo "Script name: $(basename "${BASH_SOURCE[0]}")"
     echo "Caller name: $(basename "$0")"
-    echo "Repository : ${MANAGEREPOSITORY}"
+    echo "Repository : ${MANAGE_REPOSITORY}"
     echo "PWD        : ${PWD}"
     echo "Argument 1 : $1"
     echo "Argument 2 : $2"

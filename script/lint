@@ -16,12 +16,12 @@ main ()
     # if required "$1"
     # then
     #     paths=($@)
-    if [[ "${MANAGEREPOSITORY}" == "${MANAGEDIRECTORY}" ]]
+    if [[ "${MANAGE_REPOSITORY}" == "${MANAGE_DIRECTORY}" ]]
     then
-        paths=(${MANAGEIMPORTPATHS[@]} "${MANAGESCRIPTDIRECTORY}")
+        paths=(${MANAGEIMPORTPATHS[@]} "${MANAGE_SCRIPT_DIRECTORY}")
     else
         # TODO: lint non manage repositories
-        paths=(${MANAGEIMPORTPATHS[@]}/"${MANAGEDIRECTORY}/modules")
+        paths=(${MANAGEIMPORTPATHS[@]}/"${MANAGE_DIRECTORY}/modules")
     fi
 
     while read -d '' -r file

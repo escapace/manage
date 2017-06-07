@@ -8,11 +8,11 @@ isRepository ()
     required "$1" ||
         return 1
 
-    [[ "$1" == "${MANAGELIBEXEC}"   ]] && return 1
-    [[ "$1" == "${MANAGEDIRECTORY}" ]] && return 1
+    [[ "$1" == "${MANAGE_LIBEXEC}"   ]] && return 1
+    [[ "$1" == "${MANAGE_DIRECTORY}" ]] && return 1
 
     isDirectory "$1" || return 1
     isFile "$1/.manage.yml" || return 1
 
-    MANAGEREPOSITORY="$(expandpath "$1")"
+    MANAGE_REPOSITORY="$(expandpath "$1")"
 }

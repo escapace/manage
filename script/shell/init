@@ -42,27 +42,27 @@ main ()
 
     case "${shell}" in
         bash)
-            echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
+            echo "PATH=\"${MANAGE_DIRECTORY}/libexec:\$PATH\""
 
-            cat "${MANAGEDIRECTORY}/script/shell/completions/bash"
+            cat "${MANAGE_DIRECTORY}/script/shell/completions/bash"
 
             echo "complete -F _manage -o default manage"
 
-            if [[ "$(basename "${MANAGEZERO}")" != "manage" ]]
+            if [[ "$(basename "${MANAGE_ZERO}")" != "manage" ]]
             then
-                echo "complete -F _manage -o default $(basename "${MANAGEZERO}")"
+                echo "complete -F _manage -o default $(basename "${MANAGE_ZERO}")"
             fi
             ;;
         zsh)
-            echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
+            echo "PATH=\"${MANAGE_DIRECTORY}/libexec:\$PATH\""
 
-            cat "${MANAGEDIRECTORY}/script/shell/completions/zsh"
+            cat "${MANAGE_DIRECTORY}/script/shell/completions/zsh"
 
             echo "compdef _manage manage"
 
-            if [[ "$(basename "${MANAGEZERO}")" != "manage" ]]
+            if [[ "$(basename "${MANAGE_ZERO}")" != "manage" ]]
             then
-                echo "compdef _manage manage $(basename "${MANAGEZERO}")"
+                echo "compdef _manage manage $(basename "${MANAGE_ZERO}")"
             fi
             ;;
         help)
@@ -83,13 +83,13 @@ main ()
 
             {   echo "# Load manage by adding the following to ${profile}:"
                 echo
-                echo "eval \"\$(${MANAGEDIRECTORY}/bin/manage init ${init})\""
+                echo "eval \"\$(${MANAGE_DIRECTORY}/bin/manage init ${init})\""
                 echo
             } >&2
 
             exit 1
             ;;
         *)
-            echo "PATH=\"${MANAGEDIRECTORY}/libexec:\$PATH\""
+            echo "PATH=\"${MANAGE_DIRECTORY}/libexec:\$PATH\""
     esac
 }
