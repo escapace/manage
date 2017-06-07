@@ -57,7 +57,9 @@ proceedWithRepository ()
 
         processScriptOrDirectory "$1"
         shift
-        run "${SCRIPTNAMES[0]}" "$@"
+        # TODO: fix this
+        local keys=(${!MANAGE_SCRIPTS[@]})
+        run "${keys[0]}" "$@"
     else
         if isRepository "$1"
         then
@@ -105,8 +107,7 @@ processSingleScript ()
     if isScript "${1}"
     then
         file="$(expandpath "$1")"
-        SCRIPTPATHS+=("${file}")
-        SCRIPTNAMES+=("${2}$(basename "${file}")")
+        MANAGE_SCRIPTS["${2}$(basename "${file}")"]="${file}"
     else
         return 1
     fi

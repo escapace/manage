@@ -311,8 +311,7 @@ else
 
     LC_ALL=C
 
-    SCRIPTPATHS=()
-    SCRIPTNAMES=()
+    declare -A MANAGE_SCRIPTS
 
     MANAGE_LOCAL manage/checkFileDependencies manage/collectScripts
 

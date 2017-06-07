@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # @description Display this help and exit
 # @import manage/scriptPresent
-# @import manage/scriptEach
 # @import manage/scriptFilter
 # @import console/attribute
 # @import string/wrap
@@ -26,7 +25,7 @@ help () (
     local maximumWidth="75"
     local separatorLength="3"
     local leftMarginLength="2"
-    local longNameLength="$(getLength "$(scriptEach scriptFilter basename)")"
+    local longNameLength="$(getLength "$(scriptFilter basename)")"
 
     local paragraphLength="$((leftMarginLength +
     longNameLength +
@@ -90,7 +89,7 @@ help () (
         echo
     else
         useageString '[ script ]'
-        scriptEach scriptFilter description
+        scriptFilter description
         echo
 
         if [ -n "$1" ]
