@@ -215,7 +215,7 @@ main ()
     return "${code}"
 }
 
-onexit ()
+onExit ()
 {
     [ -f "${MANAGE_DIRECTORY}/Dockerfile" ] &&
     rm -f "${MANAGE_DIRECTORY}/Dockerfile"

@@ -23,7 +23,7 @@ main ()
     echo "Argument 3 : $3"
 }
 
-onexit ()
+onExit ()
 {
     if (( $1 == 0 ))
     then

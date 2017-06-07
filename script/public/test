@@ -200,7 +200,7 @@ main () {
     test_suite "$@"
 }
 
-onexit ()
+onExit ()
 {
     for directory in "${CLEANUP_DIRECTORIES[@]}"
     do

@@ -248,9 +248,9 @@ MANAGE_RETURN ()
 {
     # TODO: rename to onExit
     local _code=${1:-0}
-    if declare -f "onexit" > /dev/null 2>&1
+    if declare -f "onExit" > /dev/null 2>&1
     then
-        onexit "${_code}" || true
+        onExit "${_code}" || true
     fi
 
     return "${_code}"

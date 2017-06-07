@@ -491,7 +491,7 @@ cleanuptmp () {
     done
 }
 
-onexit ()
+onExit ()
 {
     _ info "Removing temporary files and directories."
     cleanuptmp
