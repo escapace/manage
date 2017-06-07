@@ -7,7 +7,6 @@
 #
 # @dependency tr
 # @dependency head
-# @dependency comm
 # @dependency sed
 # @dependency find
 # shellcheck disable=SC1090,SC2016
@@ -128,8 +127,8 @@ MANAGE_TAG ()
     sed -n "s/${regex}/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
 }
 
-MANAGE_IMPORT () {
-    [ -z "${MANAGEIMPORTPATHS}" ] && MANAGEIMPORTPATHS=("${MANAGE_DIRECTORY}/modules")
+MANAGE_RESOLVE () {
+    [ -z "${MANAGE_IMPORT_PATHS}" ] && MANAGE_IMPORT_PATHS=("${MANAGE_DIRECTORY}/modules")
 
     local name
     local bashmagic="^(#!){1}.*(bash){1}.*"
@@ -138,7 +137,7 @@ MANAGE_IMPORT () {
     local imports=()
     local mode="$1"
     shift
-    local paths=(${MANAGEIMPORTPATHS[@]})
+    local paths=(${MANAGE_IMPORT_PATHS[@]})
     local script
     local scripts=($@)
     local namespace
@@ -191,18 +190,18 @@ MANAGE_IMPORT () {
 
     if [ ! ${#imports[@]} -eq 0 ]
     then
-        MANAGE_IMPORT "${mode}" "${imports[@]}"
+        MANAGE_RESOLVE "${mode}" "${imports[@]}"
     fi
 
     cd "${cwd}" || exit
 }
 
 MANAGE_LOCAL () {
-    MANAGE_IMPORT local "$@"
+    MANAGE_RESOLVE local "$@"
 }
 
 MANAGE_UNDERSCORE () {
-    MANAGE_IMPORT underscore "$@"
+    MANAGE_RESOLVE underscore "$@"
 }
 
 manage () {
@@ -226,7 +225,7 @@ MANAGE_MAIN ()
     PATH="${MANAGE_DIRECTORY}/vendor/bats/libexec:$PATH"
     local _code
     local _function
-    if [ -n "${MANAGECOMPLETION}" ]
+    if [ -n "${MANAGE_COMPLETION}" ]
     then
         _function="completion"
     else
@@ -258,7 +257,7 @@ MANAGE_RETURN ()
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
 then
-    MANAGE_IMPORT_ARRAY=(${MANAGEIMPORT})
+    MANAGE_IMPORT_ARRAY=(${MANAGE_IMPORT})
 
     strict true
 
@@ -268,8 +267,8 @@ then
         MANAGE_BOOTSTRAP
     fi
 
-    [ -n "${MANAGESCRIPTPATH}" ] &&
-    source "${MANAGESCRIPTPATH}"
+    [ -n "${MANAGE_SCRIPT_PATH}" ] &&
+    source "${MANAGE_SCRIPT_PATH}"
     MANAGE_MAIN "$@"
 else
     strict true

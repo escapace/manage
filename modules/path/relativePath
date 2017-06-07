@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# @import path/absolutePath
+# @import path/commonPath
+
+relativePath ()
+{
+    #
+    # Gets the relative path from SOURCE to DESTINATION.
+    # Output should mirror the python function os.path.relpath().
+    # All arguments default to the current directory.
+    #
+    # Usage: relativePath [DESTINATION] [SOURCE]
+    #
+    # Usage examples:
+    #     relativePath /home/user     /home/user/bin  #==> bin
+    #     relativePath /home/user/bin /home/user      #==> ..
+    #     relativePath /foo/bar/baz   /               #==> ../../..
+    #     relativePath /foo/bar       /baz            #==> ../../baz
+    #     relativePath /home/user     /home/user      #==> .
+    #     relativePath                                #==> .
+    #
+
+    local dst
+    local src
+    local common
+    dst=$(absolutePath "$1")
+    src=$(absolutePath "$2")
+    common=$(commonPath "$dst" "$src")
+
+    dst=${dst#$common}; dst=${dst#/}
+    src=${src#$common}; src=${src#/}
+
+    local OIFS=$IFS; local IFS=/
+    src=($src)
+    IFS=$OIFS
+
+    local rel=
+    # shellcheck disable=SC2034
+    for i in "${!src[@]}"; do
+        rel+=../
+    done
+
+    rel=${rel}${dst}
+
+    # Handle some corner cases.
+    # Arguments were the same path.
+    [[ $rel ]] || rel=.
+    # Make sure there are no trailing slashes.
+    # ...except for root.
+    [[ $rel == / ]] || rel=${rel%%/}
+
+    echo "$rel"
+}

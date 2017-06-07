@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# @import path/absolutePath
+# @import string/commonPrefix
+# shellcheck disable=SC2119,SC2120
+
+commonPath ()
+{
+    #
+    # Gets the common path of the paths passed on stdin.
+    # Alternatively, paths can be passed as arguments.
+    #
+
+    local path
+
+    # Make sure command line args go to stdin
+    if (( $# > 0 )); then
+        for path in "$@"; do
+            echo "$path"
+        done | commonPath
+        return
+    fi
+
+    local prefix
+    prefix=$(
+        while read -r; do
+            echo "$(absolutePath "$REPLY")/"
+        done | commonPrefix
+    )
+
+    # We only want to break at path separators
+    if [[ $prefix != */ ]]; then
+        prefix=${prefix%/*}/
+    fi
+
+    # Only strip the trailing slash if it's not root (/)
+    if [[ $prefix != / ]]; then
+        prefix=${prefix%/}
+    fi
+
+    echo "$prefix"
+}
