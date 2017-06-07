@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# @import array/includes
 
 scriptPresent () {
-    includes SCRIPTNAMES "$1"
+    [[ -n "$1" && -n "${MANAGE_SCRIPTS[$1]}" ]]
 }
