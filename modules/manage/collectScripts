@@ -120,7 +120,6 @@ proceedWithManage () {
         MANAGEPUBLIC=(
                        "help"
                        "test"
-                       "init"
                        "build"
                        "assemble"
                        "versions"
@@ -129,7 +128,6 @@ proceedWithManage () {
     else
         # TODO: help message
         MANAGEPUBLIC=(
-                       "bootstrap"
                        "help"
                        "init"
                      )

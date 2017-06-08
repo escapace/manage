@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+manage () {
+    if [ "${MANAGE_REPOSITORY}" == "${MANAGE_DIRECTORY}" ]
+    then
+        "${MANAGE_DIRECTORY}/libexec/manage" "$@"
+    else
+        "${MANAGE_DIRECTORY}/libexec/manage" "${MANAGE_REPOSITORY}" "$@"
+    fi
+}

@@ -98,9 +98,9 @@ test_runtime () {
     local commandString
     local flags=()
     local tmpDir
-    local result
     local resultFile
     local name
+    local helper
 
     name="$(testName "${file}")"
 
@@ -110,8 +110,10 @@ test_runtime () {
 
     isCi && flags+=("--no-color")
 
+    helper="source \"${MANAGE_DIRECTORY}/modules/manage/manage\""
     sharness="source \"${MANAGE_DIRECTORY}/vendor/sharness/sharness.sh\" ${flags[@]}"
     testSource="source \"${file}\""
+
 
     if [ ! -z "${MANAGE_TEST_DIRECTORY}" ]
     then
@@ -124,7 +126,7 @@ test_runtime () {
     exports+="MANAGE_DIRECTORY=\"${MANAGE_DIRECTORY}\"
     MANAGE_REPOSITORY=\"${MANAGE_REPOSITORY}\""
 
-    commandString="$(echo "${exports} && ${sharness} && ${testSource}" | tr '\n' ' ')"
+    commandString="$(echo "${exports} && ${helper} && ${sharness} && ${testSource}" | tr '\n' ' ')"
     commandString="$(_ squeeze "${commandString}")"
 
     "bash"                  \
