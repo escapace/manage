@@ -29,7 +29,7 @@ warn ()
         message="$1"
     fi
 
-    message="${message//$HOME/\~}"
+    message="${message//$HOME/~}"
 
     >&2 echo -n "${level} " >&2
     wrap "${message}" 76 | sed "2,\${s/^/${arrow} /}" >&2

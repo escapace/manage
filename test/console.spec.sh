@@ -9,6 +9,7 @@ MANAGE_UNDERSCORE \
     console/br \
     console/tab \
     console/log \
+    console/info \
     console/error \
     console/warn \
     console/icon \
@@ -42,14 +43,22 @@ expectSuccess 'log' '
     [[ "$(_ log "${ipsum}" "${ipsum}")" = "$(cat "${FIXTURES}/log/expected")" ]]
 '
 
+expectSuccess 'info' '
+    verbose true &&
+    [[ "$(_ info "${ipsum}" "${ipsum}")" = "$(cat "${FIXTURES}/info/expected")" ]] &&
+    [[ "$(_ log info "${ipsum}" "${ipsum}")" = "$(cat "${FIXTURES}/info/expected")" ]]
+'
+
 expectSuccess 'warn' '
     verbose true &&
-    [[ "$( { _ warn "${ipsum}" "${ipsum}"; } 2>&1 )" = "$(cat "${FIXTURES}/warn/expected")" ]]
+    [[ "$( { _ warn "${ipsum}" "${ipsum}"; } 2>&1 )" = "$(cat "${FIXTURES}/warn/expected")" ]] &&
+    [[ "$( { _ log warn "${ipsum}" "${ipsum}"; } 2>&1 )" = "$(cat "${FIXTURES}/warn/expected")" ]]
 '
 
 expectSuccess 'error' '
     verbose true &&
-    [[ "$( { _ error "${ipsum}" "${ipsum}"; } 2>&1 )" = "$(cat "${FIXTURES}/error/expected")" ]]
+    [[ "$( { _ error "${ipsum}" "${ipsum}"; } 2>&1 )" = "$(cat "${FIXTURES}/error/expected")" ]] &&
+    [[ "$( { _ log error "${ipsum}" "${ipsum}"; } 2>&1 )" = "$(cat "${FIXTURES}/error/expected")" ]]
 '
 
 expectSuccess 'tab' '

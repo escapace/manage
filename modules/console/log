@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
+# @dependency sed
+# @import console/attribute
+# @import console/error
+# @import console/info
+# @import console/warn
 # @import lang/required
 # @import string/wrap
-# @import console/fgcolor
-# @dependency sed
 # shellcheck disable=SC2034,SC2016
+
 
 log ()
 {
@@ -16,21 +20,33 @@ log ()
 
     local message
     local arrow
-    local level
+    arrow="$(attribute bold ">")$(attribute)"
 
-    arrow="$(attribute bold "$(fgcolor blue '>')$(fgcolor)")$(attribute)"
-    level="$(attribute bold "$(fgcolor blue 'LOG')$(fgcolor)")$(attribute)"
+    case "$1" in
+        info)
+            shift
 
-    if verbose
-    then
-        local arguments=("$@")
-        message="$(join arguments $'\n\n')"
-    else
-        message="$1"
-    fi
+            info "${@}"
+            ;;
+        warn)
+            shift
 
-    message="${message//$HOME/\~}"
+            warn "${@}"
+            ;;
+        error)
+            shift
 
-    echo -n "${level} "
-    wrap "${message}" 76 | sed "2,\${s/^/${arrow} /}"
+            error "${@}"
+            ;;
+        *)
+            if verbose
+            then
+                local arguments=("$@")
+                message="$(join arguments $'\n\n')"
+            else
+                message="$1"
+            fi
+
+            wrap "${message}" 76 | sed "2,\${s/^/${arrow} /}"
+    esac
 }

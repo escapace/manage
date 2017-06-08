@@ -108,8 +108,8 @@ _ () {
     then
         MANAGE_RUNTIME "$@"
     else
-        # TODO: error message ?
-        return 1
+        >&2 echo "ERROR: '${1}' is not defined"
+        exit 1
     fi
 }
 
@@ -173,11 +173,11 @@ MANAGE_RESOLVE () {
                     if [[ "${file}" =~ ^${MANAGE_DIRECTORY}/modules ]]
                     then
                         MANAGE_NAMESPACES["manage"]+="$(MANAGE_SOURCE "${file}" "${name}")"$'\n' ||
-                            ( echo "Failed to import '${script}'" && exit 1 )
+                            ( echo "ERROR: Failed to import '${script}'" && exit 1 )
                     fi
                 elif [[ "${mode}" == "local" ]]
                 then
-                    source "${file}" || ( echo "Failed to import '${script}'" && exit 1 )
+                    source "${file}" || ( echo "ERROR: Failed to import '${script}'" && exit 1 )
                 fi
             fi
         done
@@ -185,7 +185,7 @@ MANAGE_RESOLVE () {
 
     for script in "${scripts[@]}"
     do
-        [ -z "${MANAGE_MODULES["${script}"]}" ] && ( echo "Failed to import '${script}'" && exit 1 )
+        [ -z "${MANAGE_MODULES["${script}"]}" ] && ( echo "ERROR: Failed to import '${script}'" && exit 1 )
     done
 
     if [ ! ${#imports[@]} -eq 0 ]
@@ -204,15 +204,6 @@ MANAGE_UNDERSCORE () {
     MANAGE_RESOLVE underscore "$@"
 }
 
-manage () {
-    if [ "${MANAGE_REPOSITORY}" == "${MANAGE_DIRECTORY}" ]
-    then
-        "${MANAGE_DIRECTORY}/libexec/manage" "$@"
-    else
-        "${MANAGE_DIRECTORY}/libexec/manage" "${MANAGE_REPOSITORY}" "$@"
-    fi
-}
-
 MANAGE_ONCE () {
     local __code=0
     "$@" || __code="$?"
@@ -222,7 +213,6 @@ MANAGE_ONCE () {
 
 MANAGE_MAIN ()
 {
-    PATH="${MANAGE_DIRECTORY}/vendor/bats/libexec:$PATH"
     local _code
     local _function
     if [ -n "${MANAGE_COMPLETION}" ]
@@ -245,7 +235,6 @@ MANAGE_MAIN ()
 
 MANAGE_RETURN ()
 {
-    # TODO: rename to onExit
     local _code=${1:-0}
     if declare -f "onExit" > /dev/null 2>&1
     then
