@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# @description Manage tab completions
+
+main ()
+{
+    completion "${@}"
+}

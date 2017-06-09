@@ -117,7 +117,7 @@ processSingleScript ()
 proceedWithManage () {
     if [[ "${MANAGE_CWD}" == "${MANAGE_DIRECTORY}" ]]
     then
-        MANAGEPUBLIC=(
+        MANAGE_PUBLIC=(
                        "help"
                        "test"
                        "build"
@@ -127,7 +127,7 @@ proceedWithManage () {
                      )
     else
         # TODO: help message
-        MANAGEPUBLIC=(
+        MANAGE_PUBLIC=(
                        "help"
                        "init"
                      )

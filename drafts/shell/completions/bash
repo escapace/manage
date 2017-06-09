@@ -89,7 +89,7 @@ _manage_execute () {
     local key="$1"
     shift
 
-    (manage completion "$@" | sed 's/:.*//' || echo) > "${key}.tmp"
+    (manage _manage_completion "$@" | sed 's/:.*//' || echo) > "${key}.tmp"
     mv "${key}.tmp" "${key}" > /dev/null 2>&1 || true
 }
 
