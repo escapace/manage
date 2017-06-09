@@ -221,6 +221,7 @@ MANAGE_MAIN ()
     else
         _function="main"
     fi
+
     if declare -f "${_function}" > /dev/null 2>&1
     then
         trap 'MANAGE_ONCE MANAGE_RETURN $?' INT HUP TERM QUIT EXIT
@@ -229,7 +230,11 @@ MANAGE_MAIN ()
         trap - INT HUP TERM QUIT EXIT ERR
     fi
 
-    MANAGE_ONCE MANAGE_RETURN "${_code}"
+    if [ ! -n "${MANAGE_COMPLETION}" ]
+    then
+        MANAGE_ONCE MANAGE_RETURN "${_code}"
+    fi
+
     return $?
 }
 
@@ -301,7 +306,11 @@ else
 
     declare -A MANAGE_SCRIPTS
 
-    MANAGE_LOCAL manage/checkFileDependencies manage/collectScripts
+    MANAGE_LOCAL \
+        manage/checkFileDependencies \
+        manage/collectScripts \
+        manage/completion \
+        manage/help
 
     checkFileDependencies "${MANAGE_DIRECTORY}/libexec/manage"
     collectScripts "$@"

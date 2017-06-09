@@ -9,7 +9,7 @@ scriptFilter () {
         path="${MANAGE_SCRIPTS[$script]}"
         if [[ "${script:0:1}" == "_" ]]
         then
-            if includes MANAGEPUBLIC "${script:8}"
+            if includes MANAGE_PUBLIC "${script:8}"
             then
                 "$1" "${path}"
             fi

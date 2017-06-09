@@ -2,21 +2,9 @@
 #
 # vim: set ft=sh:
 #
-# <doc>
-#
-# Load manage into shell
-#
-# </doc>
-#
-# <import>
-#
-# collection-shell
-# collection-message
-# collection-string
-#
-# </import>
+# @description Load manage into shell
 
-getshell ()
+getShell ()
 {
     basename "/${SHELL}"
 }
@@ -28,11 +16,11 @@ main ()
     local shell
     local profile
 
-    if _ required "$1"
+    if required "$1"
     then
         if [[ "$1" == "-" ]]
         then
-            shell="$(getshell)"
+            shell="$(getShell)"
         else
             shell="$1"
         fi
@@ -44,7 +32,7 @@ main ()
         bash)
             echo "PATH=\"${MANAGE_DIRECTORY}/libexec:\$PATH\""
 
-            cat "${MANAGE_DIRECTORY}/script/shell/completions/bash"
+            cat "${MANAGE_DIRECTORY}/scripts/shell/completions/bash"
 
             echo "complete -F _manage -o default manage"
 
@@ -56,7 +44,7 @@ main ()
         zsh)
             echo "PATH=\"${MANAGE_DIRECTORY}/libexec:\$PATH\""
 
-            cat "${MANAGE_DIRECTORY}/script/shell/completions/zsh"
+            cat "${MANAGE_DIRECTORY}/scripts/shell/completions/zsh"
 
             echo "compdef _manage manage"
 
@@ -66,7 +54,7 @@ main ()
             fi
             ;;
         help)
-            case "$(getshell)" in
+            case "$(getShell)" in
                 bash)
                     profile='~/.bash_profile'
                     init="bash"
@@ -83,7 +71,7 @@ main ()
 
             {   echo "# Load manage by adding the following to ${profile}:"
                 echo
-                echo "eval \"\$(${MANAGE_DIRECTORY}/bin/manage init ${init})\""
+                echo "eval \"\$(${MANAGE_DIRECTORY}/bin/manage _manage_shell ${init})\""
                 echo
             } >&2
 

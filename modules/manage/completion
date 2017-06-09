@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# @import manage/scriptFilter
+# @import manage/scriptDescription
+# @import manage/scriptPresent
+# @import array/includes
+# @import manage/run
+# shellcheck disable=SC2034
+
+completion ()
+{
+    if (( $# == 0 ))
+    then
+        scriptFilter scriptDescription
+    else
+        name="$1"
+        MANAGE_COMPLETION="true"
+
+        if includes MANAGE_PUBLIC "${name}"
+        then
+            swapRun "$@"
+        elif scriptPresent "${name}"
+        then
+            shift
+            executeScript "${name}" "$@"
+        fi
+    fi
+}

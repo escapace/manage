@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# @description Display this help and exit
 # @import manage/scriptPresent
 # @import manage/scriptFilter
 # @import console/attribute
@@ -75,7 +74,7 @@ help () (
     if scriptPresent "${script}"
     then
         script="${script}"
-    elif includes MANAGEPUBLIC "${script}"
+    elif includes MANAGE_PUBLIC "${script}"
     then
         script="_manage_${script}"
     else

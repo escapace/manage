@@ -11,7 +11,7 @@
 (( $+functions[_manage] )) || _manage_execute () {
     local _manage_result
 
-    _manage_result="${(@f)$(manage completion "$@" || echo "")}"
+    _manage_result="${(@f)$(manage _manage_completion "$@" || echo "")}"
 
     _cache_invalid "${key}" || true
     _store_cache "${key}" _manage_result

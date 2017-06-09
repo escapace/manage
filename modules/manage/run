@@ -9,8 +9,6 @@
 # @import string/squeeze
 # @import string/upper
 
-# @import manage/help
-
 swapRun () {
     local name
     local names
@@ -31,9 +29,7 @@ swapRun () {
 run () {
     local name="$1"
 
-    if [[ "${name}" == "completion" ]] ||
-       [[ "${name}" == "init"       ]] ||
-       includes MANAGEPUBLIC "${name}"
+    if includes MANAGE_PUBLIC "${name}"
     then
         swapRun "$@"
     elif scriptPresent "${name}"
@@ -46,7 +42,7 @@ run () {
         if scriptPresent "${name}"
         then
             executeScript "${name}" "$@"
-        elif includes MANAGEPUBLIC "${name}"
+        elif includes MANAGE_PUBLIC "${name}"
         then
             swapRun "${name}" "$@"
         else
