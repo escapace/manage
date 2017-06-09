@@ -62,7 +62,7 @@ isCi () {
 aggregate_results () {
     local file="$1"
     local name="$2"
-    while IFS=' ' read type value
+    while IFS=' ' read -r type value
     do
         case $type in
             '')
@@ -111,7 +111,7 @@ test_runtime () {
     isCi && flags+=("--no-color")
 
     helper="source \"${MANAGE_DIRECTORY}/modules/manage/manage\""
-    sharness="source \"${MANAGE_DIRECTORY}/vendor/sharness/sharness.sh\" ${flags[@]}"
+    sharness="source \"${MANAGE_DIRECTORY}/vendor/sharness/sharness.sh\" $(_ join flags ' ')"
     testSource="source \"${file}\""
 
 

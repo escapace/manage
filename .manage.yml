@@ -9,27 +9,3 @@ default: help
 # Environment variables
 env:
   HELLO: "Hello World!"
-
-#
-# script: versions
-#
-
-versions:
-  url: https://github.com/epiloque/manage.git
-  maintainer: "Mark Milstein <mark+github@epiloque.com> (@epiloque)"
-  key: https://epiloque.github.io/epiloque.pub
-  verify: true
-  aliases:
-    stable: 0.4.1
-
-#
-# script: assemble
-#
-
-assemble:
-  by: versions
-  internal: true
-  preserve: false
-  versions:
-    - edge
-    - 0.4.1

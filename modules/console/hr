@@ -16,8 +16,8 @@ hr() {
     __len=$2
     __char=$1
   fi
-  while [ $__len -gt 0 ]; do
+  while [ "${__len}" -gt 0 ]; do
     echo -n "$__char"
-     __len=$(( $__len - 1 ))
+     __len=$(( __len - 1 ))
   done
 }

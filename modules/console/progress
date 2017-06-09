@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # @dependency tput
 # @dependency seq
-# shellcheck disable=SC2154
+# shellcheck disable=SC2154,SC2046
 
 progress() {
   [[ -z $MANAGE_PROGRESS_WIDTH ]]    && MANAGE_PROGRESS_WIDTH=60
