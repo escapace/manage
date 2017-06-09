@@ -20,11 +20,16 @@ help () (
         wc -L
     }
 
+    local longNameLength
+    local paragraph
+    local separator
+    local leftMargin
     local script="$1"
     local maximumWidth="75"
     local separatorLength="3"
     local leftMarginLength="2"
-    local longNameLength="$(getLength "$(scriptFilter basename)")"
+
+    longNameLength="$(getLength "$(scriptFilter basename)")"
 
     local paragraphLength="$((leftMarginLength +
     longNameLength +
@@ -32,9 +37,9 @@ help () (
 
     local textWidth="$((maximumWidth - paragraphLength))"
 
-    local leftMargin="$(getSpace "${leftMarginLength}")"
-    local paragraph="$(getSpace "${paragraphLength}")"
-    local separator="$(getSpace "${separatorLength}")"
+    leftMargin="$(getSpace "${leftMarginLength}")"
+    paragraph="$(getSpace "${paragraphLength}")"
+    separator="$(getSpace "${separatorLength}")"
 
     useageString () {
         echo -e "\n${leftMargin}$(attribute bold)Usage:$(attribute)" "$(basename "$0") $1 [ arguments ... ]\n"

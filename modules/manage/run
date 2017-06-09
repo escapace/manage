@@ -8,6 +8,7 @@
 # @import manage/scriptPath
 # @import string/squeeze
 # @import string/upper
+# shellcheck disable=SC1090
 
 swapRun () {
     local name

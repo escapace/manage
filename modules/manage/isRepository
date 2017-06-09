@@ -2,6 +2,7 @@
 # @import manage/isFile
 # @import manage/isDirectory
 # @import lang/required
+# shellcheck disable=SC2034
 
 isRepository ()
 {

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # @import array/includes
 # @import manage/yaml
+# shellcheck disable=SC2034
 
 parseYAML () {
     eval "$(yaml "${MANAGE_REPOSITORY}/.manage.yml" "yml")"

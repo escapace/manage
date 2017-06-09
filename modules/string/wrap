@@ -9,5 +9,5 @@ wrap ()
 
     local width=${2:-80}
 
-    trimLines "$(echo "${1}" | fold -c -s -w "${width}")"
+    trimLines "$(echo "${1}" | fold -s -w "${width}")"
 }
