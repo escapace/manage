@@ -10,6 +10,6 @@ execute()
     #
     required "${1}" || return 1
 
-    bash --norc --noprofile -c "$@" || return $?
+    "${BASH}" --norc --noprofile -c "$@" || return $?
 }
 

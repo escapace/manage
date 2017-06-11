@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # @import console/die
+# @import console/error
 # @import array/join
 # @import lang/required
 # @import lang/executeIn
@@ -26,26 +27,27 @@ dockerBuild () (
 
             cd "${directory}" || die "${directory} does not exist"
 
-            for dockerFile in "${imageDirectory}/${repository}"/Dockerfile.*
-            do
-                if [[ -f "${dockerFile}" ]]
+            dockerFile="${imageDirectory}/${repository}/Dockerfile"
+
+            if [[ -f "${dockerFile}" ]]
+            then
+                prefix=" -t ${scope}/${repository}:"
+                suffix="-f ${dockerFile} ${MANAGE_REPOSITORY}"
+                # shellcheck disable=SC2034
+                tags=($(MANAGE_TAG "tag" "${dockerFile}"))
+
+                if [ ${#tags[@]} -eq 0 ]
                 then
-                    prefix=" -t ${scope}/${repository}:"
-                    suffix="-f ${dockerFile} ${MANAGE_REPOSITORY}"
-                    # shellcheck disable=SC2034
-                    tags=($(MANAGE_TAG "tag" "${dockerFile}"))
-
-                    if [ ${#tags[@]} -eq 0 ]
-                    then
-                        tags=("latest")
-                    fi
-
-                    cmd="$(join tags "${prefix}")"
-                    cmd="docker build --force-rm${prefix}${cmd} ${suffix}"
-
-                    executeIn "${MANAGE_REPOSITORY}" "${cmd}"
+                    tags=("latest")
                 fi
-            done
+
+                cmd="$(join tags "${prefix}")"
+                cmd="docker build --force-rm${prefix}${cmd} ${suffix}"
+
+                executeIn "${MANAGE_REPOSITORY}" "${cmd}"
+            else
+                error "${dockerFile} does not exist"
+            fi
         fi
     }
 
