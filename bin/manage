@@ -20,6 +20,16 @@ else
     exit 1
 fi
 
+sed  ()
+{
+    if command -v "gsed" > /dev/null 2>&1
+    then
+        command gsed "$@"
+    else
+        command sed "$@"
+    fi
+}
+
 strict()
 {
     # set/unset strict mode
