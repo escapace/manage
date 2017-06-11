@@ -2,6 +2,9 @@
 # @import manage/dockerBuild
 # @import manage/downloadDumbInit
 # @import manage/manage
+# @import lang/required
+# @import console/die
+# @import lang/first
 # vim: set ft=sh:
 # @description Lint & test in a docker container
 
@@ -21,6 +24,8 @@ main () {
     verbose true
     strict true
 
+    TEST_SUITE="$(_ first "${TEST_SUITE}" "$1")" || _ die "No test suite chosen"
+
     if [[ "${DOCKER}" == "true" ]]
     then
         case "${TEST_SUITE}" in
@@ -30,9 +35,7 @@ main () {
             *)
                 _ manage test
         esac
-
-    elif [[ "${TRAVIS}" == "true" ]]
-    then
+    else
         case "${TEST_SUITE}" in
             lint)
                 dockerTest shellcheck
@@ -40,13 +43,14 @@ main () {
             fedora)
                 dockerTest fedora
             ;;
+            alpine)
+                dockerTest alpine
+            ;;
             osx)
                 _ manage test
             ;;
             *)
-                exit 1
+                _ die "'${TEST_SUITE}' is not a valid test suite"
         esac
-    else
-        _ die "not running in a CI environment"
     fi
 }

@@ -1,4 +1,4 @@
-language: python
+language: bash
 matrix:
   include:
     - os: linux
@@ -11,6 +11,12 @@ matrix:
       services: docker
       language: bash
       env: TEST_SUITE=fedora
+      script:
+      - ./bin/manage ci
+    - os: linux
+      services: docker
+      language: bash
+      env: TEST_SUITE=alpine
       script:
       - ./bin/manage ci
     - os: osx
