@@ -1,1 +1,317 @@
-../libexec/manage
+#!/usr/bin/env bash
+#
+# @doc manage is a convention for setting up shell programs that use subcommands.
+#
+# For more details on how to define your own commands
+# look online at https://github.com/epiloque/manage
+#
+# @dependency tr
+# @dependency head
+# @dependency sed
+# @dependency find
+# shellcheck disable=SC1090,SC2016,SC2034
+
+if ((BASH_VERSINFO[0] >= 4)) &&
+   ((BASH_VERSINFO[1] >= 2))
+then
+    true
+else
+    echo "You need at least GNU bash, version 4.2" >&2
+    exit 1
+fi
+
+strict()
+{
+    # set/unset strict mode
+    #
+    # Usage: strict true/false
+    #
+
+    local value
+    value="$(tr '[:upper:]' '[:lower:]' <<< "$1")"
+    case "${value}" in
+        no|n|false|f|off|0)
+            set   +o errexit
+            set   +o errtrace
+            set   +o pipefail
+            shopt -u nullglob
+            IFS=$' \n\t'
+            ;;
+        *)
+            set   -o errexit
+            set   -o errtrace
+            set   -o pipefail
+            shopt -s nullglob
+            IFS=$'\n\t'
+    esac
+}
+
+verbose()
+{
+    #
+    # With no arguments, test if verbose mode is enabled.
+    # With one argument, set/unset verbose mode.
+    #
+
+    if (( $# == 0 )); then
+        [ -n "${MANAGEVERBOSE}" ] && return "${MANAGEVERBOSE}"
+        return 1
+    else
+        local value
+        value="$(tr '[:upper:]' '[:lower:]' <<< "$1")"
+        case "${value}" in
+            no|n|false|f|off|0)
+                MANAGEVERBOSE=1
+                ;;
+            *)
+                MANAGEVERBOSE=0
+        esac
+    fi
+}
+
+declare -A MANAGE_MODULE_NAMES
+declare -A MANAGE_NAMESPACES
+declare -A MANAGE_MODULES
+
+MANAGE_BOOTSTRAP () {
+    local namespace
+
+    eval "$(
+        echo 'MANAGE_RUNTIME () (
+        strict true
+        '
+
+        for namespace in "${!MANAGE_NAMESPACES[@]}"
+        do
+            echo "${MANAGE_NAMESPACES[$namespace]}"
+        done
+
+        echo '
+            local ___func="$1"
+            shift
+
+            if [[ "$(type -t "${___func}")" = "function" ]]
+            then
+                "${___func}" "$@" || return $?
+                return $?
+            else
+                return 1
+            fi
+        )
+        '
+    )"
+}
+
+_ () {
+    if [[ -n "${1}" ]] &&
+       [[ -n "${MANAGE_MODULE_NAMES["${1}"]}" ]]
+    then
+        MANAGE_RUNTIME "$@"
+    else
+        >&2 echo "ERROR: '${1}' is not defined"
+        exit 1
+    fi
+}
+
+MANAGE_SOURCE () (
+    source "${1}"
+    declare -f "${2}"
+)
+
+MANAGE_TAG ()
+{
+
+    #TODO: import name regex
+    local tag=${1//\//\\/}; shift
+    local regex="^[#]\+[ \t]*@${tag} \(.*\)$"
+    sed -n "s/${regex}/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
+}
+
+MANAGE_RESOLVE () {
+    [ -z "${MANAGE_IMPORT_PATHS}" ] && MANAGE_IMPORT_PATHS=("${MANAGE_DIRECTORY}/modules")
+
+    local name
+    local bashmagic="^(#!){1}.*(bash){1}.*"
+    local cwd
+    local file
+    local imports=()
+    local mode="$1"
+    shift
+    local paths=(${MANAGE_IMPORT_PATHS[@]})
+    local script
+    local scripts=($@)
+    local namespace
+
+    cwd="$(pwd)"
+
+    # TODO: performance
+    while read -d '' -r file
+    do
+        for script in "${scripts[@]}"
+        do
+            if [[ -z "${MANAGE_MODULES["${script}"]}" ]] &&
+               [[ "${file}" =~ ${script}$ ]] &&
+               [[ "$(head -n 1 "${file}")" =~ ${bashmagic} ]] &&
+               [[ "$(basename "${file}")" =~ ^[-a-zA-Z_]*$ ]]
+            then
+                imports+=($(MANAGE_TAG import "${file}"))
+                MANAGE_MODULES["${script}"]="${file}"
+                cd "$(dirname "${file}")"
+
+                if [[ "${mode}" == "underscore" ]]
+                then
+                    name="$(basename "${script}")"
+
+                    if [[ -z "${MANAGE_MODULE_NAMES["${name}"]}" ]]
+                    then
+                        MANAGE_MODULE_NAMES["${name}"]="${script}"
+                    else
+                        echo "Namespace collision '${script}' & '${MANAGE_MODULE_NAMES["${name}"]}'" && exit 1
+                    fi
+
+                    # TODO: other namespaces
+                    if [[ "${file}" =~ ^${MANAGE_DIRECTORY}/modules ]]
+                    then
+                        MANAGE_NAMESPACES["manage"]+="$(MANAGE_SOURCE "${file}" "${name}")"$'\n' ||
+                            ( echo "ERROR: Failed to import '${script}'" && exit 1 )
+                    fi
+                elif [[ "${mode}" == "local" ]]
+                then
+                    source "${file}" || ( echo "ERROR: Failed to import '${script}'" && exit 1 )
+                fi
+            fi
+        done
+    done < <(find "${paths[*]}" -type f -print0)
+
+    for script in "${scripts[@]}"
+    do
+        [ -z "${MANAGE_MODULES["${script}"]}" ] && ( echo "ERROR: Failed to import '${script}'" && exit 1 )
+    done
+
+    if [ ! ${#imports[@]} -eq 0 ]
+    then
+        MANAGE_RESOLVE "${mode}" "${imports[@]}"
+    fi
+
+    cd "${cwd}" || exit
+}
+
+MANAGE_LOCAL () {
+    MANAGE_RESOLVE local "$@"
+}
+
+MANAGE_UNDERSCORE () {
+    MANAGE_RESOLVE underscore "$@"
+}
+
+MANAGE_ONCE () {
+    local __code=0
+    "$@" || __code="$?"
+    eval "$1"' () { return '"${__code}"'; }'
+    return "${__code}"
+}
+
+MANAGE_MAIN ()
+{
+    local _code
+    local _function
+    if [ -n "${MANAGE_COMPLETION}" ]
+    then
+        _function="completion"
+    else
+        _function="main"
+    fi
+
+    if declare -f "${_function}" > /dev/null 2>&1
+    then
+        trap 'MANAGE_ONCE MANAGE_RETURN $?' INT HUP TERM QUIT EXIT
+        "${_function}" "$@"
+        _code=$?
+        trap - INT HUP TERM QUIT EXIT ERR
+    fi
+
+    if [ ! -n "${MANAGE_COMPLETION}" ]
+    then
+        MANAGE_ONCE MANAGE_RETURN "${_code}"
+    fi
+
+    return $?
+}
+
+MANAGE_RETURN ()
+{
+    local _code=${1:-0}
+    if declare -f "onExit" > /dev/null 2>&1
+    then
+        onExit "${_code}" || true
+    fi
+
+    return "${_code}"
+}
+
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
+then
+    MANAGE_IMPORT_ARRAY=(${MANAGE_IMPORT})
+
+    strict true
+
+    if [ ! ${#MANAGE_IMPORT_ARRAY[@]} -eq 0 ]
+    then
+        MANAGE_UNDERSCORE "${MANAGE_IMPORT_ARRAY[@]}"
+        MANAGE_BOOTSTRAP
+    fi
+
+    [ -n "${MANAGE_SCRIPT_PATH}" ] &&
+    source "${MANAGE_SCRIPT_PATH}"
+    MANAGE_MAIN "$@"
+else
+    strict true
+
+    resolvelink() {
+        $(type -p greadlink readlink | head -1) "$1"
+    }
+
+    absolutedirectorypath() {
+        local cwd
+        local path="$1"
+
+        cwd="$(pwd)"
+
+        while [ -n "$path" ]; do
+            cd "${path%/*}" || exit
+            local name="${path##*/}"
+            path="$(resolvelink "$name" || true)"
+        done
+
+        pwd
+        cd "${cwd}" || exit
+    }
+
+    expandpath() {
+        { cd "$(dirname "$1")" 2>/dev/null
+            local dirname="$PWD"
+            cd "$OLDPWD"
+            echo "$dirname/$(basename "$1")"
+        } || echo "$1"
+    }
+
+    # shellcheck disable=SC2034
+
+    MANAGE_CWD="$(absolutedirectorypath .)"
+    MANAGE_ZERO="$(expandpath "$0")"
+    MANAGE_LIBEXEC="$(absolutedirectorypath "${MANAGE_ZERO}")"
+    MANAGE_DIRECTORY="$(absolutedirectorypath "${MANAGE_LIBEXEC}")"
+
+    LC_ALL=C
+
+    declare -A MANAGE_SCRIPTS
+
+    MANAGE_LOCAL \
+        manage/checkFileDependencies \
+        manage/collectScripts \
+        manage/completion \
+        manage/help
+
+    checkFileDependencies "${MANAGE_DIRECTORY}/bin/manage"
+    collectScripts "$@"
+fi

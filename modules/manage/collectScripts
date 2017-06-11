@@ -121,13 +121,10 @@ proceedWithManage () {
         MANAGE_PUBLIC=(
                        "help"
                        "test"
-                       "build"
-                       "assemble"
-                       "versions"
                        "lint"
+                       "ci"
                      )
     else
-        # TODO: help message
         MANAGE_PUBLIC=(
                        "help"
                        "init"

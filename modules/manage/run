@@ -107,7 +107,7 @@ executeScript () {
         imports=($(MANAGE_TAG "import" "${path}"))
 
         zero="$(basename "${MANAGE_ZERO}")"
-        libexec="source \"${MANAGE_DIRECTORY}/libexec/manage\""
+        libexec="source \"${MANAGE_DIRECTORY}/bin/manage\""
 
         if [ ! -z "${MANAGE_TEST_DIRECTORY}" ]
         then

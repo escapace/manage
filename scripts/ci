@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# @import manage/dockerBuild
+# @import manage/downloadDumbInit
+# @import manage/manage
+# vim: set ft=sh:
+# @description Lint & test in a docker container
+
+main ()
+{
+    verbose true
+    strict true
+
+    # if [[ "${TRAVIS}" != "true" ]]
+    # then
+    #     _ die "not running in a CI environment"
+    # fi
+
+    if [[ "${DOCKER}" == "true" ]]
+    then
+        _ manage lint
+        _ manage test
+    else
+        _ downloadDumbInit
+        _ dockerBuild travis
+
+        IMAGE="${DOCKER_SCOPE:-internal}/travis:travis"
+
+        docker run \
+            -e "TRAVIS=${TRAVIS}" \
+            --rm "${IMAGE}" _manage_ci
+    fi
+}

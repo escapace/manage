@@ -3,8 +3,8 @@
 manage () {
     if [ "${MANAGE_REPOSITORY}" == "${MANAGE_DIRECTORY}" ]
     then
-        "${MANAGE_DIRECTORY}/libexec/manage" "$@"
+        "${MANAGE_DIRECTORY}/bin/manage" "$@"
     else
-        "${MANAGE_DIRECTORY}/libexec/manage" "${MANAGE_REPOSITORY}" "$@"
+        "${MANAGE_DIRECTORY}/bin/manage" "${MANAGE_REPOSITORY}" "$@"
     fi
 }
