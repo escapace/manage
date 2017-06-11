@@ -3,6 +3,7 @@
 # @import manage/scriptFilter
 # @import console/attribute
 # @import string/wrap
+# @import string/capitalize
 # @import lang/required
 # @import lang/repeat
 # @dependency sed
@@ -73,7 +74,7 @@ help () (
 
     description () {
         table "$(basename "$1")" \
-              "$(MANAGE_TAG description "$1")"
+            "$(capitalize "$(MANAGE_TAG description "$1")")"
     }
 
     if scriptPresent "${script}"

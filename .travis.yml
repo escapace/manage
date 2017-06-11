@@ -1,8 +1,7 @@
 language: bash
 services: docker
 script:
-- bin/manage test
-- bin/manage lint
+- bin/manage ci
 branches:
   only:
     - master

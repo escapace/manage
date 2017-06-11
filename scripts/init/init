@@ -89,6 +89,6 @@ main () {
     cp -Li  "${templates}/hello"         "${scripts}/hello"
     cp -Li  "${templates}/hello.spec.sh" "${tests}/hello.spec.sh"
     cp -Li  "${templates}/manage.yml"    "${PWD}/.manage.yml"
-    ln -si  "${cwd}/libexec/manage"      "${PWD}/manage"
+    ln -si  "${cwd}/bin/manage"          "${PWD}/manage"
 }
 

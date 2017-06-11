@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# @dependency openssl
+# @import lang/required
+
+function checkSha () {
+    required "$1" || return 1
+
+    local file="$1"
+
+    if [ -f "${file}" ]
+    then
+        openssl dgst -sha256 "${file}" | cut -d" " -f 2
+    else
+        return 1
+    fi
+}

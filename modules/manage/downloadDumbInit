@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# @dependency curl
+# @import console/info
+# @import console/error
+# @import console/die
+# @import manage/checkSha
+
+downloadDumbInit ()
+{
+    local dumbInitTarget="${DUMB_INIT_TARGET:-${MANAGE_REPOSITORY}/vendor/dumb-init/dumb-init}"
+    local dumbInitSha256="${DUMB_INIT_SHA256:-d03e74e7f0e1bcfa7d7ae5b03426ae945742715e33d433360e90e49dc1f30039}"
+    local dumbInitUrl="${DUMB_INIT_URL:-https://github.com/epiloque/docker-base/releases/download/v1.0.2/dumb-init-x86_64}"
+    local dumb_init_sha
+
+    if [ ! -f "${dumbInitTarget}" ]
+    then
+        mkdir -p "$(dirname "${dumbInitTarget}")"
+        curl -s -S -L --progress-bar "${dumbInitUrl}" -o "${dumbInitTarget}"
+    fi
+
+    dumb_init_sha="$(checkSha "${dumbInitTarget}")"
+
+    if [[ "${dumbInitSha256}" != "${dumb_init_sha}" ]]
+    then
+        rm "${dumbInitTarget}"
+        die 'dumb-init SHA256SUM did not match'
+    fi
+}
