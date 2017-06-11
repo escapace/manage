@@ -1,7 +1,19 @@
-language: bash
-services: docker
+language: python
+matrix:
+  include:
+    - os: linux
+      services: docker
+      language: bash
+      env: TEST_SUITE=lint
+    - os: linux
+      services: docker
+      language: bash
+      env: TEST_SUITE=fedora
+    - os: osx
+      language: bash
+      env: TEST_SUITE=osx
 script:
-- bin/manage ci
+- ./run-tests.sh
 branches:
   only:
     - master
@@ -24,13 +36,6 @@ branches:
     - /^performance-.*$/
     - /^test-.*$/
     - /^tests-.*$/
-language: bash
-addons:
-  apt:
-    sources:
-    - debian-sid
-    packages:
-    - shellcheck
 env:
   global:
   - MANAGE_BUILD_DEBUG: true

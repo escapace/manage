@@ -1,3 +1,7 @@
+.vagrant
+Vagrantfile
+typescript
+node_modules
 .gitignore
 drafts/
 .git

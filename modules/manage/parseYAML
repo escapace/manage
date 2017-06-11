@@ -9,6 +9,7 @@ parseYAML () {
     MANAGE_SCRIPT_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_script || echo scripts)"
     MANAGE_MODULE_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_module || echo "scripts/modules")"
 
+    # TODO: extra filter
     [ -z "${MANAGE_PUBLIC}" ] &&
         MANAGE_PUBLIC=($(yml enable || echo -e "help\ntest"))
 

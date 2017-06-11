@@ -1,3 +1,5 @@
+.vagrant
+Vagrantfile
 typescript
 node_modules
 vendor/dumb-init

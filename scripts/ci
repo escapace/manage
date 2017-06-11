@@ -5,28 +5,48 @@
 # vim: set ft=sh:
 # @description Lint & test in a docker container
 
-main ()
+dockerTest ()
 {
+    IMAGE="${DOCKER_SCOPE:-internal}/$1"
+
+    _ downloadDumbInit
+    _ dockerBuild "$1"
+
+    docker run \
+        -e "TEST_SUITE=${TEST_SUITE}" \
+        --rm "${IMAGE}" _manage_ci
+}
+
+main () {
     verbose true
     strict true
 
-    # if [[ "${TRAVIS}" != "true" ]]
-    # then
-    #     _ die "not running in a CI environment"
-    # fi
-
     if [[ "${DOCKER}" == "true" ]]
     then
-        _ manage lint
-        _ manage test
+        case "${TEST_SUITE}" in
+            lint)
+                _ manage lint
+            ;;
+            *)
+                _ manage test
+        esac
+
+    elif [[ "${TRAVIS}" == "true" ]]
+    then
+        case "${TEST_SUITE}" in
+            lint)
+                dockerTest shellcheck
+            ;;
+            fedora)
+                dockerTest fedora
+            ;;
+            osx)
+                _ manage test
+            ;;
+            *)
+                exit 1
+        esac
     else
-        _ downloadDumbInit
-        _ dockerBuild travis
-
-        IMAGE="${DOCKER_SCOPE:-internal}/travis:travis"
-
-        docker run \
-            -e "TRAVIS=${TRAVIS}" \
-            --rm "${IMAGE}" _manage_ci
+        _ die "not running in a CI environment"
     fi
 }
