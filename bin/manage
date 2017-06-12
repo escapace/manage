@@ -150,11 +150,8 @@ MANAGE_TAG ()
         dependency)
             sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} ([0-9a-zA-Z]+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
         ;;
-        description)
-            sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} (.+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
-        ;;
         *)
-            echo "ERROR: Invalid tag '${1}'" && exit 1
+            sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} (.+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
     esac
 }
 
