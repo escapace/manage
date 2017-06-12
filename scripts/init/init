@@ -79,16 +79,17 @@ main () {
     if [ ! -d "${modules}" ];
     then
         _ info "Creating modules directory $(_ absolutePath "${tests}")"
-        mkdir -p "${modules}"
+        mkdir -p "${modules}/example"
     fi
 
     templates="${cwd}/scripts/init/templates"
 
     [ -d "${templates}" ] || _ die
 
-    cp -Li  "${templates}/hello"         "${scripts}/hello"
-    cp -Li  "${templates}/hello.spec.sh" "${tests}/hello.spec.sh"
-    cp -Li  "${templates}/manage.yml"    "${PWD}/.manage.yml"
-    ln -si  "${cwd}/bin/manage"          "${PWD}/manage"
+    cp -Li  "${templates}/hello"          "${scripts}/hello"
+    cp -Li  "${templates}/hello.spec.sh"  "${tests}/hello.spec.sh"
+    cp -Li  "${templates}/hello-function" "${modules}/example/hello"
+    cp -Li  "${templates}/manage.yml"     "${PWD}/.manage.yml"
+    ln -si  "${cwd}/bin/manage"           "${PWD}/manage"
 }
 
