@@ -141,8 +141,21 @@ MANAGE_SOURCE () (
 MANAGE_TAG ()
 {
     #TODO: go-getter like URL parsing
-    local tag=${1//\//\\/}; shift
-    sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} ([0-9a-zA-Z]+\/[0-9a-zA-Z]+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
+    local tag=${1}; shift
+
+    case "$tag" in
+        import)
+            sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} ([0-9a-zA-Z]+\/[0-9a-zA-Z]+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
+        ;;
+        dependency)
+            sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} ([0-9a-zA-Z]+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
+        ;;
+        description)
+            sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} (.+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
+        ;;
+        *)
+            echo "ERROR: Invalid tag '${1}'" && exit 1
+    esac
 }
 
 MANAGE_RESOLVE () {
