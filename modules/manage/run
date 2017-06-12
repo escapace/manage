@@ -123,6 +123,7 @@ executeScript () {
 
         exports+="MANAGE_DIRECTORY=\"${MANAGE_DIRECTORY}\"
                   MANAGE_REPOSITORY=\"${MANAGE_REPOSITORY}\"
+                  MANAGE_MODULE_DIRECTORY=\"${MANAGE_MODULE_DIRECTORY}\"
                   MANAGE_SCRIPT_PATH=\"${path}\"
                   MANAGE_ZERO=\"${MANAGE_ZERO}\"
                   MANAGE_IMPORT=\"$(join imports ' ')\""

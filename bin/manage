@@ -20,7 +20,7 @@ else
     exit 1
 fi
 
-sed  ()
+sed ()
 {
     if command -v "gsed" > /dev/null 2>&1
     then
@@ -130,15 +130,14 @@ MANAGE_SOURCE () (
 
 MANAGE_TAG ()
 {
-
-    #TODO: import name regex
+    #TODO: go-getter like URL parsing
     local tag=${1//\//\\/}; shift
-    local regex="^[#]\+[ \t]*@${tag} \(.*\)$"
-    sed -n "s/${regex}/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
+    sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} ([0-9a-zA-Z]+\/[0-9a-zA-Z]+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
 }
 
 MANAGE_RESOLVE () {
     [ -z "${MANAGE_IMPORT_PATHS}" ] && MANAGE_IMPORT_PATHS=("${MANAGE_DIRECTORY}/modules")
+    [ -n "${MANAGE_MODULE_DIRECTORY}" ] && MANAGE_IMPORT_PATHS+=("${MANAGE_MODULE_DIRECTORY}")
 
     local name
     local bashmagic="^(#!){1}.*(bash){1}.*"
@@ -180,7 +179,11 @@ MANAGE_RESOLVE () {
                     fi
 
                     # TODO: other namespaces
-                    if [[ "${file}" =~ ^${MANAGE_DIRECTORY}/modules ]]
+                    if [[ -n "${MANAGE_MODULE_DIRECTORY}" && "${file}" == "${MANAGE_MODULE_DIRECTORY}/"* ]]
+                    then
+                        MANAGE_NAMESPACES["local"]+="$(MANAGE_SOURCE "${file}" "${name}")"$'\n' ||
+                            ( echo "ERROR: Failed to import '${script}'" && exit 1 )
+                    elif [[ "${file}" == "${MANAGE_DIRECTORY}/modules/"* ]]
                     then
                         MANAGE_NAMESPACES["manage"]+="$(MANAGE_SOURCE "${file}" "${name}")"$'\n' ||
                             ( echo "ERROR: Failed to import '${script}'" && exit 1 )
@@ -191,7 +194,7 @@ MANAGE_RESOLVE () {
                 fi
             fi
         done
-    done < <(find "${paths[*]}" -type f -print0)
+    done < <(find "${paths[@]}" -type f -print0)
 
     for script in "${scripts[@]}"
     do

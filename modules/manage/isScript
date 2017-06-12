@@ -9,5 +9,5 @@ isScript () {
 
     isFile "${file}" &&
     isMagic "${file}" &&
-    [[ "$(basename "${file}")" =~ ^[-a-zA-Z\_]*$ ]]
+    [[ "$(basename "${file}")" =~ ^[-a-zA-Z\_0-9]*$ ]]
 }
