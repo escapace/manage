@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# @dependency sed
 # @import console/attribute
 # @import console/error
 # @import console/info

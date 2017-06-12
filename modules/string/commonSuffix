@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # @import string/commonPrefix
-# @dependency rev
 
 #shellcheck disable=SC2120
 #shellcheck disable=SC2119

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# @dependency tr
 # @import array/join
 # @import lang/required
 # shellcheck disable=SC2034

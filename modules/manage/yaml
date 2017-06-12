@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 # @import array/join
 # @import lang/required
-# @dependency sed
-# @dependency sort
-# @dependency grep
 
 yaml() {
     #

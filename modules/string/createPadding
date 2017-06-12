@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # @import lang/required
 # @import string/truncate
-# @dependency bc
 
 createPadding ()
 {

@@ -2,7 +2,6 @@
 # @import lang/required
 # @import string/wrap
 # @import console/fgcolor
-# @dependency sed
 # shellcheck disable=SC2034,SC2016
 
 warn ()

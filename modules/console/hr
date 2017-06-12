@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # @import string/lower
-# @dependency sed
 
 hr() {
   local __len=60
