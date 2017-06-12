@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# @dependency cut
 # @import lang/required
 
 truncate () {

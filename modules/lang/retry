@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# @dependency seq
 # @import lang/required
 
 retry ()

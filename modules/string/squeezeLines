@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# @dependency sed cat
 # @import array/join
 # @import lang/required
 # @import string/trimLines

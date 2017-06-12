@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# @dependency sed
 # @import lang/required
 # @import string/trim
 # shellcheck disable=SC2001

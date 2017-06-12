@@ -6,8 +6,6 @@
 # @import string/capitalize
 # @import lang/required
 # @import lang/repeat
-# @dependency sed
-# @dependency tr
 
 help () (
     getSpace () {

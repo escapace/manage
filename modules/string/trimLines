@@ -2,7 +2,6 @@
 # @import array/join
 # @import lang/required
 # @import string/trim
-# @dependency sed
 # shellcheck disable=SC2034
 
 trimLines()

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# @dependency curl
 # @import console/info
 # @import console/error
 # @import console/die

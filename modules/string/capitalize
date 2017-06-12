@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# @dependency sed
 # @import array/join
 # @import string/lower
 # @import lang/required

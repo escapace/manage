@@ -3,7 +3,6 @@
 # @import string/wrap
 # @import console/fgcolor
 # @import console/attribute
-# @dependency sed
 # shellcheck disable=SC2034,SC2016
 
 error ()
