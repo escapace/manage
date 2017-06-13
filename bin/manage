@@ -140,16 +140,21 @@ MANAGE_TAG ()
 {
     #TODO: go-getter like URL parsing
     local tag=${1}; shift
+    local trim="s/^[ \t]*//;s/[ \t]*$//"
+    local comment="^[ \t]*[#]+[ \t]*"
+
+    local import="[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+"
+    local dependency="[-_a-zA-Z0-9]+"
 
     case "$tag" in
         import)
-            sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} ([0-9a-zA-Z]+\/[0-9a-zA-Z]+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
+            sed -nr "s/${comment}@${tag} (${import})$/\1/p;${trim}" "$@"
         ;;
         dependency)
-            sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} ([0-9a-zA-Z]+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
+            sed -nr "s/${comment}*@${tag} (${dependency})$/\1/p;${trim}" "$@"
         ;;
         *)
-            sed -nr "s/^[ \t]*[#]+[ \t]*@${tag} (.+)$/\1/p;s/^[ \t]*//;s/[ \t]*$//" "$@"
+            sed -nr "s/${comment}*@${tag} (.+)$/\1/p;${trim}" "$@"
     esac
 }
 
@@ -179,7 +184,7 @@ MANAGE_RESOLVE () {
             if [[ -z "${MANAGE_MODULES["${script}"]}" ]] &&
                [[ "${file}" =~ ${script}$ ]] &&
                [[ "$(head -n 1 "${file}")" =~ ${bashmagic} ]] &&
-               [[ "$(basename "${file}")" =~ ^[-a-zA-Z_]*$ ]]
+               [[ "$(basename "${file}")" =~ ^[-_a-zA-Z0-9]*$ ]]
             then
                 imports+=($(MANAGE_TAG import "${file}"))
                 MANAGE_MODULES["${script}"]="${file}"
