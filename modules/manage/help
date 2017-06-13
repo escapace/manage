@@ -1,79 +1,39 @@
 #!/usr/bin/env bash
-# @import manage/scriptPresent
-# @import manage/scriptFilter
+# @import string/truncate
 # @import console/attribute
-# @import string/wrap
+# @import manage/scriptFilter
+# @import manage/scriptPresent
 # @import string/capitalize
-# @import lang/required
-# @import lang/repeat
 
-help () (
-    getSpace () {
-        local len="$1"
-        local char="${2:-" "}"
-        repeat "${len}" echo -n "${char}"
-    }
+useageString () {
+    local name="${1:-[ script ]}"
+    printf "\n  %s %s %s [ arguments ... ]\n\n" \
+        "$(attribute bold)Usage:$(attribute)" \
+        "$(basename "$0")" \
+        "${name}"
+}
 
-    getLength () {
-        echo "$1" |
-        wc -L
-    }
+HELP_MAXIMUM=0
 
-    local longNameLength
-    local paragraph
-    local separator
-    local leftMargin
+getMaximum () {
+    local name
+    name="$(basename "$1")"
+    (( "${#name}" > HELP_MAXIMUM )) && HELP_MAXIMUM="${#name}"
+}
+
+description () {
+    local name
+    name="$(basename "$1")"
+    local spacing="${2:-${#name}}"
+    local length="${3:-$(( 80 - ${#name} -6 ))}"
+
+    printf "  %-${spacing}s    %s\n" \
+        "${name}" \
+        "$(truncate "$(capitalize "$(MANAGE_TAG description "$1")")" "$length")"
+}
+
+help () {
     local script="$1"
-    local maximumWidth="75"
-    local separatorLength="3"
-    local leftMarginLength="2"
-
-    longNameLength="$(getLength "$(scriptFilter basename)")"
-
-    local paragraphLength="$((leftMarginLength +
-    longNameLength +
-    separatorLength))"
-
-    local textWidth="$((maximumWidth - paragraphLength))"
-
-    leftMargin="$(getSpace "${leftMarginLength}")"
-    paragraph="$(getSpace "${paragraphLength}")"
-    separator="$(getSpace "${separatorLength}")"
-
-    useageString () {
-        echo -e "\n${leftMargin}$(attribute bold)Usage:$(attribute)" "$(basename "$0") $1 [ arguments ... ]\n"
-    }
-
-    title ()
-    {
-        local lspace
-        local length
-        local adjustment
-
-        length="$(getLength "$1")"
-        adjustment="$((length+separatorLength))"
-        lspace="${paragraph:${adjustment}}"
-
-        echo -n "$(attribute bold)${lspace}$1${separator}$(attribute)"
-    }
-
-    table () {
-        title "$1"
-        local desc
-
-        desc="$(
-            wrap "${2}" "${textWidth}" |
-            tr -s '\n' |
-            sed   "2,\${s/^/${paragraph}/}"
-        )"
-
-        echo "${desc}"
-    }
-
-    description () {
-        table "$(basename "$1")" \
-            "$(capitalize "$(MANAGE_TAG description "$1")")"
-    }
 
     if scriptPresent "${script}"
     then
@@ -82,7 +42,7 @@ help () (
     then
         script="_manage_${script}"
     else
-        script=""
+        script=
     fi
 
     if [ -n "${script}" ]
@@ -91,14 +51,15 @@ help () (
         description "$(scriptPath "${script}")"
         echo
     else
-        useageString '[ script ]'
-        scriptFilter description
+        useageString
+        scriptFilter getMaximum
+        scriptFilter description "$((HELP_MAXIMUM))" "$((80 - HELP_MAXIMUM - 6))"
         echo
 
         if [ -n "$1" ]
         then
-            echo -e "${leftMargin}Script \"$1\" does not exist.\n"
-            return 1
+            printf "  Script '%s' does not exist\n\n" "$1"
+            exit 1
         fi
     fi
-)
+}

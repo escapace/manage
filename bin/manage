@@ -13,6 +13,7 @@
 # @dependency fold
 # @dependency grep
 # @dependency head
+# @dependency printf
 # @dependency rev
 # @dependency sed
 # @dependency seq

@@ -8,9 +8,7 @@ main ()
     help "$1"
 }
 
+# TODO: completion
 # completion () {
-#     if (( $# == 0 ))
-#     then
-#         scriptEach filter scriptDescription
-#     fi
+#   scriptFilter scriptDescription
 # }
