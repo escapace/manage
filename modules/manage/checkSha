@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 # @import lang/required
+# @import lang/exists
+# @import console/die
 
 function checkSha () {
     required "$1" || return 1
+
+    exists openssl || die "Cannot find 'openssl' in path."
 
     local file="$1"
 

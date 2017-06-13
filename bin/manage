@@ -13,12 +13,10 @@
 # @dependency fold
 # @dependency grep
 # @dependency head
-# @dependency openssl
 # @dependency rev
 # @dependency sed
 # @dependency seq
 # @dependency sort
-# @dependency tput
 # @dependency tr
 
 if ((BASH_VERSINFO[0] >= 4)) &&
