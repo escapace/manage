@@ -3,6 +3,8 @@
 scriptFilter () {
     local script
     local path
+    local func="$1"
+    shift
 
     for script in "${!MANAGE_SCRIPTS[@]}"
     do
@@ -11,11 +13,11 @@ scriptFilter () {
         then
             if includes MANAGE_PUBLIC "${script:8}"
             then
-                "$1" "${path}"
+                "$func" "${path}" "$@"
             fi
         elif [[ "${script}" != "completion" ]]
         then
-            "$1" "${path}"
+            "$func" "${path}" "$@"
         fi
     done
 
