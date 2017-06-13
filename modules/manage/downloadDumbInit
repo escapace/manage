@@ -3,9 +3,12 @@
 # @import console/error
 # @import console/die
 # @import manage/checkSha
+# @import lang/exists
 
 downloadDumbInit ()
 {
+    exists curl || die "Cannot find 'curl' in path"
+
     local dumbInitTarget="${DUMB_INIT_TARGET:-${MANAGE_REPOSITORY}/vendor/dumb-init/dumb-init}"
     local dumbInitSha256="${DUMB_INIT_SHA256:-d03e74e7f0e1bcfa7d7ae5b03426ae945742715e33d433360e90e49dc1f30039}"
     local dumbInitUrl="${DUMB_INIT_URL:-https://github.com/epiloque/docker-base/releases/download/v1.0.2/dumb-init-x86_64}"

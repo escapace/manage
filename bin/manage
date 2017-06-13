@@ -7,7 +7,6 @@
 #
 # shellcheck disable=SC1090,SC2016,SC2034
 # @dependency bc
-# @dependency curl
 # @dependency cut
 # @dependency find
 # @dependency fold
