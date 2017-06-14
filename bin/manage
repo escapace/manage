@@ -88,8 +88,48 @@ verbose()
 }
 
 declare -A MANAGE_MODULE_NAMES
-declare -A MANAGE_NAMESPACES
 declare -A MANAGE_MODULES
+declare -A MANAGE_REMOTES
+declare -A MANAGE_PATHS
+
+MANAGE_ERROR () {
+    local type="$1"; shift
+    local prefix=$'\033[1m\033[31mERROR\033[39m\033[0m'
+
+    case "${type}" in
+        notDefined)
+            printf "%s '%s' is not defined\n" "${prefix}" "$@" >&2
+        ;;
+        notRepository)
+            printf "%s '%s' is not a valid manage repository\n" "${prefix}" "$@" >&2
+        ;;
+        diffVersion)
+            printf "%s at least two different versions requested for the '%s' repository\n" "${prefix}" "$@" >&2
+        ;;
+        failDownload)
+            printf "%s failed to download repository '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        invalidQuery)
+            printf "%s invalid option '%s' in query '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        invalidVersion)
+            printf "%s version options in query '%s'\nmust match the pattern '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        failImport)
+            printf "%s failed to import '%s': No such file or directory\n" "${prefix}" "$@" >&2
+        ;;
+        collision)
+            printf "%s the same name is used by two different functions\n '%s' and '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        failVerify)
+            printf "%s failed to verify repository '%s' with tag '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        *)
+            printf "%s uncaught exception\n" "${prefix}" >&2
+    esac
+
+    exit 1
+}
 
 MANAGE_BOOTSTRAP () {
     local namespace
@@ -99,10 +139,7 @@ MANAGE_BOOTSTRAP () {
         strict true
         '
 
-        for namespace in "${!MANAGE_NAMESPACES[@]}"
-        do
-            echo "${MANAGE_NAMESPACES[$namespace]}"
-        done
+        echo "${MANAGE_NAMESPACE}"
 
         echo '
             local ___func="$1"
@@ -126,25 +163,49 @@ _ () {
     then
         MANAGE_RUNTIME "$@"
     else
-        >&2 echo "ERROR: '${1}' is not defined"
-        exit 1
+        MANAGE_ERROR notDefined "$1"
     fi
 }
 
-MANAGE_SOURCE () (
+MANAGE_GET_FUNCTION () (
     source "${1}"
     declare -f "${2}"
 )
 
+MANAGE_SOURCE () {
+    local mode="$1"
+    local file="$2"
+    local script="$3"
+    local longName="$4"
+    local name
+
+
+    name="$(basename "${script}")"
+
+    if [[ -z "${MANAGE_MODULE_NAMES["${name}"]}" ]]
+    then
+        MANAGE_MODULE_NAMES["${name}"]="${longName}"
+    else
+        MANAGE_ERROR collision "${longName}" "${MANAGE_MODULE_NAMES["${name}"]}"
+    fi
+
+    if [[ "${mode}" = "underscore" ]]
+    then
+        MANAGE_NAMESPACE+="$(MANAGE_GET_FUNCTION "${file}" "${name}")"$'\n' ||
+            MANAGE_ERROR failImport "${longName}"
+    elif [[ "${mode}" = "local" ]]
+    then
+        source "${file}" || MANAGE_ERROR failImport "${longName}"
+    fi
+}
+
 MANAGE_TAG ()
 {
-    #TODO: go-getter like URL parsing
     local tag=${1}; shift
-    local trim="s/^[ \t]*//;s/[ \t]*$//"
-    local comment="^[ \t]*[#]+[ \t]*"
-
-    local import="[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+"
-    local dependency="[-_a-zA-Z0-9]+"
+    local trim='s/^[ \t]*//;s/[ \t]*$//'
+    local comment='^[ \t]*[#]+[ \t]*'
+    local import='[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+|github.com\/[-a-z0-9]{0,39}\/[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+(\?[a-zA-Z0-9]+=[a-zA-Z0-9\.]+)*'
+    local dependency='[-_a-zA-Z0-9]+'
 
     case "$tag" in
         import)
@@ -158,86 +219,313 @@ MANAGE_TAG ()
     esac
 }
 
+MANAGE_GET () {
+    local repository="$1"
+    local version="$2"
+    local directory="$3"
+    local verify="$4"
+    local modulePath
+
+    local localVersion
+
+    local lsRemoteRegex="^[a-z0-9]{40}[\t ]+refs\/tags\/v([0-9]+)\.([0-9]+)\.([0-9]+)([0-9A-Za-z-])?"
+    local state=1
+
+    if [[ -n "${MANAGE_REMOTES["${repository}"]}" ]]
+    then
+        [[ "${MANAGE_REMOTES["${repository}"]}" != "${version}" ]] && {
+            MANAGE_ERROR diffVersion "${repository}"
+        }
+    else
+        if [ -d "${directory}" ] &&
+           [ -f "${directory}/.manage.yml" ] &&
+           cd "${directory}" &&
+           [[ "$(git remote get-url origin)" = "${repository}" ]] &&
+           localVersion="$(git describe --tags | head -n 1)"
+        then
+            if [[ "${verify}" = "false" ]]
+            then
+                state=0
+                MANAGE_REMOTES["${repository}"]="${version}"
+            else
+                cd "${directory}" &&
+                git tag -v "${localVersion}" &> /dev/null &&
+                state=0 &&
+                MANAGE_REMOTES["${repository}"]="${version}"
+            fi
+
+            [[ "${version}" != "latest" ]] &&
+            [[ "${version}" != "${localVersion}" ]] &&
+            state=1
+        fi
+    fi
+
+    if [[ "${state}" = 1 ]]
+    then
+        (
+            rm -rf "${directory}"
+            mkdir -p "${directory}"
+            cd "${directory}"
+
+            git init -q "${directory}"
+            GIT_TERMINAL_PROMPT=0 git remote add origin "${repository}"
+
+            if [[ "${version}" = "latest" ]]
+            then
+                version="$(
+                    git ls-remote --refs -t -h -q |
+                    sed -r -n "/${lsRemoteRegex}/p" |
+                    LC_ALL=C sort -r -t '/' -k 3 -V |
+                    head -n 1 |
+                    cut -d '/' -f 3
+                )"
+            fi
+
+            git fetch -q --depth=1 --recurse-submodules=yes origin tag "${version}"
+            git checkout -q "${version}"
+            git submodule --quiet update --depth 1 --init --recursive
+
+            if [[ "${verify}" = "true" ]]
+            then
+                git tag -v "${version}" &> /dev/null || {
+                    rm -rf "${directory}"
+                    MANAGE_ERROR failVerify "${repository}" "${version}"
+                }
+            fi
+        ) || return 1
+
+        MANAGE_REMOTES["${repository}"]="${1}"
+    fi
+
+    if [[ ! -n "${MANAGE_PATHS["${repository}"]}" ]]
+    then
+        [ ! -f "${directory}/.manage.yml" ] && {
+            rm -rf "${directory}" || true
+            MANAGE_ERROR notRepository "${repository}"
+        }
+
+        modulePath="$(
+            awk '
+                !/^[[:blank:]]/ {unindented = $0}
+                /module: / && /^[[:blank:]]/ {
+                    if (unindented == "directories:") {
+                            gsub(/^[ \t\r\n]+module:[ \t\r\n]+/, "", $0);
+                            print;
+                    }
+                }
+            ' "${directory}/.manage.yml"
+        )" || modulePath=
+
+        if [ ! -n "${modulePath}" ]
+        then
+            modulePath="scripts/modules"
+        fi
+
+        modulePath="${directory}/${modulePath}"
+
+        [ ! -d "${modulePath}" ] && {
+            rm -rf "${directory}" || true
+            MANAGE_ERROR notRepository "${repository}"
+        }
+
+        MANAGE_PATHS["${repository}"]="${modulePath}"
+    fi
+}
+
 MANAGE_RESOLVE () {
-    [ -z "${MANAGE_IMPORT_PATHS}" ] && MANAGE_IMPORT_PATHS=("${MANAGE_DIRECTORY}/modules")
-    [ -n "${MANAGE_MODULE_DIRECTORY}" ] && MANAGE_IMPORT_PATHS+=("${MANAGE_MODULE_DIRECTORY}")
+    if [ -z "${MANAGE_REPOSITORY}" ]
+    then
+        MANAGE_DOWNLOAD_DIRECTORY="${MANAGE_DIRECTORY}/.manage_modules"
+    else
+        MANAGE_DOWNLOAD_DIRECTORY="${MANAGE_REPOSITORY}/.manage_modules"
+    fi
 
-    local name
-    local bashmagic="^(#!){1}.*(bash){1}.*"
-    local cwd
+    [ -z "${MANAGE_PATHS["0"]}" ] && MANAGE_PATHS["0"]="${MANAGE_DIRECTORY}/modules"
+
+    [ -z "${MANAGE_PATHS["1"]}" ] &&
+    [ -n "${MANAGE_MODULE_DIRECTORY}" ] &&
+    [ "${MANAGE_MODULE_DIRECTORY}" != "${MANAGE_DIRECTORY}/modules" ] &&
+    MANAGE_PATHS["1"]="${MANAGE_MODULE_DIRECTORY}"
+
+    local mode="$1";
+    local cwd="$2"; shift 2
+
+    local arguments
+    local directory
     local file
-    local imports=()
-    local mode="$1"
-    shift
-    local paths=(${MANAGE_IMPORT_PATHS[@]})
+    local functionName
+    local imports
+    local repository
     local script
-    local scripts=($@)
-    local namespace
+    local scriptName
+    local query
+    local versionRegex="v([0-9]+)\.([0-9]+)\.([0-9]+)([0-9A-Za-z-])?"
 
-    cwd="$(pwd)"
+    declare -A scripts
+    declare -A manageModules
+    declare -A localModules
+    declare -A otherModules
 
-    # TODO: performance
+    IFS=$'\n ' read -r -a arguments <<< "${@}"
+
+    for script in "${arguments[@]}"
+    do
+        if  [[ -n "${script}" ]] &&
+            [[ -z "${scripts[${script}]}" ]]
+        then
+            if [[ "${script:0:10}" = "github.com" ]]
+            then
+                IFS='/?' read -r -a query <<< "$script"
+
+                directory="${MANAGE_DOWNLOAD_DIRECTORY}/${query[1]}/${query[2]}"
+                repository="https://${query[0]}/${query[1]}/${query[2]}.git"
+                script="${query[0]}/${query[1]}/${query[2]}/${query[3]}/${query[4]}"
+                scriptName="${query[3]}/${query[4]}"
+
+                query=("${query[@]:5}")
+
+                local part key value
+                local version="latest"
+                local verify="true"
+
+                for part in "${query[@]}"
+                do
+                    key="${part%=*}"
+                    value="${part#*=}"
+
+                    case "${key}" in
+                        version)
+                            if [[ "${value}" =~ ^${versionRegex}$ || "${value}" = "latest" ]]
+                            then
+                                version="${value}"
+                            else
+                                MANAGE_ERROR invalidVersion "${script}?${part}" "${versionRegex}"
+                            fi
+                        ;;
+                        verify)
+                            case "${value}" in
+                                no|n|false|f|off|0)
+                                    verify=false
+                                    ;;
+                                *)
+                                    verify=true
+                            esac
+                        ;;
+                        *)
+                            MANAGE_ERROR invalidQuery "${part}" "${script}?${part}"
+                    esac
+                done
+
+                MANAGE_GET "${repository}" "${version}" "${directory}" "${verify}" || {
+                    rm -rf "${directory}" || true
+                    MANAGE_ERROR failDownload "${repository}"
+                }
+
+                scripts["${scriptName}"]="${script}"
+            else
+                scripts["${script}"]="${script}"
+            fi
+        fi
+    done
+
     while read -d '' -r file
     do
-        for script in "${scripts[@]}"
+        for script in "${!scripts[@]}"
         do
             if [[ -z "${MANAGE_MODULES["${script}"]}" ]] &&
                [[ "${file}" =~ ${script}$ ]] &&
-               [[ "$(head -n 1 "${file}")" =~ ${bashmagic} ]] &&
+               [[ "$(head -n 1 "${file}")" =~ ^(#!){1}.*(bash){1}.* ]] &&
                [[ "$(basename "${file}")" =~ ^[-_a-zA-Z0-9]*$ ]]
             then
-                imports+=($(MANAGE_TAG import "${file}"))
-                MANAGE_MODULES["${script}"]="${file}"
-                cd "$(dirname "${file}")"
-
-                if [[ "${mode}" == "underscore" ]]
+                if [[ "${file}" == "${MANAGE_DIRECTORY}/modules/"* ]]
                 then
-                    name="$(basename "${script}")"
-
-                    if [[ -z "${MANAGE_MODULE_NAMES["${name}"]}" ]]
-                    then
-                        MANAGE_MODULE_NAMES["${name}"]="${script}"
-                    else
-                        echo "Namespace collision '${script}' & '${MANAGE_MODULE_NAMES["${name}"]}'" && exit 1
-                    fi
-
-                    # TODO: other namespaces
-                    if [[ -n "${MANAGE_MODULE_DIRECTORY}" && "${file}" == "${MANAGE_MODULE_DIRECTORY}/"* ]]
-                    then
-                        MANAGE_NAMESPACES["local"]+="$(MANAGE_SOURCE "${file}" "${name}")"$'\n' ||
-                            ( echo "ERROR: Failed to import '${script}'" && exit 1 )
-                    elif [[ "${file}" == "${MANAGE_DIRECTORY}/modules/"* ]]
-                    then
-                        MANAGE_NAMESPACES["manage"]+="$(MANAGE_SOURCE "${file}" "${name}")"$'\n' ||
-                            ( echo "ERROR: Failed to import '${script}'" && exit 1 )
-                    fi
-                elif [[ "${mode}" == "local" ]]
+                    manageModules["${script}"]="${file}"
+                elif [[ -n "${MANAGE_MODULE_DIRECTORY}" ]] &&
+                     [[ "${MANAGE_MODULE_DIRECTORY}" != "${MANAGE_DIRECTORY}" ]] &&
+                     [[ "${file}" == "${MANAGE_MODULE_DIRECTORY}/"* ]]
                 then
-                    source "${file}" || ( echo "ERROR: Failed to import '${script}'" && exit 1 )
+                    localModules["${script}"]="${file}"
+                else
+                    otherModules["${script}"]="${file}"
                 fi
             fi
         done
-    done < <(find "${paths[@]}" -type f -print0)
+    done < <(find "${MANAGE_PATHS[@]}" -type f -print0 2> /dev/null)
 
-    for script in "${scripts[@]}"
+    for script in "${!manageModules[@]}"
     do
-        [ -z "${MANAGE_MODULES["${script}"]}" ] && ( echo "ERROR: Failed to import '${script}'" && exit 1 )
+        if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
+        then
+            file="${manageModules["${script}"]}"
+            imports+="$(MANAGE_TAG import "${file}")"
+            imports+=$'\n'
+
+            MANAGE_SOURCE "${mode}" "${file}" "${script}" "${scripts["${script}"]}"
+            MANAGE_MODULES["${script}"]="${file}"
+        fi
     done
 
-    if [ ! ${#imports[@]} -eq 0 ]
+    for script in "${!localModules[@]}"
+    do
+        if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
+        then
+            file="${localModules["${script}"]}"
+            imports+="$(MANAGE_TAG import "${file}")"
+            imports+=$'\n'
+
+            MANAGE_SOURCE "${mode}" "${file}" "${script}" "${scripts["${script}"]}"
+            MANAGE_MODULES["${script}"]="${file}"
+        fi
+    done
+
+    # TODO: Failure modes
+    for script in "${!otherModules[@]}"
+    do
+        if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
+        then
+            file="${otherModules["${script}"]}"
+            imports+="$(MANAGE_TAG import "${file}")"
+            imports+=$'\n'
+
+
+            # if [[ ! "${scripts["${script}"]}" =~ ^github\.com ]]
+            # then
+            #     echo give an error for "${script}"
+            #     exit 1
+            # fi
+
+            MANAGE_SOURCE "${mode}" "${file}" "${script}" "${scripts["${script}"]}"
+            MANAGE_MODULES["${script}"]="${file}"
+        else
+            true
+            # if [[ "${scripts["${script}"]}" =~ ^github\.com ]]
+            # then
+            #     echo give a warning for "${script}"
+            # fi
+        fi
+    done
+
+    for script in "${!scripts[@]}"
+    do
+        [ -z "${MANAGE_MODULES["${script}"]}" ] && {
+            MANAGE_ERROR failImport "${scripts[${script}]}"
+        }
+    done
+
+    if [ ! ${#imports} -eq 0 ]
     then
-        MANAGE_RESOLVE "${mode}" "${imports[@]}"
+        MANAGE_RESOLVE "${mode}" "${cwd}" "${imports//$'\n'/ }"
     fi
 
     cd "${cwd}" || exit
 }
 
 MANAGE_LOCAL () {
-    MANAGE_RESOLVE local "$@"
+    MANAGE_RESOLVE local "$(pwd)" "$@"
 }
 
 MANAGE_UNDERSCORE () {
-    MANAGE_RESOLVE underscore "$@"
+    MANAGE_RESOLVE underscore "$(pwd)" "$@"
 }
 
 MANAGE_ONCE () {
