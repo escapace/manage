@@ -22,10 +22,11 @@ main ()
 
     while read -d '' -r file
     do
-        if isScript "${file}"
+        if isFile "${file}" &&
+           isMagic "${file}" &&
+           [[ "$(basename "${file}")" =~ ^[-_a-zA-Z0-9\.]*$ ]]
         then
-
-            shellcheck "${file}" || exitCode=$?
+           shellcheck "${file}" || exitCode=$?
         fi
     done < <(find "${paths[@]}" -type f -print0)
 

@@ -1,3 +1,5 @@
+.manage_modules/*
+!.manage_modules/.gitkeep
 .vagrant
 Vagrantfile
 typescript

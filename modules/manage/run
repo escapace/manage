@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # @import array/includes
-# @import array/join
 # @import console/die
 # @import manage/checkFileDependencies
 # @import manage/isInternal
@@ -104,7 +103,7 @@ executeScript () {
         checkFileDependencies "${path}"
 
         # shellcheck disable=SC2034
-        imports=($(MANAGE_TAG "import" "${path}"))
+        imports="$(MANAGE_TAG "import" "${path}")"
 
         zero="$(basename "${MANAGE_ZERO}")"
         libexec="source \"${MANAGE_DIRECTORY}/bin/manage\""
@@ -126,11 +125,11 @@ executeScript () {
                   MANAGE_MODULE_DIRECTORY=\"${MANAGE_MODULE_DIRECTORY}\"
                   MANAGE_SCRIPT_PATH=\"${path}\"
                   MANAGE_ZERO=\"${MANAGE_ZERO}\"
-                  MANAGE_IMPORT=\"$(join imports ' ')\""
+                  MANAGE_IMPORT=\"${imports}\""
 
-        commandstring="$(echo "${exports} && ${libexec}" | tr '\n' ' ')"
-        commandstring="$(squeeze "${commandstring}")"
-
+        commandstring="${exports} && ${libexec}"
+        commandstring="${commandstring//$'\n'/ }"
+ 
         exec -a "${zero}"           \
             "bash"                  \
             "--norc"                \

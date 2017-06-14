@@ -114,10 +114,10 @@ test_runtime () {
     sharness="source \"${MANAGE_DIRECTORY}/vendor/sharness/sharness.sh\" $(_ join flags ' ')"
     testSource="source \"${file}\""
 
-
     if [ ! -z "${MANAGE_TEST_DIRECTORY}" ]
     then
         exports+="MANAGE_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
+        exports+="MANAGE_MODULE_DIRECTORY=\"${MANAGE_MODULE_DIRECTORY}\" "
         exports+="SHARNESS_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
         exports+="SHARNESS_RESULT=\"${resultFile}\" "
         exports+="SHARNESS_TRASH_DIRECTORY=\"${tmpDir}/trash\" "
@@ -144,13 +144,13 @@ test_suite () {
 
     if [ -d "${MANAGE_TEST_DIRECTORY}" ]
     then
-        if _ required "${1}"
-        then
-            for file in "${MANAGE_TEST_DIRECTORY}"/*.spec.sh
-            do
-                if [   -f "${file}" ] &&
-                   [   -r "${file}" ] &&
-                   _ isMagic "${file}"
+        for file in "${MANAGE_TEST_DIRECTORY}"/*.spec.sh
+        do
+            if [   -f "${file}" ] &&
+               [   -r "${file}" ] &&
+               _ isMagic "${file}"
+            then
+                if _ required "${1}"
                 then
                     name="$(testName "${file}")"
 
@@ -158,20 +158,11 @@ test_suite () {
                     then
                         targets=("${file}")
                     fi
-                fi
-            done
-            cd "${OPWD}" || exit
-        else
-            for file in "${MANAGE_TEST_DIRECTORY}"/*.{spec.sh,t,t.sh}
-            do
-                if [   -f "${file}" ] &&
-                   [   -r "${file}" ] &&
-                   _ isMagic "${file}"
-                then
+                else
                     targets+=("${file}")
                 fi
-            done
-        fi
+            fi
+        done
 
         if [ ! "${#targets[@]}" -eq 0 ]
         then
@@ -213,22 +204,3 @@ onExit ()
 }
 
 # TODO: completion
-
-# completion () {
-#     if (( $# == 0 ))
-#     then
-#         if [ -d "${MANAGE_TEST_DIRECTORY}" ]
-#         then
-#             for file in "${MANAGE_TEST_DIRECTORY}"/*.bats
-#             do
-#                 if [   -f "${file}" ] &&
-#                    [   -r "${file}" ] &&
-#                    [[ "$(basename "${file}")" == *.bats ]]
-#                 then
-#                     name="$(basename "${file}")"
-#                     echo "${name::-5}"
-#                 fi
-#             done
-#         fi
-#     fi
-# }
