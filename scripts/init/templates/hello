@@ -6,8 +6,6 @@
 # @import console/warn
 # @import console/error
 # @import example/hello
-#
-# @dependency bash
 
 main ()
 {
