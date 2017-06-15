@@ -2,6 +2,7 @@
 # @import console/attribute
 # @import console/error
 # @import console/info
+# @import console/debug
 # @import console/warn
 # @import lang/required
 # @import string/wrap
@@ -22,6 +23,11 @@ log ()
     arrow="$(attribute bold ">")$(attribute)"
 
     case "$1" in
+        debug)
+            shift
+
+            debug "${@}"
+            ;;
         info)
             shift
 
