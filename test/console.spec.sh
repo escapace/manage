@@ -10,6 +10,7 @@ MANAGE_UNDERSCORE \
     console/tab \
     console/log \
     console/info \
+    console/debug \
     console/error \
     console/warn \
     console/icon \
@@ -41,6 +42,12 @@ assert_equal () {
 expectSuccess 'log' '
     verbose true &&
     [[ "$(_ log "${ipsum}" "${ipsum}")" = "$(cat "${FIXTURES}/log/expected")" ]]
+'
+
+expectSuccess 'debug' '
+    verbose true &&
+    [[ "$(_ debug "${ipsum}" "${ipsum}")" = "$(cat "${FIXTURES}/debug/expected")" ]] &&
+    [[ "$(_ log debug "${ipsum}" "${ipsum}")" = "$(cat "${FIXTURES}/debug/expected")" ]]
 '
 
 expectSuccess 'info' '
