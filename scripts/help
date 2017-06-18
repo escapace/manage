@@ -7,8 +7,3 @@ main ()
 
     help "$1"
 }
-
-# TODO: completion
-# completion () {
-#   scriptFilter scriptDescription
-# }

@@ -1,7 +1,7 @@
 FROM alpine:3.6
 MAINTAINER Mark Milstein <mark@epiloque.com> (@epiloque)
 
-RUN apk add --no-cache coreutils bash sed bc
+RUN apk add --no-cache coreutils bash sed bc gnupg git
 
 ENV DOCKER=true
 RUN mkdir -p /workdir

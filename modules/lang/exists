@@ -8,7 +8,6 @@ exists () {
 
     local i
     local dependencies=("$@")
-    local coreutils=("sed")
     local code=0
 
     for i in "${!dependencies[@]}"
@@ -18,7 +17,7 @@ exists () {
 
         names+=("${dependencies[i]}")
 
-        if includes coreutils "${dependencies[i]}"
+        if includes MANAGE_COREUTILS "${dependencies[i]}"
         then
             names+=("g${dependencies[i]}")
         fi

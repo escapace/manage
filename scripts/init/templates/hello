@@ -31,24 +31,3 @@ onExit ()
         _ error "An error with exit code \"$1\" has occured."
     fi
 }
-
-completion () {
-    case "$1" in
-        reginald)
-            echo "Peter"
-            echo "Molly:Leading online fashion boutique."
-            ;;
-        dwayne)
-            echo "Map:World maps, atlases and geography."
-            echo "News"
-            ;;
-        files)
-            # Fallback to file/dir completion.
-            return 1
-            ;;
-        *)
-            echo 'reginald:This is a description for zsh tab completion.'
-            echo 'dwayne:This is another description for zsh tab completion.'
-            echo 'files:file/dir completion'
-        esac
-}

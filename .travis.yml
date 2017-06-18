@@ -26,6 +26,9 @@ matrix:
       - brew update
       - brew install bash
       - brew install gnu-sed
+      - brew upgrade coreutils
+      - brew upgrade gnupg
+      - brew upgrade git
       - /usr/local/bin/bash --version
       - /usr/local/bin/bash bin/manage ci
 branches:
