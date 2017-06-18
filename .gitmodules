@@ -1,3 +1,18 @@
 [submodule "vendor/sharness"]
 	path = vendor/sharness
 	url = https://github.com/epiloque/sharness.git
+[submodule "modules/string"]
+	path = modules/string
+	url = https://github.com/epiloque/manage-string.git
+[submodule "modules/array"]
+	path = modules/array
+	url = https://github.com/epiloque/manage-array.git
+[submodule "modules/console"]
+	path = modules/console
+	url = https://github.com/epiloque/manage-console.git
+[submodule "modules/lang"]
+	path = modules/lang
+	url = https://github.com/epiloque/manage-lang.git
+[submodule "modules/path"]
+	path = modules/path
+	url = https://github.com/epiloque/path.git

@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-# @import lang/required
-
-truncate () {
-    required "$1" || return 1
-    local length="${2:-80}"
-
-    echo "$1" | cut -c "1-${length}"
-}
