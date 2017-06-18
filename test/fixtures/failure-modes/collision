@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# @import example/hello
+# @import another-example/hello
+
+main ()
+{
+    verbose true
+    strict true
+
+    _ hello
+}

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# @import github.com/epiloque/manage-examples/spark/spark?version=v1.0.0
+
+main ()
+{
+    verbose true
+    strict true
+}

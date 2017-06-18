@@ -28,15 +28,24 @@ else
     exit 1
 fi
 
-sed ()
-{
-    if command -v "gsed" > /dev/null 2>&1
-    then
-        command gsed "$@"
-    else
-        command sed "$@"
-    fi
-}
+MANAGE_COREUTILS=(sed sort)
+
+for executable in "${MANAGE_COREUTILS[@]}"
+do
+    eval "
+        ${executable} ()
+        {
+            if command -v \"g${executable}\" > /dev/null 2>&1
+            then
+                command \"g${executable}\" \"\$@\"
+            else
+                command \"${executable}\" \"\$@\"
+            fi
+        }
+    "
+done
+
+unset executable
 
 strict()
 {
@@ -64,7 +73,7 @@ strict()
     esac
 }
 
-verbose()
+verbose ()
 {
     #
     # With no arguments, test if verbose mode is enabled.
@@ -72,17 +81,17 @@ verbose()
     #
 
     if (( $# == 0 )); then
-        [ -n "${MANAGEVERBOSE}" ] && return "${MANAGEVERBOSE}"
+        [ -n "${MANAGE_VERBOSE}" ] && return "${MANAGE_VERBOSE}"
         return 1
     else
         local value
         value="$(tr '[:upper:]' '[:lower:]' <<< "$1")"
         case "${value}" in
             no|n|false|f|off|0)
-                MANAGEVERBOSE=1
+                MANAGE_VERBOSE=1
                 ;;
             *)
-                MANAGEVERBOSE=0
+                MANAGE_VERBOSE=0
         esac
     fi
 }
@@ -90,7 +99,7 @@ verbose()
 declare -A MANAGE_MODULE_NAMES
 declare -A MANAGE_MODULES
 declare -A MANAGE_REMOTES
-declare -A MANAGE_PATHS
+declare -A MANAGE_REMOTE_PATHS
 
 MANAGE_ERROR () {
     local type="$1"; shift
@@ -113,16 +122,16 @@ MANAGE_ERROR () {
             printf "%s invalid option '%s' in query '%s'\n" "${prefix}" "$@" >&2
         ;;
         invalidVersion)
-            printf "%s version options in query '%s'\nmust match the pattern '%s'\n" "${prefix}" "$@" >&2
+            printf "%s version option in query '%s'\nmust match the pattern '%s'\n" "${prefix}" "$@" >&2
         ;;
         failImport)
-            printf "%s failed to import '%s': No such file or directory\n" "${prefix}" "$@" >&2
-        ;;
-        collision)
-            printf "%s the same name is used by two different functions\n '%s' and '%s'\n" "${prefix}" "$@" >&2
+            printf "%s failed to import '%s'\n" "${prefix}" "$@" >&2
         ;;
         failVerify)
             printf "%s failed to verify repository '%s' with tag '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        collision)
+            printf "%s the same name is used by two different functions\n '%s' and '%s'\n" "${prefix}" "$@" >&2
         ;;
         *)
             printf "%s uncaught exception\n" "${prefix}" >&2
@@ -147,8 +156,7 @@ MANAGE_BOOTSTRAP () {
 
             if [[ "$(type -t "${___func}")" = "function" ]]
             then
-                "${___func}" "$@" || return $?
-                return $?
+                "${___func}" "$@"
             else
                 return 1
             fi
@@ -168,6 +176,8 @@ _ () {
 }
 
 MANAGE_GET_FUNCTION () (
+    cd "$(dirname "${1}")" || return 1
+
     source "${1}"
     declare -f "${2}"
 )
@@ -176,9 +186,9 @@ MANAGE_SOURCE () {
     local mode="$1"
     local file="$2"
     local script="$3"
-    local longName="$4"
+    local longName="${4:-${script}}"
     local name
-
+    local cwd
 
     name="$(basename "${script}")"
 
@@ -195,28 +205,13 @@ MANAGE_SOURCE () {
             MANAGE_ERROR failImport "${longName}"
     elif [[ "${mode}" = "local" ]]
     then
-        source "${file}" || MANAGE_ERROR failImport "${longName}"
+        {
+            cwd="$(pwd)"
+            cd "$(dirname "${file}")"
+            source "${file}"
+            cd "${cwd}"
+        } || MANAGE_ERROR failImport "${longName}"
     fi
-}
-
-MANAGE_TAG ()
-{
-    local tag=${1}; shift
-    local trim='s/^[ \t]*//;s/[ \t]*$//'
-    local comment='^[ \t]*[#]+[ \t]*'
-    local import='[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+|github.com\/[-a-z0-9]{0,39}\/[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+(\?[a-zA-Z0-9]+=[a-zA-Z0-9\.]+)*'
-    local dependency='[-_a-zA-Z0-9]+'
-
-    case "$tag" in
-        import)
-            sed -nr "s/${comment}@${tag} (${import})$/\1/p;${trim}" "$@"
-        ;;
-        dependency)
-            sed -nr "s/${comment}*@${tag} (${dependency})$/\1/p;${trim}" "$@"
-        ;;
-        *)
-            sed -nr "s/${comment}*@${tag} (.+)$/\1/p;${trim}" "$@"
-    esac
 }
 
 MANAGE_GET () {
@@ -281,9 +276,11 @@ MANAGE_GET () {
                 )"
             fi
 
-            git fetch -q --depth=1 --recurse-submodules=yes origin tag "${version}"
-            git checkout -q "${version}"
-            git submodule --quiet update --depth 1 --init --recursive
+            {
+                git fetch -q --depth=1 --recurse-submodules=yes origin tag "${version}"
+                git checkout -q "${version}"
+                git submodule --quiet update --depth 1 --init --recursive
+            } &> /dev/null
 
             if [[ "${verify}" = "true" ]]
             then
@@ -297,7 +294,7 @@ MANAGE_GET () {
         MANAGE_REMOTES["${repository}"]="${1}"
     fi
 
-    if [[ ! -n "${MANAGE_PATHS["${repository}"]}" ]]
+    if [[ ! -n "${MANAGE_REMOTE_PATHS["${repository}"]}" ]]
     then
         [ ! -f "${directory}/.manage.yml" ] && {
             rm -rf "${directory}" || true
@@ -328,102 +325,126 @@ MANAGE_GET () {
             MANAGE_ERROR notRepository "${repository}"
         }
 
-        MANAGE_PATHS["${repository}"]="${modulePath}"
+        MANAGE_REMOTE_PATHS["${repository}"]="${modulePath}"
     fi
 }
 
-MANAGE_RESOLVE () {
-    if [ -z "${MANAGE_REPOSITORY}" ]
-    then
-        MANAGE_DOWNLOAD_DIRECTORY="${MANAGE_DIRECTORY}/.manage_modules"
-    else
-        MANAGE_DOWNLOAD_DIRECTORY="${MANAGE_REPOSITORY}/.manage_modules"
-    fi
+MANAGE_TAG ()
+{
+    local tag=${1}; shift
+    local trim='s/^[ \t]*//;s/[ \t]*$//'
+    local comment='^[ \t]*[#]+[ \t]*'
+    local import='[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+|github.com\/[-a-z0-9]{0,39}\/[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+(\?[a-zA-Z0-9]+=[a-zA-Z0-9\.]+)*'
+    local dependency='[-_a-zA-Z0-9]+'
 
-    [ -z "${MANAGE_PATHS["0"]}" ] && MANAGE_PATHS["0"]="${MANAGE_DIRECTORY}/modules"
+    case "$tag" in
+        import)
+            sed -nr "s/${comment}@${tag} (${import})$/\1/p;${trim}" "$@"
+        ;;
+        dependency)
+            sed -nr "s/${comment}*@${tag} (${dependency})$/\1/p;${trim}" "$@"
+        ;;
+        *)
+            sed -nr "s/${comment}*@${tag} (.+)$/\1/p;${trim}" "$@"
+    esac
+}
 
-    [ -z "${MANAGE_PATHS["1"]}" ] &&
-    [ -n "${MANAGE_MODULE_DIRECTORY}" ] &&
-    [ "${MANAGE_MODULE_DIRECTORY}" != "${MANAGE_DIRECTORY}/modules" ] &&
-    MANAGE_PATHS["1"]="${MANAGE_MODULE_DIRECTORY}"
-
-    local mode="$1";
-    local cwd="$2"; shift 2
-
-    local arguments
-    local directory
+MANAGE_QUERY () {
+    local mode="$1"; shift 1
     local file
-    local functionName
-    local imports
-    local repository
-    local script
-    local scriptName
-    local query
-    local versionRegex="v([0-9]+)\.([0-9]+)\.([0-9]+)([0-9A-Za-z-])?"
+    local list
 
-    declare -A scripts
-    declare -A manageModules
-    declare -A localModules
-    declare -A otherModules
+    for file in "$@"
+    do
+        list="$(MANAGE_TAG import "${file}")"
+        list="${list//$'\n'/ }"
+        list=(${list})
+
+        if [[ "${file}" == "${MANAGE_DOWNLOAD_DIRECTORY}"/* ]]
+        then
+            MANAGE_RESOLVE_REMOTE "${mode}" "${list[@]}"
+        else
+            MANAGE_RESOLVE_LOCAL "${mode}" "${list[@]}"
+        fi
+    done
+}
+
+MANAGE_RESOLVE_REMOTE () {
+    local mode="$1"; shift 1
+    local arguments
+    local script
+    local file
+    local versionRegex="v([0-9]+)\.([0-9]+)\.([0-9]+)([0-9A-Za-z-])?"
 
     IFS=$'\n ' read -r -a arguments <<< "${@}"
 
+    declare -A managePaths
+    declare -A imports
+    declare -A scripts
+    declare -A remoteModules
+    declare -A manageModules
+
+    managePaths["${MANAGE_DIRECTORY}/modules"]="1"
+
     for script in "${arguments[@]}"
     do
-        if  [[ -n "${script}" ]] &&
-            [[ -z "${scripts[${script}]}" ]]
+        if [[ -n "${script}" ]] &&
+           [[ -z "${scripts["${script}"]}" ]]
         then
-            if [[ "${script:0:10}" = "github.com" ]]
+            if [[ "${script:0:10}" != "github.com" ]]
             then
+                [[ -z "${MANAGE_MODULES["${script}"]}" ]] &&
+                scripts["${script}"]="${script}"
+            else
                 IFS='/?' read -r -a query <<< "$script"
 
-                directory="${MANAGE_DOWNLOAD_DIRECTORY}/${query[1]}/${query[2]}"
-                repository="https://${query[0]}/${query[1]}/${query[2]}.git"
+                local directory="${MANAGE_DOWNLOAD_DIRECTORY}/${query[1]}/${query[2]}"
+                local repository="https://${query[0]}/${query[1]}/${query[2]}.git"
+                local scriptName="${query[3]}/${query[4]}"
                 script="${query[0]}/${query[1]}/${query[2]}/${query[3]}/${query[4]}"
-                scriptName="${query[3]}/${query[4]}"
 
-                query=("${query[@]:5}")
+                if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
+                then
+                    local query=("${query[@]:5}")
+                    local part key value
+                    local version="latest"
+                    local verify="true"
 
-                local part key value
-                local version="latest"
-                local verify="true"
+                    for part in "${query[@]}"
+                    do
+                        key="${part%=*}"
+                        value="${part#*=}"
 
-                for part in "${query[@]}"
-                do
-                    key="${part%=*}"
-                    value="${part#*=}"
+                        case "${key}" in
+                            version)
+                                if [[ "${value}" =~ ^${versionRegex}$ || "${value}" = "latest" ]]
+                                then
+                                    version="${value}"
+                                else
+                                    MANAGE_ERROR invalidVersion "${script}?${part}" "${versionRegex}"
+                                fi
+                            ;;
+                            verify)
+                                case "${value}" in
+                                    no|n|false|f|off|0)
+                                        verify=false
+                                        ;;
+                                    *)
+                                        verify=true
+                                esac
+                            ;;
+                            *)
+                                MANAGE_ERROR invalidQuery "${part}" "${script}?${part}"
+                        esac
+                    done
 
-                    case "${key}" in
-                        version)
-                            if [[ "${value}" =~ ^${versionRegex}$ || "${value}" = "latest" ]]
-                            then
-                                version="${value}"
-                            else
-                                MANAGE_ERROR invalidVersion "${script}?${part}" "${versionRegex}"
-                            fi
-                        ;;
-                        verify)
-                            case "${value}" in
-                                no|n|false|f|off|0)
-                                    verify=false
-                                    ;;
-                                *)
-                                    verify=true
-                            esac
-                        ;;
-                        *)
-                            MANAGE_ERROR invalidQuery "${part}" "${script}?${part}"
-                    esac
-                done
+                    MANAGE_GET "${repository}" "${version}" "${directory}" "${verify}" || {
+                        rm -rf "${directory}" || true
+                        MANAGE_ERROR failDownload "${repository}"
+                    }
 
-                MANAGE_GET "${repository}" "${version}" "${directory}" "${verify}" || {
-                    rm -rf "${directory}" || true
-                    MANAGE_ERROR failDownload "${repository}"
-                }
-
-                scripts["${scriptName}"]="${script}"
-            else
-                scripts["${script}"]="${script}"
+                    scripts["${scriptName}"]="${script}"
+                fi
             fi
         fi
     done
@@ -432,8 +453,87 @@ MANAGE_RESOLVE () {
     do
         for script in "${!scripts[@]}"
         do
-            if [[ -z "${MANAGE_MODULES["${script}"]}" ]] &&
-               [[ "${file}" =~ ${script}$ ]] &&
+            if [[ "${file}" =~ ${script}$ ]] &&
+               [[ "$(head -n 1 "${file}")" =~ ^(#!){1}.*(bash){1}.* ]] &&
+               [[ "$(basename "${file}")" =~ ^[-_a-zA-Z0-9]*$ ]]
+            then
+                if [[ "${file}" == "${MANAGE_DOWNLOAD_DIRECTORY}/"* ]]
+                then
+                    remoteModules["${script}"]="${file}"
+                else
+                    manageModules["${script}"]="${file}"
+                fi
+            fi
+        done
+    done < <(find "${!managePaths[@]}" "${MANAGE_REMOTE_PATHS[@]}" -type f -print0 2> /dev/null)
+
+    for script in "${!manageModules[@]}"
+    do
+        local longName="${scripts["${script}"]}"
+
+        if [[ "${longName:0:10}" = "github.com" ]]
+        then
+            MANAGE_ERROR failImport "${longName}"
+        fi
+
+        file="${manageModules["${script}"]}"
+        imports["${file}"]=1
+
+        MANAGE_SOURCE "${mode}" "${file}" "${script}" "${longName}"
+        MANAGE_MODULES["${script}"]="${file}"
+    done
+
+    for script in "${!remoteModules[@]}"
+    do
+        file="${remoteModules["${script}"]}"
+        imports["${file}"]=1
+
+        MANAGE_SOURCE "${mode}" "${file}" "${script}" "${scripts["${script}"]}"
+        MANAGE_MODULES["${script}"]="${file}"
+    done
+
+    for script in "${!scripts[@]}"
+    do
+        [ -z "${MANAGE_MODULES["${script}"]}" ] && {
+            MANAGE_ERROR failImport "${script}"
+        }
+    done
+
+    if [ ! ${#imports[@]} -eq 0 ]
+    then
+        MANAGE_QUERY "${mode}" "${!imports[@]}"
+    fi
+}
+
+MANAGE_RESOLVE_LOCAL () {
+    local mode="$1"; shift 1
+    local arguments
+    local script
+    local file
+
+    IFS=$'\n ' read -r -a arguments <<< "${@}"
+
+    declare -A localModules
+    declare -A manageModules
+    declare -A managePaths
+    declare -A imports
+    declare -A scripts
+
+    managePaths["${MANAGE_DIRECTORY}/modules"]="1"
+    [ -n "${MANAGE_MODULE_DIRECTORY}" ] && managePaths["${MANAGE_MODULE_DIRECTORY}"]="1"
+
+    for script in "${arguments[@]}"
+    do
+        [[ -n "${script}" ]] &&
+        [[ -z "${MANAGE_MODULES["${script}"]}" ]] &&
+        scripts["${script}"]=1
+    done
+
+    while read -d '' -r file
+    do
+        for script in "${!scripts[@]}"
+        do
+            if [[ "${file}" =~ ${script}$ ]] &&
                [[ "$(head -n 1 "${file}")" =~ ^(#!){1}.*(bash){1}.* ]] &&
                [[ "$(basename "${file}")" =~ ^[-_a-zA-Z0-9]*$ ]]
             then
@@ -445,87 +545,81 @@ MANAGE_RESOLVE () {
                      [[ "${file}" == "${MANAGE_MODULE_DIRECTORY}/"* ]]
                 then
                     localModules["${script}"]="${file}"
-                else
-                    otherModules["${script}"]="${file}"
                 fi
             fi
         done
-    done < <(find "${MANAGE_PATHS[@]}" -type f -print0 2> /dev/null)
+    done < <(find "${!managePaths[@]}" -type f -print0 2> /dev/null)
 
     for script in "${!manageModules[@]}"
     do
-        if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
-        then
-            file="${manageModules["${script}"]}"
-            imports+="$(MANAGE_TAG import "${file}")"
-            imports+=$'\n'
+        file="${manageModules["${script}"]}"
+        imports["${file}"]=1
 
-            MANAGE_SOURCE "${mode}" "${file}" "${script}" "${scripts["${script}"]}"
-            MANAGE_MODULES["${script}"]="${file}"
-        fi
+        MANAGE_SOURCE "${mode}" "${file}" "${script}"
+        MANAGE_MODULES["${script}"]="${file}"
     done
 
     for script in "${!localModules[@]}"
     do
-        if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
-        then
-            file="${localModules["${script}"]}"
-            imports+="$(MANAGE_TAG import "${file}")"
-            imports+=$'\n'
+        file="${localModules["${script}"]}"
+        imports["${file}"]=1
 
-            MANAGE_SOURCE "${mode}" "${file}" "${script}" "${scripts["${script}"]}"
-            MANAGE_MODULES["${script}"]="${file}"
-        fi
-    done
-
-    # TODO: Failure modes
-    for script in "${!otherModules[@]}"
-    do
-        if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
-        then
-            file="${otherModules["${script}"]}"
-            imports+="$(MANAGE_TAG import "${file}")"
-            imports+=$'\n'
-
-
-            # if [[ ! "${scripts["${script}"]}" =~ ^github\.com ]]
-            # then
-            #     echo give an error for "${script}"
-            #     exit 1
-            # fi
-
-            MANAGE_SOURCE "${mode}" "${file}" "${script}" "${scripts["${script}"]}"
-            MANAGE_MODULES["${script}"]="${file}"
-        else
-            true
-            # if [[ "${scripts["${script}"]}" =~ ^github\.com ]]
-            # then
-            #     echo give a warning for "${script}"
-            # fi
-        fi
+        MANAGE_SOURCE "${mode}" "${file}" "${script}"
+        MANAGE_MODULES["${script}"]="${file}"
     done
 
     for script in "${!scripts[@]}"
     do
         [ -z "${MANAGE_MODULES["${script}"]}" ] && {
-            MANAGE_ERROR failImport "${scripts[${script}]}"
+            MANAGE_ERROR failImport "${script}"
         }
     done
 
-    if [ ! ${#imports} -eq 0 ]
+    if [ ! ${#imports[@]} -eq 0 ]
     then
-        MANAGE_RESOLVE "${mode}" "${cwd}" "${imports//$'\n'/ }"
+        MANAGE_QUERY "${mode}" "${!imports[@]}"
+    fi
+}
+
+MANAGE_RESOLVE () {
+    local mode="$1"; shift 1
+    local arguments
+    local script
+
+    if [ -z "${MANAGE_REPOSITORY}" ] &&
+       [ -z "${MANAGE_DOWNLOAD_DIRECTORY}" ]
+    then
+        MANAGE_DOWNLOAD_DIRECTORY="${MANAGE_DIRECTORY}/.manage_modules"
+    else
+        MANAGE_DOWNLOAD_DIRECTORY="${MANAGE_REPOSITORY}/.manage_modules"
     fi
 
-    cd "${cwd}" || exit
+    IFS=$'\n ' read -r -a arguments <<< "${@}"
+
+    declare -A localModules
+    declare -A remoteModules
+
+    for script in "${arguments[@]}"
+    do
+        [[ -n "${script}" ]] && case "${script}" in
+            github.com*)
+                remoteModules["${script}"]=1
+            ;;
+            *)
+                localModules["${script}"]=1
+        esac
+    done
+
+    MANAGE_RESOLVE_LOCAL "${mode}" "${!localModules[@]}"
+    MANAGE_RESOLVE_REMOTE "${mode}" "${!remoteModules[@]}"
 }
 
 MANAGE_LOCAL () {
-    MANAGE_RESOLVE local "$(pwd)" "$@"
+    MANAGE_RESOLVE local "$@"
 }
 
 MANAGE_UNDERSCORE () {
-    MANAGE_RESOLVE underscore "$(pwd)" "$@"
+    MANAGE_RESOLVE underscore "$@"
 }
 
 MANAGE_ONCE () {
@@ -538,26 +632,16 @@ MANAGE_ONCE () {
 MANAGE_MAIN ()
 {
     local _code
-    local _function
-    if [ -n "${MANAGE_COMPLETION}" ]
-    then
-        _function="completion"
-    else
-        _function="main"
-    fi
 
-    if declare -f "${_function}" > /dev/null 2>&1
+    if declare -f "main" > /dev/null 2>&1
     then
         trap 'MANAGE_ONCE MANAGE_RETURN $?' INT HUP TERM QUIT EXIT
-        "${_function}" "$@"
+        main "$@"
         _code=$?
         trap - INT HUP TERM QUIT EXIT ERR
     fi
 
-    if [ ! -n "${MANAGE_COMPLETION}" ]
-    then
-        MANAGE_ONCE MANAGE_RETURN "${_code}"
-    fi
+    MANAGE_ONCE MANAGE_RETURN "${_code}"
 
     return $?
 }
@@ -633,7 +717,6 @@ else
     MANAGE_LOCAL \
         manage/checkFileDependencies \
         manage/collectScripts \
-        manage/completion \
         manage/help
 
     checkFileDependencies "${MANAGE_DIRECTORY}/bin/manage"

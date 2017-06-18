@@ -2,7 +2,7 @@ FROM fedora:rawhide
 MAINTAINER Mark Milstein <mark@epiloque.com> (@epiloque)
 
 # RUN dnf -y update && dnf clean all
-RUN dnf -y install coreutils findutils bc
+RUN dnf -y install coreutils findutils bc gnupg git
 
 ENV DOCKER=true
 RUN mkdir -p /workdir

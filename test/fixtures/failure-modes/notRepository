@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# @import github.com/epiloque/empty-repository/directory/function?verify=false
+
+main ()
+{
+    verbose true
+    strict true
+}

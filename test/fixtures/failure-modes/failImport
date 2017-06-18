@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# @import github.com/epiloque/manage-examples/spark/noSuchFile?version=v1.1.0
+
+main ()
+{
+    verbose true
+    strict true
+}

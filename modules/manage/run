@@ -82,19 +82,9 @@ executeScript () {
     then
         source "${path}"
 
-        if [ -n "${MANAGE_COMPLETION}" ]
-        then
-            if declare -f "completion" > /dev/null 2>&1
-            then
-                completion "$@" || code=$?
-                MANAGE_COMPLETION=""
-            fi
-        else
-            main "$@" || code=$?
-        fi
+        main "$@" || code=$?
 
         # TODO: cache
-        # cachescripts || true
     else
         local zero
         local exports=""
@@ -111,11 +101,6 @@ executeScript () {
         if [ ! -z "${MANAGE_TEST_DIRECTORY}" ]
         then
             exports+="MANAGE_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
-        fi
-
-        if [ ! -z "${MANAGE_COMPLETION}" ]
-        then
-            exports+="MANAGE_COMPLETION=\"${MANAGE_COMPLETION}\" "
         fi
 
         exports+="$(scriptEnvironment) "
