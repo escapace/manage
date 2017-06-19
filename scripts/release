@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# @description release manage
+# @import console/die
+# @import console/warn
+# @import console/error
+# @import lang/required
+# @import string/camelCase
+# @import manage/dockerBuild
+# @dependency hub
+
+image () {
+    echo "${DOCKER_SCOPE:-internal}/$1"
+}
+
+build () {
+    local tmpDir
+    local name
+
+    tmpDir="$(mktemp -d)"
+    CLEANUP_DIRECTORIES+=("${tmpDir}")
+
+    _ dockerBuild "$1"
+
+    name="$(_ camelCase "$(image "$1"-data)")"
+
+    docker volume rm -f "${name}" &> /dev/null || true
+    docker volume create "${name}" &> /dev/null || true
+
+    docker rm "${name}" &> /dev/null || true
+
+    docker create -v /data --name "${name}" \
+        --entrypoint "/bin/true" "$(image "$1")" &> /dev/null
+
+    docker run --rm -i --volumes-from "${name}" \
+        "$(image "$1")" \
+        cp -rf /workdir /data/manage
+
+    docker cp "${name}:/data" "${tmpDir}"
+
+    find "${tmpDir}" -type f ! -name '.manage.yml' -name '.*' -delete 2> /dev/null
+
+    RELEASE_DIRECTORY="${tmpDir}/data/manage"
+}
+
+commit () {
+    local deployDirectory="$1"
+    local tag="$2"
+    local deployBranch="$3"
+    local repo="$4"
+
+    git --work-tree "$deployDirectory" commit \
+        --gpg-sign=0x671C330913823C5B \
+        -m "$tag"
+
+    git --work-tree "$deployDirectory" tag -m "${tag}" -s "${tag}"
+    git push --quiet "${repo}" "${deployBranch}"
+    git push --quiet "${repo}" "${tag}"
+}
+
+main ()
+{
+    verbose true
+    strict true
+
+    local tag="$1"
+
+    _ required "${tag}" || _ die "specify a version"
+
+    local versionRegex="v([0-9]+)\.([0-9]+)\.([0-9]+)([0-9A-Za-z-])?"
+
+    if [[ ! "${tag}" =~ ^${versionRegex}$ ]]
+    then
+        _ die "invalid version"
+    fi
+
+    {
+        git diff --exit-code &&
+        git diff --cached --exit-code
+    } > /dev/null || _ die "working tree is not clean"
+
+
+    INITIAL_GIT_USER_NAME="$(git config user.name)"
+    INITIAL_GIT_USER_EMAIL="$(git config user.email)"
+
+    git config user.name "Packaging"
+    git config user.email "packaging@epiloque.com"
+
+    build release
+
+    local deployDirectory="${RELEASE_DIRECTORY}"
+    local deployBranch="master"
+    local repo="https://github.com/epiloque/manage.git"
+    local previousBranch
+    local commitHashh
+    local diff
+    local line
+
+    previousBranch="$(git rev-parse --abbrev-ref HEAD)"
+    commitHashh="$(git log -n 1 --format="%H" HEAD)"
+
+    if git ls-remote --exit-code "${repo}" "refs/heads/$deployBranch"
+    then
+        # deployBranch exists in "${repo}"; make sure we have the latest version
+
+        git fetch --force "${repo}" $deployBranch:$deployBranch
+    fi
+
+    if git show-ref --verify --quiet "refs/heads/$deployBranch"
+    then
+        # make deployBranch the current branch
+        git symbolic-ref HEAD refs/heads/$deployBranch
+        # put the previously committed contents of deployBranch into the index
+        git --work-tree "$deployDirectory" reset --mixed --quiet
+        git --work-tree "$deployDirectory" add --all
+
+        set +o errexit
+        diff=$(git --work-tree "$deployDirectory" diff --exit-code --quiet HEAD --)$?
+        set -o errexit
+        case $diff in
+            0)
+                echo "No changes to files in $deployDirectory. Skipping commit."
+            ;;
+            1)
+                commit "${deployDirectory}" "${tag}" "${deployBranch}" "${repo}"
+            ;;
+            *)
+                echo "git diff exited with code $diff. Aborting. Staying on
+                branch $deployBranch so you can debug. To switch back to
+                master, use: git symbolic-ref HEAD refs/heads/master && git
+                reset --mixed >&2"
+            ;;
+        esac
+    else
+        git --work-tree "$deployDirectory" checkout --orphan $deployBranch
+        git --work-tree "$deployDirectory" rm --cached -r .
+
+        while read -r line
+        do
+            git --work-tree "$deployDirectory" rm -rf "${line}" || true
+        done < <(git --work-tree "$deployDirectory" ls-files --stage | grep 160000 | awk '{print $4}')
+
+        git --work-tree "$deployDirectory" add --all
+
+        commit "${deployDirectory}" "${tag}" "${deployBranch}" "${repo}"
+    fi
+
+    if [[ $previousBranch = "HEAD" ]]; then
+        #we weren't on any branch before, so just set HEAD back to the commit it was on
+        git update-ref --no-deref HEAD "${commitHashh}" "${deployBranch}"
+    else
+        git symbolic-ref HEAD "refs/heads/$previousBranch"
+    fi
+
+    git reset --mixed
+}
+
+onExit ()
+{
+    git config user.name "${INITIAL_GIT_USER_NAME}"
+    git config user.email "${INITIAL_GIT_USER_EMAIL}"
+
+    for directory in "${CLEANUP_DIRECTORIES[@]}"
+    do
+        [ -d "${directory}" ] && rm -rf "${directory}"
+    done
+}

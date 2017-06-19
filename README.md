@@ -1,6 +1,6 @@
 <p align="right">
     <a href="https://travis-ci.org/epiloque/manage">
-        <img src="https://travis-ci.org/epiloque/manage.svg?branch=master"
+        <img src="https://travis-ci.org/epiloque/manage.svg?branch=next"
              alt="build status">
     </a>
 </p>

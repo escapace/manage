@@ -323,7 +323,7 @@ MANAGE_GET () {
            [ -f "${directory}/.manage.yml" ] &&
            cd "${directory}" &&
            [[ "$(git remote get-url origin)" = "${repository}" ]] &&
-           localVersion="$(git describe --tags | head -n 1)"
+           localVersion="$(git describe --exact-match HEAD | head -n 1)"
         then
             if [[ "${verify}" = "false" ]]
             then

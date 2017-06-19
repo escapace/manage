@@ -173,5 +173,3 @@ onExit ()
 
     exit "${EXIT_CODE}"
 }
-
-# TODO: completion

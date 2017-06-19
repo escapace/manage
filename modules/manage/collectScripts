@@ -123,6 +123,7 @@ proceedWithManage () {
                        "test"
                        "lint"
                        "ci"
+                       "release"
                      )
     else
         MANAGE_PUBLIC=(
