@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# @description release manage
+# @import console/die
+# @import console/warn
+# @import console/error
+# @import lang/required
+# @import string/camelCase
+# @import manage/dockerBuild
+# @dependency hub
+
+image () {
+    echo "${DOCKER_SCOPE:-internal}/$1"
+}
+
+build () {
+    local tmpDir
+    local name
+
+    tmpDir="$(mktemp -d)"
+    CLEANUP_DIRECTORIES+=("${tmpDir}")
+
+    _ dockerBuild "$1"
+
+    name="$(_ camelCase "$(image "$1"-data)")"
+
+    docker volume rm -f "${name}" &> /dev/null || true
+    docker volume create "${name}" &> /dev/null || true
+
+    docker rm "${name}" &> /dev/null || true
+
+    docker create -v /data --name "${name}" \
+        --entrypoint "/bin/true" "$(image "$1")" &> /dev/null
+
+    docker run --rm -i --volumes-from "${name}" \
+        "$(image "$1")" \
+        cp -rf /workdir /data/manage
+
+    docker cp "${name}:/data" "${tmpDir}"
+
+    find "${tmpDir}" -type f ! -name '.manage.yml' -name '.*' -delete 2> /dev/null
+
+    # tree -a "${tmpDir}"
+    RELEASE_FILES="${tmpDir}/data/manage"
+}
+
+main ()
+{
+    verbose true
+    strict true
+
+    local tag="$1"
+
+    # required "${tag}" || _ die "specify a version"
+    #
+    # [[ "${tag:0:1}" = "v" ]] || _ die "version must begin with 'v'"
+
+    # {
+    #     git diff --exit-code &&
+    #     git diff --cached --exit-code
+    # } > /dev/null || _ die "working tree is not clean"
+    #
+    # ! git describe --exact-match HEAD &> /dev/null || _ die "HEAD is already tagged"
+    #
+    # git submodule foreach bash --norc --noprofile -c \
+    #     '! git describe --exact-match HEAD' &> /dev/null || _ die "submodule(s) already tagged"
+    #
+    # git submodule foreach git tag -m "${tag}" -s "${tag}"
+    # git submodule foreach git push origin "${tag}"
+    #
+    # git tag -m "${tag}" -s "${tag}"
+
+    build release
+}
+
+onExit ()
+{
+    for directory in "${CLEANUP_DIRECTORIES[@]}"
+    do
+        [ -d "${directory}" ] && rm -rf "${directory}"
+    done
+}
