@@ -55,8 +55,6 @@ MANAGE_IS_CI () {
     [[ ! "${#ci[@]}" == "${code}" ]]
 }
 
-MANAGE_IS_CI && echo is ci
-
 if [ -z "${MANAGE_INTERACTIVE}" ] &&
    [ -t 0 ] &&
    [ -t 1 ] &&
