@@ -29,36 +29,6 @@ testName () {
     echo "${name}"
 }
 
-isCi () {
-
-    # Returns 0 if the current environment
-    # is a Continuous Integration server.
-
-    local ci=(
-        "${CI}"                     # Travis CI, CircleCI, ...
-        "${CONTINUOUS_INTEGRATION}" # Travis CI, ...
-        "${BUILD_NUMBER}"           # Jenkins, TeamCity, ...
-        "${JENKINS_URL}"            # Jenkins
-        "${bamboo_planKey}"         # Bamboo (by Atlassian)
-        "${TF_BUILD}"               # Team Foundation Server
-        "${TEAMCITY_VERSION}"       # TeamCity (by JetBrains)
-        "${BUILDKITE}"              # Buildkite
-        "${HUDSON_URL}"             # Hudson
-        "${MANAGE_BUILD}"           # Manage
-        "${container}"              # Container
-    )
-
-    local code=0
-    local variable
-
-    for variable in "${ci[@]}"
-    do
-        _ required "${variable}" || ((++code))
-    done
-
-    [[ ! "${#ci[@]}" == "${code}" ]]
-}
-
 aggregate_results () {
     local file="$1"
     local name="$2"
@@ -108,7 +78,7 @@ test_runtime () {
     CLEANUP_DIRECTORIES+=("${tmpDir}")
     resultFile="${tmpDir}/${name}.counts"
 
-    isCi && flags+=("--no-color")
+    MANAGE_IS_CI && flags+=("--no-color")
 
     helper="source \"${MANAGE_DIRECTORY}/modules/manage/manage\""
     sharness="source \"${MANAGE_DIRECTORY}/vendor/sharness/sharness.sh\" $(_ join flags ' ')"
@@ -124,6 +94,7 @@ test_runtime () {
     fi
 
     exports+="MANAGE_DIRECTORY=\"${MANAGE_DIRECTORY}\"
+    MANAGE_INTERACTIVE=\"false\"
     MANAGE_REPOSITORY=\"${MANAGE_REPOSITORY}\""
 
     commandString="$(echo "${exports} && ${helper} && ${sharness} && ${testSource}" | tr '\n' ' ')"

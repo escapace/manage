@@ -34,6 +34,39 @@ else
     exit 1
 fi
 
+MANAGE_IS_CI () {
+    # Returns 0 if the current environment
+    # is a Continuous Integration server.
+
+    local ci=(
+        "${CI}"                     # Travis CI, CircleCI, Gitlab CI, Appveyor, CodeShip
+        "${CONTINUOUS_INTEGRATION}" # Travis CI
+        "${BUILD_NUMBER}"           # Jenkins, TeamCity
+    )
+
+    local code=0
+    local variable
+
+    for variable in "${ci[@]}"
+    do
+        [ ! -z "${variable// }" ] || code=$((code+1))
+    done
+
+    [[ ! "${#ci[@]}" == "${code}" ]]
+}
+
+MANAGE_IS_CI && echo is ci
+
+if [ -z "${MANAGE_INTERACTIVE}" ] &&
+   [ -t 0 ] &&
+   [ -t 1 ] &&
+   ! MANAGE_IS_CI
+then
+    MANAGE_INTERACTIVE=true
+else
+    MANAGE_INTERACTIVE=false
+fi
+
 MANAGE_COREUTILS=(sed sort)
 
 for executable in "${MANAGE_COREUTILS[@]}"
@@ -111,6 +144,8 @@ MANAGE_ERROR () {
     local type="$1"; shift
     local prefix=$'\033[1m\033[31mERROR\033[39m\033[0m'
 
+    MANAGE_SPINNER disable
+
     case "${type}" in
         notDefined)
             printf "%s '%s' is not defined\n" "${prefix}" "$@" >&2
@@ -187,6 +222,54 @@ MANAGE_GET_FUNCTION () (
     source "${1}"
     declare -f "${2}"
 )
+
+MANAGE_SPINNER_ENABLED=false
+MANAGE_SPINNER_STATE=0
+MANAGE_SPINNER_SYMBOLS=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+
+MANAGE_SPINNER () {
+    local mode="$1"
+    local line
+    local symbol
+
+    case "${mode}" in
+        enable)
+            if [[ "${MANAGE_INTERACTIVE}" = "true" ]] &&
+               [[ "${MANAGE_SPINNER_ENABLED}" = "false" ]]
+            then
+                if test "$(which tput)"
+                then
+                    tput civis
+                    trap 'tput cnorm; exit 1' INT HUP TERM QUIT EXIT
+                fi
+
+                MANAGE_SPINNER_ENABLED=true
+            fi
+        ;;
+        disable)
+            if [[ "${MANAGE_SPINNER_ENABLED}" = "true" ]]
+            then
+                printf "\e[K\r"
+                test "$(which tput)" && tput cnorm
+
+                MANAGE_SPINNER_ENABLED=false
+            fi
+        ;;
+        *)
+            if [[ "${MANAGE_SPINNER_ENABLED}" = "true" ]]
+            then
+                if [[ "${#MANAGE_SPINNER_SYMBOLS[@]}" = "${MANAGE_SPINNER_STATE}" ]]
+                then
+                    MANAGE_SPINNER_STATE=0
+                else
+                    symbol="${MANAGE_SPINNER_SYMBOLS[${MANAGE_SPINNER_STATE}]}"
+                    MANAGE_SPINNER_STATE=$((MANAGE_SPINNER_STATE + 1))
+
+                    printf "%s \e[K%s\r" "${symbol}" "${mode}"
+                fi
+            fi
+    esac
+}
 
 MANAGE_SOURCE () {
     local mode="$1"
@@ -399,8 +482,10 @@ MANAGE_RESOLVE_REMOTE () {
         then
             if [[ "${script:0:10}" != "github.com" ]]
             then
-                [[ -z "${MANAGE_MODULES["${script}"]}" ]] &&
-                scripts["${script}"]="${script}"
+                [[ -z "${MANAGE_MODULES["${script}"]}" ]] && {
+                    scripts["${script}"]="${script}"
+                    MANAGE_SPINNER "${script}"
+                }
             else
                 IFS='/?' read -r -a query <<< "$script"
 
@@ -443,6 +528,8 @@ MANAGE_RESOLVE_REMOTE () {
                                 MANAGE_ERROR invalidQuery "${part}" "${script}?${part}"
                         esac
                     done
+
+                    MANAGE_SPINNER "${script}"
 
                     MANAGE_GET "${repository}" "${version}" "${directory}" "${verify}" || {
                         rm -rf "${directory}" || true
@@ -531,8 +618,10 @@ MANAGE_RESOLVE_LOCAL () {
     for script in "${arguments[@]}"
     do
         [[ -n "${script}" ]] &&
-        [[ -z "${MANAGE_MODULES["${script}"]}" ]] &&
-        scripts["${script}"]=1
+        [[ -z "${MANAGE_MODULES["${script}"]}" ]] && {
+            scripts["${script}"]=1
+            MANAGE_SPINNER "${script}"
+        }
     done
 
     while read -d '' -r file
@@ -671,8 +760,12 @@ then
 
     if [ ! ${#MANAGE_IMPORT_ARRAY[@]} -eq 0 ]
     then
+        MANAGE_SPINNER enable
+
         MANAGE_UNDERSCORE "${MANAGE_IMPORT_ARRAY[@]}"
         MANAGE_BOOTSTRAP
+
+        MANAGE_SPINNER disable
     fi
 
     [ -n "${MANAGE_SCRIPT_PATH}" ] &&
@@ -720,10 +813,14 @@ else
 
     declare -A MANAGE_SCRIPTS
 
+    MANAGE_SPINNER enable
+
     MANAGE_LOCAL \
         manage/checkFileDependencies \
         manage/collectScripts \
         manage/help
+
+    MANAGE_SPINNER disable
 
     checkFileDependencies "${MANAGE_DIRECTORY}/bin/manage"
     collectScripts "$@"
