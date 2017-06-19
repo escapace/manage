@@ -15,4 +15,4 @@
 	url = https://github.com/epiloque/manage-lang.git
 [submodule "modules/path"]
 	path = modules/path
-	url = https://github.com/epiloque/path.git
+	url = https://github.com/epiloque/manage-path.git
