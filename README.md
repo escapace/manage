@@ -25,8 +25,7 @@ development of this software.
 * [Christian Couder](https://github.com/chriscool),
   [Mathias Lafeldt](https://twitter.com/mlafeldt) & contributors to the
   original `test-lib.sh` for the
-  [sharness](https://github.com/chriscool/sharness) portable shell library to
-  write, run, and analyze automated tests for Unix programs
+  [sharness](https://github.com/chriscool/sharness) test library.
 
 ## [License](https://github.com/epiloque/manage#License)
 
