@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# @import lang/required
+
+# join ()
+# {
+#     required "$1" ||
+#         return 1
+#
+#     local array="$1[*]"
+#     local OIFS="${IFS}"
+#     if [ ! -z "$2" ]
+#     then
+#         local IFS="$2"
+#     else
+#         local IFS=$'\n'
+#     fi
+#     echo "${!array}"
+#     IFS="${OIFS}"
+# }
+
+join ()
+{
+    required "$1" ||
+        return 1
+
+    local name="$1[@]"
+    local currentArray=("${!name}")
+    local delimiter="\n"
+    local index
+    local last
+    local length
+
+    if [ ! -z "$2" ]
+    then
+        delimiter="$2"
+    fi
+
+    length="${#currentArray[@]}"
+    last=$((length - 1))
+
+    for index in "${!currentArray[@]}"; do 
+        if [[ "${index}" = "${last}" ]]
+        then
+            printf "%s\n" "${currentArray[$index]}"
+        else
+            printf "%s${delimiter}" "${currentArray[$index]}"
+        fi
+    done
+}

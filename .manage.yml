@@ -1,0 +1,12 @@
+directories:
+  script: scripts
+  module: modules
+  test: test
+
+# Default script to execute
+default: help
+
+# Environment variables
+env:
+  HELLO: "Hello World!"
+  DOCKER_SCOPE: epiloque

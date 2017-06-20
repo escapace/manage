@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2017 Mark Milstein <mark@epiloque.com>
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# @import lang/required
+# @import string/wrap
+# @import console/fgcolor
+# @import console/attribute
+# shellcheck disable=SC2034,SC2016
+
+warn ()
+{
+    #
+    # Will only echo the first argument if verbose mode is disabled.
+    # Otherwise, echo the all arguments.
+    #
+
+    required "$1" || return 1
+
+    local message
+    local arrow
+    local level
+
+    arrow="$(attribute bold "$(fgcolor yellow '>')$(fgcolor)")$(attribute)"
+    level="$(attribute bold "$(fgcolor yellow 'WARN')$(fgcolor)")$(attribute)"
+
+    if verbose
+    then
+        local arguments=("$@")
+        message="$(join arguments $'\n\n')"
+    else
+        message="$1"
+    fi
+
+    message="${message//$HOME/~}"
+
+    >&2 echo -n "${level} " >&2
+    wrap "${message}" 76 | sed "2,\${s/^/${arrow} /}" >&2
+}

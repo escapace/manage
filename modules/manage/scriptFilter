@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+scriptFilter () {
+    local script
+    local path
+    local func="$1"
+    shift
+
+    for script in "${!MANAGE_SCRIPTS[@]}"
+    do
+        path="${MANAGE_SCRIPTS[$script]}"
+        if [[ "${script:0:1}" == "_" ]]
+        then
+            if includes MANAGE_PUBLIC "${script:8}"
+            then
+                "$func" "${path}" "$@"
+            fi
+        elif [[ "${script}" != "completion" ]]
+        then
+            "$func" "${path}" "$@"
+        fi
+    done
+
+}

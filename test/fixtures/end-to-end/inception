@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# @description Hello World
+# @import console/warn
+# @import console/error
+# @import manage/manage
+#
+# @dependency bash
+
+main ()
+{
+    verbose true
+    strict true
+
+
+    _ manage hello "$@"
+}

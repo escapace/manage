@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+isDirectory ()
+{
+    [ -d "$1" ] ||
+        return 1
+}
+

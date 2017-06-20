@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# @import lang/required
+# @import string/startsWith
+# @import string/endsWith
+
+replace () {
+    required "$1" "$2" "$3" || return 1
+
+    local string="$1"
+    local pattern="$2"
+    local replacement="$3"
+
+    if startsWith "${pattern}" '/' &&
+       endsWith "${pattern}" '/'
+    then
+        local patternLength=$(( ${#pattern} - 2 ))
+        pattern=${pattern:1:${patternLength}}
+        echo "${string//${pattern}/${replacement}}"
+    else
+        echo "${string//"${pattern}"/${replacement}}"
+    fi
+}

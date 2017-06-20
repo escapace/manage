@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+main () {
+    strict false
+    cat /tmp/thisfiledoesnotexistsdoesit > /dev/null 2>&1
+}
+
+onExit () {
+    echo "onExit $1"
+}

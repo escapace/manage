@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# @import array/join
+# @import string/upper
+# @import lang/required
+# shellcheck disable=SC2034
+
+upperFirst ()
+{
+    #
+    # Converts the first character of string to upper case
+    #
+    required "$1" || return 1
+
+    local arguments=("$@")
+    local string
+    string="$(join arguments ' ')"
+
+    local firstCharacter="${string:0:1}"
+    local rest="${string:1}"
+
+    echo "$(upper "${firstCharacter}")${rest}"
+}
+

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# @import lang/required
+
+indexOf () {
+    required "$1" "$2" ||
+        return 1
+
+    local array="$1[@]"
+    local seeking=$2
+    local in=0
+    for element in "${!array}"; do
+        if [[ "${element}" == "${seeking}" ]]; then
+            echo "${in}"
+            break
+        fi
+        in=$((in+1))
+    done
+}
+

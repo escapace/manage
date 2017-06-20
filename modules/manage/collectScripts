@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+# @import console/die
+# @import lang/required
+# @import manage/isDirectory
+# @import manage/isFile
+# @import manage/isRepository
+# @import manage/isScript
+# @import manage/parseYAML
+# @import manage/run
+# shellcheck disable=SC2034
+
+collectScripts ()
+{
+    local callerdirectory
+    local paths
+    callerdirectory="$(dirname "$(expandpath "${MANAGE_ZERO}")")"
+    paths=( "${callerdirectory}" "$1" "${MANAGE_CWD}" )
+
+    if searchPath "${paths[@]}"
+    then
+        proceedWithRepository "$@"
+    else
+        proceedWithManage "$@"
+    fi
+}
+
+searchPath ()
+{
+    required "$1" || return 1
+    local path
+    local code=1
+
+    for path in "$@"
+    do
+        while [ -n "${path}"     ] &&
+              [ "${path}" != "/" ] &&
+              [ "${path}" != "." ]
+        do
+            if isRepository "${path}"
+            then
+                code=0
+                break
+            else
+                path="$(dirname "${path}")"
+            fi
+        done
+        [ "${code}" == "0" ] && break
+    done
+
+    return "${code}"
+}
+
+proceedWithRepository ()
+{
+    if isScript "$1"
+    then
+        searchPath "$1" && parseYAML
+
+        processScriptOrDirectory "$1"
+        shift
+        # TODO: fix this
+        local keys=(${!MANAGE_SCRIPTS[@]})
+        run "${keys[0]}" "$@"
+    else
+        if isRepository "$1"
+        then
+            shift
+        fi
+
+        processScriptOrDirectory "${MANAGE_DIRECTORY}/scripts" "_manage_"
+
+        parseYAML
+
+        if [[ ${MANAGE_REPOSITORY} != "${MANAGE_DIRECTORY}" ]]
+        then
+            processScriptOrDirectory "${MANAGE_SCRIPT_DIRECTORY}" ||
+                die "Cannot find ${MANAGE_SCRIPT_DIRECTORY}, aborting."
+        fi
+
+        run "$@"
+    fi
+}
+
+processScriptOrDirectory () {
+    local file
+
+    if isDirectory "$1"
+    then
+        for file in "$1"/* "$1"/**/*
+        do
+            if [[ "$(dirname "${file}")" != "${MANAGE_TEST_DIRECTORY}" &&
+                  "$(dirname "${file}")" != "${MANAGE_MODULE_DIRECTORY}" ]]
+            then
+                processSingleScript "${file}" "$2" || true
+            fi
+        done
+    elif isFile "$1"
+    then
+        processSingleScript "$1" "$2" || return 1
+    else
+        return 1
+    fi
+}
+
+processSingleScript ()
+{
+    local file
+
+    if isScript "${1}"
+    then
+        file="$(expandpath "$1")"
+        MANAGE_SCRIPTS["${2}$(basename "${file}")"]="${file}"
+    else
+        return 1
+    fi
+}
+
+proceedWithManage () {
+    if [[ "${MANAGE_CWD}" == "${MANAGE_DIRECTORY}" ]]
+    then
+        MANAGE_PUBLIC=(
+                       "help"
+                       "test"
+                       "lint"
+                       "ci"
+                       "release"
+                     )
+    else
+        MANAGE_PUBLIC=(
+                       "help"
+                       "init"
+                     )
+    fi
+
+    MANAGE_REPOSITORY="${MANAGE_DIRECTORY}"
+    proceedWithRepository "$@"
+}

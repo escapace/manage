@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# @import array/join
+# @import lang/required
+# @import string/capitalize
+# @import string/lower
+# @import string/words
+# shellcheck disable=SC2034
+
+camelCase ()
+{
+    #
+    # Converts string to camel case.
+    #
+    required "$1" || return 1
+
+    local OIFS="${IFS}"
+    local arguments=("$@")
+    local string
+    local words=()
+    local i
+    local result
+
+    IFS=$' -_'
+
+    string=($(words "$(join arguments ' ')" | sed 's/\([a-z0-9]\)\([A-Z]\)/\1_\L\2/g'))
+
+    for word in "${string[@]}"
+    do
+        [ -n "${word}" ] && words+=("${word}")
+    done
+
+    IFS="${OIFS}"
+
+    for ((i = 0; i < ${#words[@]}; ++i))
+    do
+        if [[ $i != 0 ]]
+        then
+            result+="$(capitalize "${words[$i]}")"
+        else
+            result+="$(lower "${words[$i]}")"
+        fi
+    done
+
+    echo "${result}"
+}

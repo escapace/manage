@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+scriptPresent () {
+    [[ -n "$1" && -n "${MANAGE_SCRIPTS[$1]}" ]]
+}

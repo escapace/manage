@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# @import string/truncate
+# @import console/attribute
+# @import manage/scriptFilter
+# @import manage/scriptPresent
+# @import string/capitalize
+
+useageString () {
+    local name="${1:-[ script ]}"
+    printf "\n  %s %s %s [ arguments ... ]\n\n" \
+        "$(attribute bold)Usage:$(attribute)" \
+        "$(basename "$0")" \
+        "${name}"
+}
+
+HELP_MAXIMUM=0
+
+getMaximum () {
+    local name
+    name="$(basename "$1")"
+    (( "${#name}" > HELP_MAXIMUM )) && HELP_MAXIMUM="${#name}"
+}
+
+description () {
+    local name
+    name="$(basename "$1")"
+    local spacing="${2:-${#name}}"
+    local length="${3:-$(( 80 - ${#name} -6 ))}"
+
+    printf "  %-${spacing}s    %s\n" \
+        "${name}" \
+        "$(truncate "$(capitalize "$(MANAGE_TAG description "$1")")" "$length")"
+}
+
+help () {
+    local script="$1"
+
+    if scriptPresent "${script}"
+    then
+        script="${script}"
+    elif includes MANAGE_PUBLIC "${script}"
+    then
+        script="_manage_${script}"
+    else
+        script=
+    fi
+
+    if [ -n "${script}" ]
+    then
+        useageString "$1"
+        description "$(scriptPath "${script}")"
+        echo
+    else
+        useageString
+        scriptFilter getMaximum
+        scriptFilter description "$((HELP_MAXIMUM))" "$((80 - HELP_MAXIMUM - 6))"
+        echo
+
+        if [ -n "$1" ]
+        then
+            printf "  Script '%s' does not exist\n\n" "$1"
+            exit 1
+        fi
+    fi
+}

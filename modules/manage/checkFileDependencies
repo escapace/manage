@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# @import manage/checkDependencies
+# @import lang/required
+
+checkFileDependencies ()
+{
+    required "$1" || return 1
+    local path="$1"
+    local dependencies
+    dependencies=($(MANAGE_TAG "dependency" "${path}"))
+    checkDependencies "${dependencies[@]}"
+}
+

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# @description Display this help and exit
+
+main ()
+{
+    strict true
+
+    help "$1"
+}

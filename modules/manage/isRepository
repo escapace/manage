@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# @import manage/isFile
+# @import manage/isDirectory
+# @import lang/required
+# shellcheck disable=SC2034
+
+isRepository ()
+{
+    required "$1" ||
+        return 1
+
+    [[ "$1" == "${MANAGE_LIBEXEC}"   ]] && return 1
+    [[ "$1" == "${MANAGE_DIRECTORY}" ]] && return 1
+
+    isDirectory "$1" || return 1
+    isFile "$1/.manage.yml" || return 1
+
+    MANAGE_REPOSITORY="$(expandpath "$1")"
+}

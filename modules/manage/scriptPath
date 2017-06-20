@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+scriptPath ()
+{
+    echo  "${MANAGE_SCRIPTS["$1"]}"
+}
+

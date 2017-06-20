@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# @import array/join
+# @import lang/required
+# shellcheck disable=SC2034
+
+lower()
+{
+    #
+    # Convert string to lowercase.
+    #
+    required "$1" || return 1
+
+    local arguments=("$@")
+
+    join arguments ' ' | tr '[:upper:]' '[:lower:]'
+}

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+attribute() {
+  local __end='\033[0m'
+  local __attr=$__end # end by default
+  case "$1" in
+    end|off|reset) __attr=$__end;;
+    bold)          __attr='\033[1m';;
+    dim)           __attr='\033[2m';;
+    underline)     __attr='\033[4m';;
+    blink)         __attr='\033[5m';;
+    invert)        __attr='\033[7m';;
+    hidden)        __attr='\033[8m';;
+  esac
+  if test "$2"; then
+    echo -en "$__attr$2$__end"
+  else
+    echo -en "$__attr"
+  fi
+}
