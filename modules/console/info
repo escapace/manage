@@ -6,9 +6,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
+# @import array/join
+# @import console/attribute
+# @import console/fgcolor
 # @import lang/required
 # @import string/wrap
-# @import console/fgcolor
 # shellcheck disable=SC2034,SC2016
 
 info ()

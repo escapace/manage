@@ -10,6 +10,7 @@
 # @import string/wrap
 # @import console/fgcolor
 # @import console/attribute
+# @import array/join
 # shellcheck disable=SC2034,SC2016
 
 debug ()

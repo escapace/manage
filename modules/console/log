@@ -13,6 +13,7 @@
 # @import console/warn
 # @import lang/required
 # @import string/wrap
+# @import array/join
 # shellcheck disable=SC2034,SC2016
 
 
