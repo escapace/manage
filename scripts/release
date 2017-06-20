@@ -55,6 +55,7 @@ commit () {
         --gpg-sign=0x671C330913823C5B \
         -m "$tag"
 
+    git --work-tree "$deployDirectory" tag -d "${tag}" &> /dev/null || true
     git --work-tree "$deployDirectory" tag -m "${tag}" -s "${tag}"
     git push --quiet "${repo}" "${deployBranch}"
     git push --quiet "${repo}" "${tag}"
@@ -83,6 +84,7 @@ main ()
 
     git config user.name "Packaging"
     git config user.email "packaging@epiloque.com"
+    git config user.signingkey 0x671C330913823C5B
 
     build release
 
@@ -157,6 +159,7 @@ onExit ()
 {
     git config user.name "Mark Milstein"
     git config user.email "mark@epiloque.com"
+    git config --unset user.signingkey
 
     for directory in "${CLEANUP_DIRECTORIES[@]}"
     do
