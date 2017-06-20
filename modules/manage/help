@@ -53,7 +53,7 @@ help () {
     else
         useageString
         scriptFilter getMaximum
-        scriptFilter description "$((HELP_MAXIMUM))" "$((80 - HELP_MAXIMUM - 6))"
+        scriptFilter description "$((HELP_MAXIMUM))" "$((80 - HELP_MAXIMUM - 6))" | sort
         echo
 
         if [ -n "$1" ]
