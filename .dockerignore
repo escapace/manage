@@ -1,7 +1,6 @@
 .git
 .gitignore
 .manage_modules
-.travis.yml
 .vagrant
 Makefile
 Vagrantfile

@@ -40,7 +40,7 @@ build () {
 
     docker cp "${name}:/data" "${tmpDir}"
 
-    find "${tmpDir}" -type f ! -name '.manage.yml' -name '.*' -delete 2> /dev/null
+    find "${tmpDir}" -type f ! -name '.travis.yml' ! -name '.manage.yml' -name '.*' -delete 2> /dev/null
 
     RELEASE_DIRECTORY="${tmpDir}/data/manage"
 }
@@ -80,10 +80,6 @@ main ()
         git diff --exit-code &&
         git diff --cached --exit-code
     } > /dev/null || _ die "working tree is not clean"
-
-
-    INITIAL_GIT_USER_NAME="$(git config user.name)"
-    INITIAL_GIT_USER_EMAIL="$(git config user.email)"
 
     git config user.name "Packaging"
     git config user.email "packaging@epiloque.com"
@@ -159,8 +155,8 @@ main ()
 
 onExit ()
 {
-    git config user.name "${INITIAL_GIT_USER_NAME}"
-    git config user.email "${INITIAL_GIT_USER_EMAIL}"
+    git config user.name "Mark Milstein"
+    git config user.email "mark@epiloque.com"
 
     for directory in "${CLEANUP_DIRECTORIES[@]}"
     do
