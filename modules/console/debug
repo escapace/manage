@@ -34,8 +34,9 @@ debug ()
 
     message="${message//$HOME/~}"
 
-    verbose && {
+    if verbose
+    then
         echo -n "${level} "
         wrap "${message}" 76 | sed "2,\${s/^/${arrow} /}"
-    }
+    fi
 }
