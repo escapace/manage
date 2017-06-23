@@ -461,7 +461,7 @@ MANAGE_RESOLVE_REMOTE () {
     local arguments
     local script
     local file
-    local versionRegex="v([0-9]+)\.([0-9]+)\.([0-9]+)([0-9A-Za-z-])?"
+    local versionRegex='v([0-9]+)\.([0-9]+)\.([0-9]+)([\.0-9A-Za-z-]+)?'
 
     IFS=$'\n ' read -r -a arguments <<< "${@}"
 

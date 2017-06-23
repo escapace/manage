@@ -15,6 +15,7 @@ MANAGE_UNDERSCORE string/camelCase \
     string/padEnd \
     string/padStart \
     string/replace \
+    string/kebabCase \
     string/snakeCase \
     string/splitString \
     string/squeeze \
@@ -81,6 +82,15 @@ expectSuccess "snakeCase" '
     [[ "$(_ snakeCase "Also_Foo_" "_Bar")" = "also_foo_bar" ]] &&
     [[ "$(_ snakeCase "__FOO_BAR__" "--foo-bar--")" = "foo_bar_foo_bar" ]] &&
     [[ "$(_ snakeCase "Hello-World" "World-Order" "!")" = "hello_world_world_order" ]]
+'
+expectSuccess "kebabCase" '
+    [[ "$(_ kebabCase "kebabCase")" = "kebab-case" ]] &&
+    [[ "$(_ kebabCase "kebab Case")" = "kebab-case" ]] &&
+    [[ "$(_ kebabCase "kebabCase")" = "kebab-case" ]] &&
+    [[ "$(_ kebabCase "kebab-case")" = "kebab-case" ]] &&
+    [[ "$(_ kebabCase "Also_Foo_" "_Bar")" = "also-foo-bar" ]] &&
+    [[ "$(_ kebabCase "__FOO_BAR__" "--foo-bar--")" = "foo-bar-foo-bar" ]] &&
+    [[ "$(_ kebabCase "Hello-World" "World-Order" "!")" = "hello-world-world-order" ]]
 '
 
 expectSuccess "lower" '
