@@ -318,6 +318,8 @@ MANAGE_GET () {
         [[ "${MANAGE_REMOTES["${repository}"]}" != "${version}" ]] && {
             MANAGE_ERROR diffVersion "${repository}"
         }
+
+        state=0
     else
         if [ -d "${directory}" ] &&
            [ -f "${directory}/.manage.yml" ] &&
@@ -336,9 +338,13 @@ MANAGE_GET () {
                 MANAGE_REMOTES["${repository}"]="${version}"
             fi
 
-            [[ "${version}" != "latest" ]] &&
-            [[ "${version}" != "${localVersion}" ]] &&
-            state=1
+            if [[ "${version}" == "latest" ]] ||
+               [[ "${version}" == "${localVersion}" ]]
+            then
+                true
+            else
+                state=1
+            fi
         fi
     fi
 
