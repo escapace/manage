@@ -2,7 +2,7 @@ FROM fedora:rawhide
 MAINTAINER Mark Milstein <mark@epiloque.com> (@epiloque)
 
 # RUN dnf -y update && dnf clean all
-RUN dnf -y install ShellCheck coreutils findutils bc
+RUN dnf -y install ShellCheck coreutils findutils bc gnupg git
 
 ENV DOCKER=true
 RUN mkdir -p /workdir
@@ -16,6 +16,7 @@ COPY scripts scripts
 COPY test test
 COPY vendor vendor
 
+RUN gpg --keyserver pgp.mit.edu --recv-key 0x671C330913823C5B
 RUN mv /workdir/vendor/dumb-init/dumb-init /usr/bin/dumb-init
 RUN chown root:root /usr/bin/dumb-init
 RUN chmod 755 /usr/bin/dumb-init
