@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# @import manage/dockerBuild
-# @import manage/downloadDumbInit
+# @import github.com/epiloque/docker-base/docker/downloadDumbInit
+# @import github.com/epiloque/docker-base/docker/dockerBuild
 # @import manage/manage
 # @import lang/required
 # @import console/die

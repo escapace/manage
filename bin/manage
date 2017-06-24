@@ -378,7 +378,7 @@ MANAGE_GET () {
             fi
         ) || return 1
 
-        MANAGE_REMOTES["${repository}"]="${1}"
+        MANAGE_REMOTES["${repository}"]="${2}"
     fi
 
     if [[ ! -n "${MANAGE_REMOTE_PATHS["${repository}"]}" ]]
@@ -461,7 +461,7 @@ MANAGE_RESOLVE_REMOTE () {
     local arguments
     local script
     local file
-    local versionRegex='v([0-9]+)\.([0-9]+)\.([0-9]+)([\.0-9A-Za-z-]+)?'
+    local versionRegex='v([0-9]+)\.([0-9]+)\.([0-9]+)([\.0-9A-Za-z-]*)?'
 
     IFS=$'\n ' read -r -a arguments <<< "${@}"
 

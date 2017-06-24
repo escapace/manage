@@ -29,6 +29,7 @@ matrix:
       - brew upgrade coreutils
       - brew upgrade gnupg
       - brew upgrade git
+      - gpg --keyserver pgp.mit.edu --recv-key 0x671C330913823C5B
       - /usr/local/bin/bash --version
       - /usr/local/bin/bash bin/manage ci
 branches:

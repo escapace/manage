@@ -8,8 +8,8 @@
 # @import console/error
 # @import lang/required
 # @import string/camelCase
-# @import manage/dockerBuild
-# @dependency hub
+# @import github.com/epiloque/docker-base/docker/dockerBuild
+# @dependency git
 
 image () {
     echo "${DOCKER_SCOPE:-internal}/$1"
