@@ -67,7 +67,7 @@ expectSuccess "collision" '
     [[ "${message}" =~ ERROR ]]
 '
 
-expectSuccess "edge-case-a" '
+expectFailure "edge-case-a" '
     cp -f "${FIXTURES}/edge-case-a" "$(pwd)/scripts/edge-case-a" &&
     message="$("$(pwd)/manage" edge-case-a 2>&1 || true)" &&
     [[ "${message}" =~ "failed to import" ]] &&
