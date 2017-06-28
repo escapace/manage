@@ -667,12 +667,12 @@ MANAGE_RESOLVE_LOCAL () {
         MANAGE_MODULES["${script}"]="${file}"
     done
 
-    for script in "${!scripts[@]}"
-    do
-        [ -z "${MANAGE_MODULES["${script}"]}" ] && {
-            MANAGE_ERROR failImport "${script}"
-        }
-    done
+    # for script in "${!scripts[@]}"
+    # do
+    #     [ -z "${MANAGE_MODULES["${script}"]}" ] && {
+    #         MANAGE_ERROR failImport "${script}"
+    #     }
+    # done
 
     if [ ! ${#imports[@]} -eq 0 ]
     then
