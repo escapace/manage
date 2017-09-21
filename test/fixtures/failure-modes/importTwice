@@ -7,5 +7,5 @@ main ()
     verbose true
     strict true
 
-    echo "$(_ capitalize "FRED")"
+    _ capitalize "FRED"
 }
