@@ -67,7 +67,7 @@ expectSuccess "collision" '
     [[ "${message}" =~ ERROR ]]
 '
 
-expectFailure "edge-case-a" '
+expectSuccess "edge-case-a" '
     cp -f "${FIXTURES}/edge-case-a" "$(pwd)/scripts/edge-case-a" &&
     message="$("$(pwd)/manage" edge-case-a 2>&1 || true)" &&
     [[ "${message}" =~ "failed to import" ]] &&
@@ -77,6 +77,20 @@ expectFailure "edge-case-a" '
 expectSuccess "edge-case-b" '
     cp -f "${FIXTURES}/edge-case-b" "$(pwd)/scripts/edge-case-b" &&
     message="$("$(pwd)/manage" edge-case-b 2>&1 || true)" &&
+    [[ "${message}" =~ "failed to import" ]] &&
+    [[ "${message}" =~ ERROR ]]
+'
+
+expectSuccess "import failure local" '
+    cp -f "${FIXTURES}/failImportLocal" "$(pwd)/scripts/failImportLocal" &&
+    message="$("$(pwd)/manage" failImportLocal 2>&1 || true)" &&
+    [[ "${message}" =~ "failed to import" ]] &&
+    [[ "${message}" =~ ERROR ]]
+'
+
+expectSuccess "import twice" '
+    cp -f "${FIXTURES}/importTwice" "$(pwd)/scripts/importTwice" &&
+    message="$("$(pwd)/manage" importTwice 2>&1 || true)" &&
     [[ "${message}" =~ "failed to import" ]] &&
     [[ "${message}" =~ ERROR ]]
 '

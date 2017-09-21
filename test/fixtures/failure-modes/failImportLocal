@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# @import example/capitalize
+
+main ()
+{
+    verbose true
+    strict true
+
+    echo "$(_ capitalize "FRED")"
+}
