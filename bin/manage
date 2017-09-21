@@ -669,9 +669,16 @@ MANAGE_RESOLVE_LOCAL () {
 
     for script in "${!scripts[@]}"
     do
-        [ -z "${MANAGE_MODULES["${script}"]}" ] && {
-            MANAGE_ERROR failImport "${script}"
-        }
+        if [ -z "${MANAGE_MODULES["${script}"]}" ]
+        then
+            if [[ "${script:0:10}" = "github.com" ]]
+            then
+                # echo "${script}"
+                MANAGE_RESOLVE_REMOTE "${mode}" "${script}"
+            else
+                MANAGE_ERROR failImport "${script}"
+            fi
+        fi
     done
 
     if [ ! ${#imports[@]} -eq 0 ]
