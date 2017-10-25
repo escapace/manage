@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# @description Create a manage repository
+# @import console/die
+# @import lang/required
+# @import path/relativePath
+# @import path/absolutePath
+# @import path/commonPath
+# @import console/info
+
+managePath () {
+    local destinationpath
+    local sourcepath
+    local path
+    destinationpath="$1"
+    sourcepath="$(pwd)"
+    path="$(_ relativePath "${destinationpath}" "${sourcepath}")"
+    if [[ "${path}" == ".." ]] ||
+       [[ "${path}" == "."  ]]
+    then
+        _ die "Consider a path outside of the manage repository."
+    else
+        echo "${path}"
+    fi
+}
+
+scriptPath () {
+    _ required "$1" ||
+        _ die
+    local scriptdir
+    local managedir
+    local absmanagedir
+    local absscriptdir
+    local checkcommon
+
+    managedir="$1"
+    scriptdir="scripts"
+
+    absmanagedir="$(_ absolutePath "${managedir}")"
+    absscriptdir="$(_ absolutePath "${scriptdir}")"
+    checkcommon="$(_ commonPath "${absmanagedir}" "${absscriptdir}")"
+    if [ "${checkcommon}" == "${absmanagedir}" ]
+    then
+        _ die "Consider a path outside of the manage repository."
+    else
+        echo "${scriptdir}"
+    fi
+}
+
+main () {
+    strict true
+    verbose true
+
+    local cwd
+    local tests
+    local scripts
+    local modules
+    local templates
+
+    cwd="$(managePath "${MANAGE_DIRECTORY}")"
+    scripts="$(scriptPath "${cwd}")"
+    modules="${scripts}/modules"
+    tests="${scripts}/tests"
+
+    if [ ! -d "${scripts}" ];
+    then
+        _ info "Creating scripts directory $(_ absolutePath "${scripts}")"
+        mkdir -p "${scripts}"
+    fi
+
+    if [ ! -d "${tests}" ];
+    then
+        _ info "Creating tests directory $(_ absolutePath "${tests}")"
+        mkdir -p "${tests}"
+    fi
+
+    if [ ! -d "${modules}" ];
+    then
+        _ info "Creating modules directory $(_ absolutePath "${tests}")"
+        mkdir -p "${modules}/example"
+    fi
+
+    templates="${cwd}/scripts/init/templates"
+
+    [ -d "${templates}" ] || _ die
+
+    cp -Li  "${templates}/hello"          "${scripts}/hello"
+    cp -Li  "${templates}/hello.spec.sh"  "${tests}/hello.spec.sh"
+    cp -Li  "${templates}/hello-function" "${modules}/example/hello"
+    cp -Li  "${templates}/manage.yml"     "${PWD}/.manage.yml"
+    ln -si  "${cwd}/bin/manage"           "${PWD}/manage"
+}
+

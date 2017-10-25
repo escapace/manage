@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# @import lang/execute
+# @import lang/required
+
+executeIn()
+{
+    #
+    # Execute a command in a given directory.
+    #
+    # Usage: executeIn DIRECTORY [COMMAND...]
+    #
+    required "${1}" "${2}" || return 1
+
+    local error
+    local OPWD=$PWD
+    cd "$1" || return 1
+    shift
+    execute "$@"; error=$?
+    cd "$OPWD" || return 1
+    return $error
+}

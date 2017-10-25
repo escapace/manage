@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# @import manage/isFile
+# @import manage/isMagic
+# @import lang/required
+
+#shellcheck disable=SC1001
+isScript () {
+    local file="$1"
+
+    isFile "${file}" &&
+    isMagic "${file}" &&
+    [[ "$(basename "${file}")" =~ ^[-_a-zA-Z0-9]*$ ]]
+}

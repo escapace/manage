@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+main () {
+    while read -r value
+    do
+        echo "${value}"
+    done
+}

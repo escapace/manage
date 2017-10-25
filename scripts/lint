@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# @description Lint script, modules & tests
+
+main ()
+{
+    verbose true
+    strict true
+
+    local file
+    local paths
+    local exitCode=0
+
+    if [[ "${MANAGE_REPOSITORY}" == "${MANAGE_DIRECTORY}" ]]
+    then
+        paths=(${MANAGE_IMPORT_PATHS[@]} "${MANAGE_SCRIPT_DIRECTORY}" "${MANAGE_DIRECTORY}/bin" "${MANAGE_TEST_DIRECTORY}")
+    else
+        paths=("${MANAGE_SCRIPT_DIRECTORY}" "${MANAGE_MODULE_DIRECTORY}" "${MANAGE_TEST_DIRECTORY}")
+    fi
+
+    while read -d '' -r file
+    do
+        if isFile "${file}" &&
+           isMagic "${file}" &&
+           [[ "$(basename "${file}")" =~ ^[-_a-zA-Z0-9\.]*$ ]]
+        then
+           shellcheck "${file}" || exitCode=$?
+        fi
+    done < <(find "${paths[@]}" -type f -print0)
+
+    exit "${exitCode}"
+}

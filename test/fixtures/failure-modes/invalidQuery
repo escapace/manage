@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# @import github.com/escapace/manage-examples/spark/spark?bla=qwe
+
+main ()
+{
+    verbose true
+    strict true
+}

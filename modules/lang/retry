@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# @import lang/required
+
+retry ()
+{
+    required "$1" "$2" || return 1
+
+    local tries="$1"
+    local func="$2"
+    shift 2
+    local code
+
+    while [ "${tries}" != 0 ]
+    do
+        "${func}" "$@" && code=$? || code=$?
+
+        [[ "${code}" = 0 ]] && break
+
+        tries=$((tries - 1))
+    done
+
+    return "${code}"
+}

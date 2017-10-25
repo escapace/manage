@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# @import lang/required
+# shellcheck disable=SC2034
+
+forEach () {
+    required "$1" "$2" ||
+        return 1
+
+    local array="$1[@]"
+    local function=$2
+    shift 2
+    local index=0
+    local element
+
+    while read -r element
+    do
+        "${function}" "${element}" "${index}" "$@"
+        index=$((index + 1))
+    done < <(
+        for element in "${!array}"
+        do
+            echo "${element}"
+        done
+    )
+}
+

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+manage () {
+    if [ "${MANAGE_REPOSITORY}" == "${MANAGE_DIRECTORY}" ]
+    then
+        MANAGE_INTERACTIVE=false "${MANAGE_DIRECTORY}/bin/manage" "$@"
+    else
+        MANAGE_INTERACTIVE=false "${MANAGE_DIRECTORY}/bin/manage" "${MANAGE_REPOSITORY}" "$@"
+    fi
+}

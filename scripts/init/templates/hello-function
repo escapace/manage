@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# @import lang/required
+# @import console/die
+
+hello () {
+    required "$@" || die "Arguement required"
+    echo "$@"
+}

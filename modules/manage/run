@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# @import array/includes
+# @import console/die
+# @import manage/checkFileDependencies
+# @import manage/isInternal
+# @import manage/scriptPresent
+# @import manage/scriptPath
+# @import string/squeeze
+# @import string/upper
+# shellcheck disable=SC1090
+
+swapRun () {
+    local name
+    local names
+    names=("$1" "_manage_$1")
+    shift
+
+    for name in "${names[@]}"
+    do
+        if scriptPresent "${name}"
+        then
+            break
+        fi
+    done
+
+    executeScript "${name}" "$@"
+}
+
+run () {
+    local name="$1"
+
+    if includes MANAGE_PUBLIC "${name}"
+    then
+        swapRun "$@"
+    elif scriptPresent "${name}"
+    then
+        shift
+        executeScript "${name}" "$@"
+    else
+        name="$(yml default || echo help)"
+
+        if scriptPresent "${name}"
+        then
+            executeScript "${name}" "$@"
+        elif includes MANAGE_PUBLIC "${name}"
+        then
+            swapRun "${name}" "$@"
+        else
+            die "The default script \"${name}\" defined in .manage.yml does not exist."
+        fi
+    fi
+}
+
+scriptEnvironment ()
+{
+    if declare -f "yml" > /dev/null 2>&1
+    then
+        local keys
+        local key
+        keys="$(yml __keys || echo)"
+        for key in ${keys}
+        do
+            if [[ "${key}" =~ ^env_.* ]]
+            then
+                echo "$(upper "${key#env_}")=\"$(yml "${key}" || echo)\""
+            fi
+        done
+    fi
+}
+
+executeScript () {
+    local name
+    local path
+    local imports
+    local code=0
+
+    name="${1}"
+    path="$(scriptPath "${name}")"
+    shift || true
+
+    if isInternal "${name}"
+    then
+        source "${path}"
+
+        main "$@" || code=$?
+
+        # TODO: cache
+    else
+        local zero
+        local exports=""
+        local commandstring
+
+        checkFileDependencies "${path}"
+
+        # shellcheck disable=SC2034
+        imports="$(MANAGE_TAG "import" "${path}")"
+
+        zero="$(basename "${MANAGE_ZERO}")"
+        libexec="source \"${MANAGE_DIRECTORY}/bin/manage\""
+
+        if [ ! -z "${MANAGE_TEST_DIRECTORY}" ]
+        then
+            exports+="MANAGE_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
+        fi
+
+        exports+="$(scriptEnvironment) "
+
+        exports+="MANAGE_DIRECTORY=\"${MANAGE_DIRECTORY}\"
+                  MANAGE_REPOSITORY=\"${MANAGE_REPOSITORY}\"
+                  MANAGE_MODULE_DIRECTORY=\"${MANAGE_MODULE_DIRECTORY}\"
+                  MANAGE_SCRIPT_PATH=\"${path}\"
+                  MANAGE_ZERO=\"${MANAGE_ZERO}\"
+                  MANAGE_IMPORT=\"${imports}\""
+
+        commandstring="${exports} && ${libexec}"
+        commandstring="${commandstring//$'\n'/ }"
+ 
+        exec -a "${zero}"           \
+            "bash"                  \
+            "--norc"                \
+            "--noprofile"           \
+            "-c" "${commandstring}" \
+            "${zero}"               \
+            "$@"
+
+    fi
+
+    exit "${code}"
+}

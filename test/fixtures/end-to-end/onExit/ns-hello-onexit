@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+main () {
+    strict false
+    echo "Hello World" > /dev/null
+}
+
+onExit () {
+    echo "onExit $1"
+}

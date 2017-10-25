@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# @import lang/required
+# @import array/join
+# @import array/includes
+
+difference () {
+    required "$1" "$2" ||
+        return 1
+
+    local A="$1[@]"
+    local AcB=()
+    local itema
+
+    for itema in "${!A}"; do
+        if ! includes "$2" "${itema}"
+        then
+            AcB+=( "$itema" )
+        fi
+    done
+
+    join AcB "$3"
+}
+

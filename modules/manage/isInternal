@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# @import array/includes
+# @import lang/required
+
+isInternal ()
+{
+    required "$1" ||
+        return 1
+
+    local internal
+    # shellcheck disable=SC2034
+    internal=("help" "_manage_help" "lint" "_manage_lint")
+    includes internal "$1"
+}

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+isFile ()
+{
+    local file="$1"
+
+    [ -f  "${file}" ] &&
+    [ -r  "${file}" ] ||
+        return 1
+}
+

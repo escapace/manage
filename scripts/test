@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# @description Run the test suite
+# @import lang/required
+# @import array/join
+# @import lang/exists
+# @import console/die
+# @import console/hr
+# @import console/attribute
+# @import console/fgcolor
+# @import manage/isMagic
+# @import string/squeeze
+
+CLEANUP_DIRECTORIES=()
+FAILED_TESTS=()
+FIXED_NUMBER=0
+SUCCESS_NUMBER=0
+FAILED_NUMBER=0
+BROKEN_NUMBER=0
+TOTAL_NUMBER=0
+EXIT_CODE=0
+
+testName () {
+    local name
+    name="$(basename "${1}")"
+    name=${name%%.*}
+    echo "${name}"
+}
+
+aggregate_results () {
+    local file="$1"
+    local name="$2"
+    while IFS=' ' read -r type value
+    do
+        case $type in
+            '')
+                continue
+            ;;
+            fixed)
+                FIXED_NUMBER=$((FIXED_NUMBER + value))
+            ;;
+            success)
+                SUCCESS_NUMBER=$((SUCCESS_NUMBER + value))
+            ;;
+            failed)
+                FAILED_NUMBER=$((FAILED_NUMBER + value))
+                if test "${value}" != 0; then
+                    FAILED_TESTS+=("${name}")
+                fi
+            ;;
+            broken)
+                BROKEN_NUMBER=$((BROKEN_NUMBER + value))
+            ;;
+            total)
+                TOTAL_NUMBER=$((TOTAL_NUMBER + value))
+            ;;
+        esac
+    done < "${file}"
+}
+
+test_runtime () {
+    local file="$1"
+    local sharness
+    local testSource
+    local exports
+    local commandString
+    local flags=()
+    local tmpDir
+    local resultFile
+    local name
+    local helper
+
+    name="$(testName "${file}")"
+
+    tmpDir="$(mktemp -d)"
+    CLEANUP_DIRECTORIES+=("${tmpDir}")
+    resultFile="${tmpDir}/${name}.counts"
+
+    MANAGE_IS_CI && flags+=("--no-color")
+
+    helper="source \"${MANAGE_DIRECTORY}/modules/manage/manage\""
+    sharness="source \"${MANAGE_DIRECTORY}/vendor/sharness/sharness.sh\" $(_ join flags ' ')"
+    testSource="source \"${file}\""
+
+    if [ ! -z "${MANAGE_TEST_DIRECTORY}" ]
+    then
+        exports+="MANAGE_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
+        exports+="MANAGE_MODULE_DIRECTORY=\"${MANAGE_MODULE_DIRECTORY}\" "
+        exports+="SHARNESS_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
+        exports+="SHARNESS_RESULT=\"${resultFile}\" "
+        exports+="SHARNESS_TRASH_DIRECTORY=\"${tmpDir}/trash\" "
+    fi
+
+    exports+="MANAGE_DIRECTORY=\"${MANAGE_DIRECTORY}\"
+    MANAGE_INTERACTIVE=\"false\"
+    MANAGE_REPOSITORY=\"${MANAGE_REPOSITORY}\""
+
+    commandString="$(echo "${exports} && ${helper} && ${sharness} && ${testSource}" | tr '\n' ' ')"
+    commandString="$(_ squeeze "${commandString}")"
+
+    "bash"                  \
+    "--norc"                \
+    "--noprofile"           \
+    "-c" "${commandString}" || EXIT_CODE=$?
+
+    aggregate_results "${resultFile}" "${name}"
+}
+
+test_suite () {
+    local name
+    local file
+    local targets=()
+
+    if [ -d "${MANAGE_TEST_DIRECTORY}" ]
+    then
+        for file in "${MANAGE_TEST_DIRECTORY}"/*.spec.sh
+        do
+            if [   -f "${file}" ] &&
+               [   -r "${file}" ] &&
+               _ isMagic "${file}"
+            then
+                if _ required "${1}"
+                then
+                    name="$(testName "${file}")"
+
+                    if [[ "${1}" == "${name}" ]]
+                    then
+                        targets=("${file}")
+                    fi
+                else
+                    targets+=("${file}")
+                fi
+            fi
+        done
+
+        if [ ! "${#targets[@]}" -eq 0 ]
+        then
+            for target in "${targets[@]}"
+            do
+                echo
+                echo "#" "$(_ attribute bold "$(testName "${target}")") $(_ attribute end)"
+                echo
+                test_runtime "${target}"
+            done
+
+            printf "\n# %s tests, %s passed, %s fixed, %s broken, %s failed\n" \
+                "$(_ attribute bold "${TOTAL_NUMBER}")$(_ attribute end)"    \
+                "$(_ attribute bold "${SUCCESS_NUMBER}")$(_ attribute end)"  \
+                "$(_ attribute bold "${FIXED_NUMBER}")$(_ attribute end)"    \
+                "$(_ attribute bold "${BROKEN_NUMBER}")$(_ attribute end)"   \
+                "$(_ attribute bold "${FAILED_NUMBER}")$(_ attribute end)"
+        fi
+    else
+        _ die "The directory ${MANAGE_TEST_DIRECTORY} does not exist."
+    fi
+}
+
+main () {
+    strict true
+    verbose true
+
+    test_suite "$@"
+}
+
+onExit ()
+{
+    for directory in "${CLEANUP_DIRECTORIES[@]}"
+    do
+        [ -d "${directory}" ] && rm -rf "${directory}"
+    done
+
+    exit "${EXIT_CODE}"
+}

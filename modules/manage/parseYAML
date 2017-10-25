@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# @import array/includes
+# @import manage/yaml
+# shellcheck disable=SC2034
+
+parseYAML () {
+    eval "$(yaml "${MANAGE_REPOSITORY}/.manage.yml" "yml")"
+
+    MANAGE_SCRIPT_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_script || echo scripts)"
+    MANAGE_MODULE_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_module || echo "scripts/modules")"
+
+    # TODO: extra filter
+    [ -z "${MANAGE_PUBLIC}" ] &&
+        MANAGE_PUBLIC=($(yml enable || echo -e "help\ntest"))
+
+    if includes MANAGE_PUBLIC "test"
+    then
+        MANAGE_TEST_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_test || echo "scripts/tests")"
+    fi
+}

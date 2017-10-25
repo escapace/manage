@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# @import lang/truthEcho
+
+truthValue()
+{
+    #
+    # Gets a value that represents the "truthiness" of the given value.
+    #
+
+    truthEcho "$1" 1 0
+}

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# @import lang/required
+# @import string/trimLines
+
+wrap ()
+{
+    required "$1" || return 1
+
+    local width=${2:-80}
+
+    trimLines "$(echo "${1}" | fold -s -w "${width}")"
+}

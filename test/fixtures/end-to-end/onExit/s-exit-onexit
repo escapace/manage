@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+main () {
+    strict true
+
+    true
+    exit 45
+    true
+}
+
+onExit () {
+    echo "onExit $1"
+}
