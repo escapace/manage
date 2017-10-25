@@ -5,7 +5,7 @@ manage="${MANAGE_DIRECTORY}/bin/manage"
 FIXTURES="${SHARNESS_TEST_DIRECTORY}/fixtures/failure-modes"
 
 expectSuccess "init" '
-    gpg --keyserver pgp.mit.edu --recv-key 0x671C330913823C5B &&
+    gpg --keyserver pgp.mit.edu --recv-key 0xF29CCEBC83FD4525 &&
     "${manage}" init &&
     "$(pwd)/manage" test
 '

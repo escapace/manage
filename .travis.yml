@@ -6,21 +6,21 @@ matrix:
       language: bash
       env: TEST_SUITE=lint
       script:
-        - gpg --keyserver pgp.mit.edu --recv-key 0x671C330913823C5B
+        - gpg --keyserver pgp.mit.edu --recv-key 0xF29CCEBC83FD4525
         - ./bin/manage ci
     - os: linux
       services: docker
       language: bash
       env: TEST_SUITE=fedora
       script:
-        - gpg --keyserver pgp.mit.edu --recv-key 0x671C330913823C5B
+        - gpg --keyserver pgp.mit.edu --recv-key 0xF29CCEBC83FD4525
         - ./bin/manage ci
     - os: linux
       services: docker
       language: bash
       env: TEST_SUITE=alpine
       script:
-        - gpg --keyserver pgp.mit.edu --recv-key 0x671C330913823C5B
+        - gpg --keyserver pgp.mit.edu --recv-key 0xF29CCEBC83FD4525
         - ./bin/manage ci
     # - os: osx
     #   language: bash
@@ -32,7 +32,7 @@ matrix:
     #     - brew upgrade coreutils
     #     - brew upgrade gnupg
     #     - brew upgrade git
-    #     - gpg --keyserver pgp.mit.edu --recv-key 0x671C330913823C5B
+    #     - gpg --keyserver pgp.mit.edu --recv-key 0xF29CCEBC83FD4525
     #     - /usr/local/bin/bash --version
     #     - /usr/local/bin/bash bin/manage ci
 branches:

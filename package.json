@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@epiloque/weaver-changelog": "^5.6.0",
-    "@epiloque/weaver-readme": "^5.6.0"
-  }
-}

@@ -8,7 +8,7 @@
 # @import console/error
 # @import lang/required
 # @import string/camelCase
-# @import github.com/epiloque/docker-base/docker/dockerBuild
+# @import github.com/escapace/stack-tools/docker/dockerBuild
 # @dependency git
 
 image () {
@@ -52,7 +52,7 @@ commit () {
     local repo="$4"
 
     git --work-tree "$deployDirectory" commit \
-        --gpg-sign=0x671C330913823C5B \
+        --gpg-sign=0xF29CCEBC83FD4525 \
         -m "$tag"
 
     git --work-tree "$deployDirectory" tag -d "${tag}" &> /dev/null || true
@@ -82,15 +82,15 @@ main ()
         git diff --cached --exit-code
     } > /dev/null || _ die "working tree is not clean"
 
-    git config user.name "Packaging"
-    git config user.email "packaging@epiloque.com"
-    git config user.signingkey 0x671C330913823C5B
+    git config user.name "escapace"
+    git config user.email "security@escapace.com"
+    git config user.signingkey 0xF29CCEBC83FD4525
 
     build release
 
     local deployDirectory="${RELEASE_DIRECTORY}"
     local deployBranch="master"
-    local repo="https://github.com/epiloque/manage.git"
+    local repo="https://github.com/escapace/manage.git"
     local previousBranch
     local commitHashh
     local diff
@@ -157,8 +157,8 @@ main ()
 
 onExit ()
 {
-    git config user.name "Mark Milstein"
-    git config user.email "mark@epiloque.com"
+    git config --unset user.name
+    git config --unset user.email
     git config --unset user.signingkey
 
     for directory in "${CLEANUP_DIRECTORIES[@]}"

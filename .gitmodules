@@ -1,18 +1,18 @@
 [submodule "vendor/sharness"]
 	path = vendor/sharness
-	url = https://github.com/epiloque/sharness.git
+	url = https://github.com/escapace/sharness.git
 [submodule "modules/string"]
 	path = modules/string
-	url = https://github.com/epiloque/manage-string.git
+	url = https://github.com/escapace/manage-string.git
 [submodule "modules/array"]
 	path = modules/array
-	url = https://github.com/epiloque/manage-array.git
+	url = https://github.com/escapace/manage-array.git
 [submodule "modules/console"]
 	path = modules/console
-	url = https://github.com/epiloque/manage-console.git
+	url = https://github.com/escapace/manage-console.git
 [submodule "modules/lang"]
 	path = modules/lang
-	url = https://github.com/epiloque/manage-lang.git
+	url = https://github.com/escapace/manage-lang.git
 [submodule "modules/path"]
 	path = modules/path
-	url = https://github.com/epiloque/manage-path.git
+	url = https://github.com/escapace/manage-path.git

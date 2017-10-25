@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @import github.com/epiloque/empty-repository/directory/function?verify=false
+# @import github.com/escapace/empty-repository/directory/function?verify=false
 
 main ()
 {

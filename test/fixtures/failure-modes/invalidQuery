@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @import github.com/epiloque/manage-examples/spark/spark?bla=qwe
+# @import github.com/escapace/manage-examples/spark/spark?bla=qwe
 
 main ()
 {

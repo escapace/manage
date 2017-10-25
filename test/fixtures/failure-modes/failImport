@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @import github.com/epiloque/manage-examples/spark/noSuchFile?version=v1.1.0
+# @import github.com/escapace/manage-examples/spark/noSuchFile?version=v1.1.0
 
 main ()
 {
