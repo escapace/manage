@@ -1,5 +1,4 @@
 FROM fedora:rawhide
-MAINTAINER Mark Milstein <mark@epiloque.com> (@epiloque)
 
 # RUN dnf -y update && dnf clean all
 RUN dnf -y install ShellCheck coreutils findutils bc gnupg git

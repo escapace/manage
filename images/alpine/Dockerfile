@@ -1,5 +1,4 @@
 FROM alpine:3.6
-MAINTAINER Mark Milstein <mark@epiloque.com> (@epiloque)
 
 RUN apk add --no-cache coreutils bash sed bc gnupg git
 
