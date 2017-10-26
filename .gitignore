@@ -4,4 +4,4 @@
 Vagrantfile
 typescript
 node_modules
-vendor/dumb-init
+vendor/tini

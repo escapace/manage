@@ -15,10 +15,10 @@ COPY scripts scripts
 COPY test test
 COPY vendor vendor
 
-RUN gpg --keyserver pgp.mit.edu --recv-key 0xF29CCEBC83FD4525
-RUN mv /workdir/vendor/dumb-init/dumb-init /usr/bin/dumb-init
-RUN chown root:root /usr/bin/dumb-init
-RUN chmod 755 /usr/bin/dumb-init
+RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
+RUN mv /workdir/vendor/tini/tini /sbin/tini
+RUN chown root:root /sbin/tini
+RUN chmod 755 /sbin/tini
 
-ENTRYPOINT ["/usr/bin/dumb-init", "--", "/workdir/bin/manage"]
+ENTRYPOINT ["/sbin/tini", "--", "/workdir/bin/manage"]
 CMD ["help"]

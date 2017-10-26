@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @import github.com/escapace/stack-tools/docker/downloadDumbInit
+# @import github.com/escapace/stack-tools/docker/downloadTini
 # @import github.com/escapace/stack-tools/docker/dockerBuild
 # @import manage/manage
 # @import lang/required
@@ -12,7 +12,7 @@ dockerTest ()
 {
     IMAGE="${DOCKER_SCOPE:-internal}/$1"
 
-    _ downloadDumbInit
+    _ downloadTini
     _ dockerBuild "$1"
 
     docker run \
