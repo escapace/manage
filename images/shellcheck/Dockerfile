@@ -1,7 +1,6 @@
-FROM fedora:rawhide
-
-# RUN dnf -y update && dnf clean all
-RUN dnf -y install ShellCheck coreutils findutils bc gnupg git
+FROM centos:latest
+RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+RUN yum -y install coreutils findutils bc gnupg git ShellCheck
 
 ENV DOCKER=true
 RUN mkdir -p /workdir

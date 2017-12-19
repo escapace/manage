@@ -12,6 +12,7 @@
 # @import console/fgcolor
 # @import manage/isMagic
 # @import string/squeeze
+# shellcheck disable=SC1117
 
 CLEANUP_DIRECTORIES=()
 FAILED_TESTS=()

@@ -7,7 +7,7 @@
 # For more details on how to define your own commands
 # look online at https://github.com/escapace/manage
 #
-# shellcheck disable=SC1090,SC2016,SC2034
+# shellcheck disable=SC1090,SC2016,SC2034,SC1117,SC2206
 # @dependency bc
 # @dependency cut
 # @dependency find
@@ -231,7 +231,7 @@ MANAGE_SPINNER () {
             if [[ "${MANAGE_INTERACTIVE}" = "true" ]] &&
                [[ "${MANAGE_SPINNER_ENABLED}" = "false" ]]
             then
-                if test "$(which tput)"
+                if command -v "tput" > /dev/null 2>&1
                 then
                     tput civis
                     trap 'tput cnorm; exit 1' INT HUP TERM QUIT EXIT
@@ -244,7 +244,7 @@ MANAGE_SPINNER () {
             if [[ "${MANAGE_SPINNER_ENABLED}" = "true" ]]
             then
                 printf "\e[K\r"
-                test "$(which tput)" && tput cnorm
+                command -v "tput" > /dev/null 2>&1 && tput cnorm
 
                 MANAGE_SPINNER_ENABLED=false
             fi
