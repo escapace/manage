@@ -21,13 +21,13 @@ matrix:
       script:
         - gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
         - ./bin/manage ci
-    - os: linux
-      services: docker
-      language: bash
-      env: TEST_SUITE=alpine
-      script:
-        - gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
-        - ./bin/manage ci
+    # - os: linux
+    #   services: docker
+    #   language: bash
+    #   env: TEST_SUITE=alpine
+    #   script:
+    #     - gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
+    #     - ./bin/manage ci
     # - os: osx
     #   language: bash
     #   env: TEST_SUITE=osx
