@@ -1,3 +1,7 @@
+sudo: required
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 language: bash
 matrix:
   include:
