@@ -11,7 +11,7 @@
 
 # Usage    
 
-In this example, we'll use `manage` as a submodule. We'll go through the setup process,  understand the distinction between commands and modules, describe built-in statements. We'll also see how `manage` can be used as a module manager.
+In this example, we'll use `manage` as a submodule. We'll go through the setup process, learn the distinction between commands and modules, describe built-in statements. We'll also see how `manage` can be used as a module manager.
 
 ## Setup
 Let's make a temporary directory, initialize a git project and add a directory to it (vendor, in this case).
@@ -22,7 +22,7 @@ $ cd tmp
 $ mkdir vendor
 ```
 
-Add `manage` as a submodule to vendor:
+Add `manage` as a submodule:
 
 ``` bash
 $ git submodule add https://github.com/escapace/manage vendor/manage
@@ -48,7 +48,7 @@ Running `ls` in `tmp`, we should now get:
 scripts vendor manage
 ```
 
-Note that these paths are customizable from our `.manage.yml` file, which is in `vendor/manage`. 
+Note that these paths are customizable from our `.manage.yml` file. 
 
 
 ## Commands and Modules
@@ -66,7 +66,7 @@ Commands are scripts local to the project (much like npm scripts). Modules are r
 - must have only 1 function
 - file name must be the same as the bash function name it exposes
 - must not prefix imported modules with an underscore
-- should be placed in `path/to/modules/directory/yourModule` 
+- should be placed in `scripts/modules/arbitrary-directory/moduleName` 
 
 
 ## Built-in statements
@@ -167,7 +167,7 @@ This will execute the script and create a `.manage_modules` directory containing
 
     .git  .manage_modules  scripts  vendor  .gitmodules  manage  .manage.yml
 
-`.manage_modules` now contains Terraform, which is ready for usage.
+`vendor/terraform` now contains Terraform, which is ready for usage.
 
 
 ## [Acknowledgements](https://github.com/escapace/manage#Acknowledgements)
