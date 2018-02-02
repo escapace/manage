@@ -9,11 +9,12 @@
 
 `manage` is a convention for setting up shell programs that use subcommands.   
 
-## Usage
-### Setup
+## Usage    
 
-`manage` is generally very flexible. In this example, we’ll use it as a submodule.   
-Make a temporary directory, initialize a git project and add a directory to it (vendor, in this case).
+In this example we'll use `manage` as a submodule. We'll go through the setup process,  understand the distinction between commands and modules, describe built-in statements. We'll also see how `manage` can be used as a module manager.
+
+### Setup
+We make a temporary directory, initialize a git project and add a directory to it (vendor, in this case).
 
 ``` bash
 $ mkdir tmp
@@ -27,7 +28,7 @@ Add `manage` as a submodule to vendor:
 $ git submodule add https://github.com/escapace/manage vendor/manage
 ```
 
-Then run the initialization script:
+Then we run the initialization script:
 
 ``` bash
 $ ./vendor/manage/bin/manage init
@@ -41,13 +42,31 @@ INFO Creating tests directory /path/to/scripts/tests
 INFO Creating modules directory /path/to/scripts/modules
 ```
 
-If you run `ls` in `tmp`, you should now get:
+Running `ls` in `tmp`, we should now get:
 
 ``` bash
 scripts vendor manage
 ```
 
-Note that these paths are customizable from your `.manage.yml` file, which is in `vendor/manage`. 
+Note that these paths are customizable from our `.manage.yml` file, which is in `vendor/manage`. 
+
+
+### Commands and Modules
+
+Commands are scripts local to the project (much like npm scripts). Modules are reusable bash functions that can be imported from commands in local and remote projects. There are differences between commands and modules.   
+
+**Commands**: 
+
+- contain [`@dependency`]() [`@description`]() and [`@import`]() statements 
+- when importing modules, need to prefix them with an underscore _
+
+**Modules**:  
+
+- contain only [`@import`]() statements
+- must have only 1 function
+- file name must be the same as the bash function name it exposes
+- when importing other modules, need not underscore those
+- should be placed in `path/to/modules/directory/yourModule` 
 
 
 ### Built-in statements
@@ -67,26 +86,7 @@ Note that these paths are customizable from your `.manage.yml` file, which is in
 ```# @import github.com/escapace/stack-tools/hashicorp/downloadPacker```
 
 
-### Scripts and Modules
-
-There is a distinction between scripts and modules. 
-
-**Scripts**: 
-
-- are specific to the project
-- contain `@dependency` `@description` and `@import` statements 
-- when importing modules, need to prefix them with an underscore _
-
-**Modules**:  
-
-- are composable scripts that can be imported from elsewhere. 
-- contain only `@import` statements
-- must have only 1 function
-- file name must be the same as the bash function name it exposes
-- when importing other modules, need not underscore those
-- should be placed in `path/to/modules/directory/yourModule` 
-
-### Utility Library
+### Utility Library- are reusable scripts that can be imported from elsewhere. 
 
 Manage contains utility modules for Bash, resembling those of lodash. Utility module groups include:
 
@@ -116,7 +116,7 @@ We import `string/capitalize`, which, not surprisingly, capitalizes a string.
 
     # @import string/capitalize 
 
-Then add the following to `main()`:
+Then we add the following to `main()`:
 
 
     local string="lorem"
@@ -148,7 +148,7 @@ Notice on line 9, “lorem” is capitalized to “Lorem”.
 
 Manage can be used as a module manager.   
 Say we want to import a script from [Escapace](https://github.com/escapace) that automates downloading and verifying the checksum of Hashicorp’s [Terraform](https://www.terraform.io/).   
-First of all, you should secure your communications with Escapace:
+First of all, we should secure our communications with Escapace:
 
 ``` bash
 $ gpg2 --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
