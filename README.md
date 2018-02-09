@@ -172,13 +172,14 @@ Notice on line 9, “lorem” is capitalized to “Lorem”.
 
 ### Remote Modules
 
-An import path can describe how to obtain the module source code from
-GitHub repository. The GitHub repository should have at least one
-signed version tag (like v1.8.5). Say we want to import a manage
-module from the [escapace/stack-tools][11] repository that automates
-downloading and verifying the checksum of Hashicorp’s [Terraform][12]
-. In order to verify the [escapace/stack-tools][11] repository, you
-need to have the escapace public key.
+An import path can describe how to obtain the module source code from a GitHub
+repository. The GitHub repository should have at least one signed version tag
+(like v1.8.5). Say we want to import a manage module from the
+[escapace/stack-tools][11] repository that automates the download and
+verification of Hashicorp’s [Terraform][12].
+
+In order to verify the [escapace/stack-tools][11] repository, we need to have
+the escapace public key.
 
 ```bash
 $ gpg2 --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
@@ -196,7 +197,7 @@ $ ./manage hello
 ```
 
 This will execute the script and create a `.manage_modules` directory
-containing your imports. If we run `ls -a` in `tmp`, we should get
+containing our imports. If we run `ls -a` in `tmp`, we should get
 
     .git  .manage_modules  scripts  vendor  .gitmodules  manage  .manage.yml
 
