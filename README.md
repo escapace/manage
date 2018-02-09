@@ -70,7 +70,7 @@ that can be imported from commands in local and remote projects.
 
 -   Contain [`@dependency`][4] [`@description`][4] and [`@import`][4]
     statements
--   When importing modules, need to prefix them with an underscore (\_)
+-   When importing modules, need to prefix them with an underscore
 
 #### Modules
 
