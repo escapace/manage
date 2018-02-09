@@ -40,7 +40,7 @@ Add `manage` as a submodule
 $ git submodule add https://github.com/escapace/manage vendor/manage
 ```
 
-Then we run the initialization script
+Run the initialization script
 
 ```bash
 $ ./vendor/manage/manage init
@@ -49,24 +49,22 @@ $ ./vendor/manage/manage init
 This will set up directories inside `tmp` as follows
 
 ```bash
-INFO Creating scripts directory /path/to/scripts
-INFO Creating modules directory /path/to/scripts/modules
+INFO Creating scripts directory /path/to/tmp/scripts
+INFO Creating modules directory /path/to/tmp/scripts/modules
 ```
 
-Running `ls` in `tmp`, we should now get
+Running `ls -a` in `tmp`, we should now get
 
 ```bash
-scripts vendor manage
+.  ..  scripts  manage  .manage.yml
 ```
 
 Note that these paths are customizable in the `.manage.yml` file.
 
 ### Commands and Modules
 
-Commands are scripts local to the project (much like npm scripts).
-Modules are reusable bash functions that can be imported from commands
-in local and remote projects. There are differences between commands
-and modules.
+Commands are scripts local to the project. Modules are reusable bash functions
+that can be imported from commands in local and remote projects.
 
 #### Commands
 
@@ -94,7 +92,7 @@ Provides a short description of a script which will be logged when `./manage` is
 
 #### @dependency
 
-```sh
+```bash
 # @dependency docker
 ```
 
@@ -102,7 +100,7 @@ Checks whether executable with given name exists in **PATH**
 
 #### @import
 
-```sh
+```bash
 # @import github.com/escapace/stack-tools/hashicorp/downloadPacker
 ```
 
@@ -199,7 +197,10 @@ $ ./manage hello
 This will execute the script and create a `.manage_modules` directory
 containing our imports. If we run `ls -a` in `tmp`, we should get
 
-    .git  .manage_modules  scripts  vendor  .gitmodules  manage  .manage.yml
+
+```bash
+.  .. .git  .manage_modules  scripts  vendor  .gitmodules  manage  .manage.yml
+```
 
 `vendor/terraform` now contains HashiCorp’s Terraform, which is ready
 for usage.
