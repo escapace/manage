@@ -3,7 +3,8 @@
 `manage` is an MPLv2 licensed framework for building modular Bash
 applications.
 
-[![build status][2]][1] ![license][3]
+[![build status][2]][1]
+[![license][3]]()
 
 ## Table of Contents
 
@@ -58,14 +59,14 @@ Running `ls` in `tmp`, we should now get
 scripts vendor manage
 ```
 
-Note that these paths are customizable from the `.manage.yml` file. 
+Note that these paths are customizable in the `.manage.yml` file.
 
 ### Commands and Modules
 
 Commands are scripts local to the project (much like npm scripts).
 Modules are reusable bash functions that can be imported from commands
 in local and remote projects. There are differences between commands
-and modules. 
+and modules.
 
 #### Commands
 
@@ -79,7 +80,7 @@ and modules.
 -   Must have only 1 function
 -   File name must be the same as the bash function name it exposes
 -   Must not prefix imported modules with an underscore
--   Should be placed in `scripts/modules/arbitrary-directory/moduleName` 
+-   Should be placed in `scripts/modules/arbitrary-directory/moduleName`
 
 ### Built-in statements
 
@@ -141,7 +142,7 @@ Imported modules should be prefixed with underscore, hence
 We import `string/capitalize`, which, not surprisingly, capitalizes a
 string.
 
-    # @import string/capitalize 
+    # @import string/capitalize
 
 Then we add the following to `main ()`
 
@@ -161,9 +162,9 @@ The result will be
     Caller name: manage
     Repository : path/to/tmp
     PWD        : path/to/tmp
-    Argument 1 : 
-    Argument 2 : 
-    Argument 3 : 
+    Argument 1 :
+    Argument 2 :
+    Argument 3 :
     Lorem
     WARN Exiting.
 
