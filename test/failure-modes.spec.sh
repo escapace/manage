@@ -6,9 +6,9 @@ FIXTURES="${SHARNESS_TEST_DIRECTORY}/fixtures/failure-modes"
 
 expectSuccess "init" '
     gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525 &&
-    "${manage}" init &&
-    "$(pwd)/manage" test
+    "${manage}" init
 '
+
 expectSuccess "function is not defined" '
     cp -f "${FIXTURES}/notDefined" "$(pwd)/scripts/notDefined" &&
     message="$("$(pwd)/manage" notDefined 2>&1 || true)" &&

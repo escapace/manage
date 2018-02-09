@@ -5,8 +5,7 @@ manage="${MANAGE_DIRECTORY}/manage"
 FIXTURES="${SHARNESS_TEST_DIRECTORY}/fixtures/end-to-end"
 
 expectSuccess "init" '
-    "${manage}" init &&
-    "$(pwd)/manage" test
+    "${manage}" init
 '
 
 expectSuccess "arguments" '
@@ -128,12 +127,9 @@ expectSuccess "environment" '
 
 expectSuccess "directories" '
     cp -f "${FIXTURES}/directories.yml" "$(pwd)/.manage.yml"
-    mv "$(pwd)/scripts/tests" "$(pwd)/tests" &&
     mv "$(pwd)/scripts/modules" "$(pwd)/modules" &&
     mv "$(pwd)/scripts" "$(pwd)/other" &&
-    "$(pwd)/manage" test &&
     mv "$(pwd)/other" "$(pwd)/scripts" &&
-    mv "$(pwd)/tests" "$(pwd)/scripts/tests" &&
     mv "$(pwd)/modules" "$(pwd)/scripts/modules" &&
     cp -f "${FIXTURES}/default.yml" "$(pwd)/.manage.yml"
 '
