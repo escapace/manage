@@ -9,7 +9,6 @@ isRepository ()
     required "$1" ||
         return 1
 
-    [[ "$1" == "${MANAGE_LIBEXEC}"   ]] && return 1
     [[ "$1" == "${MANAGE_DIRECTORY}" ]] && return 1
 
     isDirectory "$1" || return 1

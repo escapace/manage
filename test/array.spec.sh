@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2016,SC1090
 
-source "${MANAGE_DIRECTORY}/bin/manage"
+source "${MANAGE_DIRECTORY}/manage"
 
 MANAGE_UNDERSCORE \
     array/complement \

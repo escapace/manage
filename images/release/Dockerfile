@@ -10,7 +10,7 @@ WORKDIR /workdir
 COPY .manage.yml .manage.yml
 COPY README.md README.md
 COPY LICENSE LICENSE
-COPY bin bin
+COPY manage manage
 COPY modules modules
 COPY scripts scripts
 COPY test test

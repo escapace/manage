@@ -13,5 +13,5 @@ main ()
     verbose true
     strict true
 
-    manage
+    _ manage
 }
