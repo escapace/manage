@@ -1,10 +1,10 @@
 # manage
 
-`manage` is an MPLv2 licensed framework for building modular Bash
-applications.
-
 [![build status][2]][1]
 [![license][3]]()
+
+`manage` is an MPLv2 licensed framework for building modular Bash
+applications.
 
 ## Table of Contents
 
@@ -205,17 +205,13 @@ for usage.
 
 ## Acknowledgements
 
-We are very grateful to the following people and projects for their
-contributions to this product:
+Our thanks go out to the developers and organizations who have directly and
+indirectly contributed to this project.
 
--   [bashful][13] collection of libraries that simplify writing bash
-    scripts ([Jeremy Cantrell][14])
-
--   [shml][15] terminal style framework ([Justin Dorfman][16] & [Joshua
-    Mervine][17])
-
--   [sharness][18] test library ([Christian Couder][19], [Mathias
-    Lafeldt][20] & contributors)
+-   [Jeremy Cantrell][14], [bashful][13] collection of libraries that simplify writing bash
+    scripts
+-   [Justin Dorfman][16] and [Joshua Mervine][17], [shml][15] terminal style framework
+-   [Christian Couder][19], [Mathias Lafeldt][20] and contributors, [sharness][18] test library
 
 ## License
 
