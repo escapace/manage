@@ -125,27 +125,35 @@ Utility module groups include
 Let’s import and use one of these. In `scripts` there is a file called
 `hello`. It already uses `warn` and `error` modules
 
-    # @import console/warn
-    # @import console/error
+```bash
+# @import console/warn
+# @import console/error
+```
 
 Imported modules should be prefixed with underscore, hence
 
-    if (( $1 == 0 ))
-    then
-        _ warn "Exiting."
-    else
-        _ error "An error with exit code \"$1\" has occurred."
-    fi
+```bash
+if (( $1 == 0 ))
+then
+    _ warn "Exiting."
+else
+    _ error "An error with exit code \"$1\" has occurred."
+fi
+```
 
 We import `string/capitalize`, which, not surprisingly, capitalizes a
 string.
 
-    # @import string/capitalize
+```bash
+# @import string/capitalize
+```
 
 Then we add the following to `main ()`
 
-    local string="lorem"
-    _ capitalize "${string}"
+```bash
+local string="lorem"
+_ capitalize "${string}"
+```
 
 Now, if we run
 
@@ -186,7 +194,9 @@ $ gpg2 --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE46905
 Now, we can import the script by adding the following line to our `hello` file
 in `scripts`
 
-    # @import github.com/escapace/stack-tools/hashicorp/downloadTerraform
+```bash
+# @import github.com/escapace/stack-tools/hashicorp/downloadTerraform
+```
 
 Then run
 
