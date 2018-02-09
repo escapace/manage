@@ -1,7 +1,6 @@
 directories:
   script: scripts
   module: scripts/modules
-  test: scripts/tests
 
 # Environment variables
 env:
@@ -10,7 +9,6 @@ env:
 # Enable manage repository scripts
 enable:
   - help
-  - test
 
 # Default script
 default: help

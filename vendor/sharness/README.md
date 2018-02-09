@@ -1,10 +1,3 @@
-<p align="right">
-    <a href="https://travis-ci.org/epiloque/sharness">
-        <img src="https://travis-ci.org/epiloque/sharness.svg?branch=master"
-             alt="build status">
-    </a>
-</p>
-
 # sharness
 
 Sharness is a portable shell library to write, run, and analyze automated tests
@@ -374,9 +367,9 @@ sharness is licensed under the terms of the GNU General Public License version
 
 [chriscool]: https://github.com/chriscool
 
-[contributors]: https://github.com/epiloque/sharness/graphs/contributors
+[contributors]: https://github.com/escapace/sharness/graphs/contributors
 
-[license]: https://github.com/epiloque/sharness/blob/master/LICENSE
+[license]: https://github.com/escapace/sharness/blob/master/LICENSE
 
 [git]: http://git-scm.com/
 

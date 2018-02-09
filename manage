@@ -818,8 +818,7 @@ else
 
     MANAGE_CWD="$(absolutedirectorypath .)"
     MANAGE_ZERO="$(expandpath "$0")"
-    MANAGE_LIBEXEC="$(absolutedirectorypath "${MANAGE_ZERO}")"
-    MANAGE_DIRECTORY="$(absolutedirectorypath "${MANAGE_LIBEXEC}")"
+    MANAGE_DIRECTORY="$(absolutedirectorypath "${MANAGE_ZERO}")"
 
     LC_ALL=C
 
@@ -834,6 +833,6 @@ else
 
     MANAGE_SPINNER disable
 
-    checkFileDependencies "${MANAGE_DIRECTORY}/bin/manage"
+    checkFileDependencies "${MANAGE_DIRECTORY}/manage"
     collectScripts "$@"
 fi

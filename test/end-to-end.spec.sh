@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2016,SC1090,SC2034
 
-manage="${MANAGE_DIRECTORY}/bin/manage"
+manage="${MANAGE_DIRECTORY}/manage"
 FIXTURES="${SHARNESS_TEST_DIRECTORY}/fixtures/end-to-end"
 
 expectSuccess "init" '
-    "${manage}" init &&
-    "$(pwd)/manage" test
+    "${manage}" init
 '
 
 expectSuccess "arguments" '
@@ -24,7 +23,7 @@ expectSuccess "inception" '
     [ "${lines[5]}" = "Argument 1 : Argument One" ] &&
     [ "${lines[6]}" = "Argument 2 : Argument Two" ] &&
     [ "${lines[7]}" = "Argument 3 : Argument Three" ] &&
-    expectCode 127 "$(pwd)/manage" inception_fail
+    expectCode 1 "$(pwd)/manage" inception_fail
 '
 
 expectSuccess "cwd change" '
@@ -41,7 +40,7 @@ expectSuccess "cwd change" '
     [ "${lines[5]}" = "Argument 1 : Argument One" ] &&
     [ "${lines[6]}" = "Argument 2 : Argument Two" ] &&
     [ "${lines[7]}" = "Argument 3 : Argument Three" ] &&
-    expectCode 127 "${cwd}/manage" inception_fail
+    expectCode 1 "${cwd}/manage" inception_fail
 '
 
 expectSuccess "repository change" '
@@ -58,7 +57,7 @@ expectSuccess "repository change" '
     [ "${lines[5]}" = "Argument 1 : Argument One" ] &&
     [ "${lines[6]}" = "Argument 2 : Argument Two" ] &&
     [ "${lines[7]}" = "Argument 3 : Argument Three" ] &&
-    expectCode 127 "${manage}" "${cwd}" inception_fail
+    expectCode 1 "${manage}" "${cwd}" inception_fail
 '
 
 expectSuccess "full path script" '
@@ -75,7 +74,7 @@ expectSuccess "full path script" '
     [ "${lines[5]}" = "Argument 1 : Argument One" ] &&
     [ "${lines[6]}" = "Argument 2 : Argument Two" ] &&
     [ "${lines[7]}" = "Argument 3 : Argument Three" ] &&
-    expectCode 127 "${manage}" "${cwd}/scripts/inception_fail"
+    expectCode 1 "${manage}" "${cwd}/scripts/inception_fail"
 '
 
 # expectSuccess "completion" '
@@ -128,12 +127,9 @@ expectSuccess "environment" '
 
 expectSuccess "directories" '
     cp -f "${FIXTURES}/directories.yml" "$(pwd)/.manage.yml"
-    mv "$(pwd)/scripts/tests" "$(pwd)/tests" &&
     mv "$(pwd)/scripts/modules" "$(pwd)/modules" &&
     mv "$(pwd)/scripts" "$(pwd)/other" &&
-    "$(pwd)/manage" test &&
     mv "$(pwd)/other" "$(pwd)/scripts" &&
-    mv "$(pwd)/tests" "$(pwd)/scripts/tests" &&
     mv "$(pwd)/modules" "$(pwd)/scripts/modules" &&
     cp -f "${FIXTURES}/default.yml" "$(pwd)/.manage.yml"
 '
