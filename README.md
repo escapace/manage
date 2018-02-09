@@ -106,9 +106,9 @@ Checks whether executable with given name exists in **PATH**
 
 Import a module from import path.
 
-* Modules from manage utility library such as `array/join`
-* Local modules in `scripts/modules` directory
-* Remote modules such as `github.com/escapace/stack-tools/hashicorp/downloadPacker`
+-   Modules from manage utility library such as `array/join`
+-   Local modules in `scripts/modules` directory
+-   Remote modules such as `github.com/escapace/stack-tools/hashicorp/downloadPacker`
 
 ### Utility Library
 
@@ -197,7 +197,6 @@ $ ./manage hello
 This will execute the script and create a `.manage_modules` directory
 containing our imports. If we run `ls -a` in `tmp`, we should get
 
-
 ```bash
 .  .. .git  .manage_modules  scripts  vendor  .gitmodules  manage  .manage.yml
 ```
@@ -264,3 +263,17 @@ copyright notices, and licenses.
 [19]: https://github.com/chriscool
 
 [20]: https://twitter.com/mlafeldt
+
+[22]: #usage
+
+[23]: #setup
+
+[24]: #commands-and-modules
+
+[25]: #utility-library
+
+[26]: #remote-modules
+
+[27]: #acknowledgements
+
+[28]: #license
