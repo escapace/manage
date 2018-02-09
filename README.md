@@ -68,13 +68,13 @@ that can be imported from commands in local and remote projects.
 
 #### Commands
 
--   Contain [`@dependency`][4] [`@description`][4] and [`@import`][4]
+-   Contain [`@dependency`][29] [`@description`][30] and [`@import`][31]
     statements
 -   When importing modules, need to prefix them with an underscore
 
 #### Modules
 
--   Contain only [`@import`][4] statements
+-   Contain only [`@import`][31] statements
 -   Must have only 1 function
 -   File name must be the same as the bash function name it exposes
 -   Must not prefix imported modules with an underscore
@@ -242,17 +242,17 @@ copyright notices, and licenses.
 
 [4]: #built-in-statements
 
-[5]: https://github.com/escapace/manage/tree/master/modules/array
+[5]: modules/array
 
-[6]: https://github.com/escapace/manage/tree/master/modules/console
+[6]: modules/console
 
-[7]: https://github.com/escapace/manage/tree/master/modules/lang
+[7]: modules/lang
 
-[8]: https://github.com/escapace/manage/tree/master/modules/manage
+[8]: modules/manage
 
-[9]: https://github.com/escapace/manage/tree/master/modules/path
+[9]: modules/path
 
-[10]: https://github.com/escapace/manage/tree/master/modules/string
+[10]: modules/string
 
 [11]: https://github.com/escapace/stack-tools
 
@@ -287,3 +287,9 @@ copyright notices, and licenses.
 [27]: #acknowledgements
 
 [28]: #license
+
+[29]: #dependency
+
+[30]: #description
+
+[31]: #import
