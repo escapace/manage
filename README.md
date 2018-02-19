@@ -1,7 +1,8 @@
 # manage
 
 [![build status][2]][1]
-[![license][3]]()
+[![license][3]][![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fescapace%2Fmanage.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fescapace%2Fmanage?ref=badge_shield)
+()
 
 `manage` is an MPLv2 licensed framework for building modular Bash
 applications.
@@ -293,3 +294,6 @@ copyright notices, and licenses.
 [30]: #description
 
 [31]: #import
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fescapace%2Fmanage.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fescapace%2Fmanage?ref=badge_large)
