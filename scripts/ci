@@ -40,6 +40,9 @@ main () {
             lint)
                 dockerTest shellcheck
             ;;
+            centos)
+                dockerTest centos
+            ;;
             fedora)
                 dockerTest fedora
             ;;

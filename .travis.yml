@@ -4,6 +4,10 @@ before_install:
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get -y install docker-ce
+  - gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
+script:
+  - ./manage ci
+
 language: bash
 matrix:
   include:
@@ -11,16 +15,10 @@ matrix:
       services: docker
       language: bash
       env: TEST_SUITE=lint
-      script:
-        - gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
-        - ./manage ci
     - os: linux
       services: docker
       language: bash
-      env: TEST_SUITE=fedora
-      script:
-        - gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
-        - ./manage ci
+      env: TEST_SUITE=centos
     # - os: linux
     #   services: docker
     #   language: bash
