@@ -101,14 +101,14 @@ Checks whether executable with given name exists in **PATH**
 #### @import
 
 ```bash
-# @import github.com/escapace/stack-tools/hashicorp/downloadPacker
+# @import github.com/escapace/stack-tools//hashicorp/downloadPacker
 ```
 
 Import a module from import path.
 
 -   Modules from manage utility library such as `array/join`
 -   Local modules in `scripts/modules` directory
--   Remote modules such as `github.com/escapace/stack-tools/hashicorp/downloadPacker`
+-   Remote modules such as `github.com/escapace/stack-tools//hashicorp/downloadPacker`
 
 ### Utility Library
 
@@ -195,7 +195,7 @@ Now, we can import the script by adding the following line to our `hello` file
 in `scripts`
 
 ```bash
-# @import github.com/escapace/stack-tools/hashicorp/downloadTerraform
+# @import github.com/escapace/stack-tools//hashicorp/downloadTerraform
 ```
 
 Then run

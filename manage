@@ -51,6 +51,11 @@ MANAGE_IS_CI () {
     [[ ! "${#ci[@]}" == "${code}" ]]
 }
 
+MANAGE_IS_LOCAL () {
+    # shellcheck disable=1001
+    [[ "${1}" =~ ^[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+$ ]] || return 1
+}
+
 if [ -z "${MANAGE_INTERACTIVE}" ] &&
    [ -t 0 ] &&
    [ -t 1 ] &&
@@ -141,6 +146,9 @@ MANAGE_ERROR () {
     MANAGE_SPINNER disable
 
     case "${type}" in
+        shasum)
+            printf "%s No sha256sum, shasum or openssl in path\n" "${prefix}" "$@" >&2
+        ;;
         notDefined)
             printf "%s '%s' is not defined\n" "${prefix}" "$@" >&2
         ;;
@@ -221,6 +229,23 @@ MANAGE_SPINNER_ENABLED=false
 MANAGE_SPINNER_STATE=0
 MANAGE_SPINNER_SYMBOLS=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
 
+MANAGE_SHASUM () {
+    local string="$1"
+
+    if command -v "sha256sum" > /dev/null 2>&1
+    then
+        echo -n "${string}" | sha256sum | awk '{print toupper($1)}'
+    elif command -v "shasum" > /dev/null 2>&1
+    then
+        echo -n "${string}" | shasum -a 256 | awk '{print toupper($1)}'
+    elif command -v "openssl" > /dev/null 2>&1
+    then
+        echo -n "${string}" | openssl dgst -sha256 | awk '{print toupper($2)}'
+    else
+        MANAGE_ERROR shasum
+    fi
+}
+
 MANAGE_SPINNER () {
     local mode="$1"
     local line
@@ -234,7 +259,7 @@ MANAGE_SPINNER () {
                 if command -v "tput" > /dev/null 2>&1
                 then
                     tput civis
-                    trap 'tput cnorm; exit 1' INT HUP TERM QUIT EXIT
+                    trap 'tput cnorm' INT HUP TERM QUIT EXIT
                 fi
 
                 MANAGE_SPINNER_ENABLED=true
@@ -366,9 +391,9 @@ MANAGE_GET () {
             fi
 
             {
-                git fetch -q --depth=1 --recurse-submodules=yes origin tag "${version}"
-                git checkout -q "${version}"
-                git submodule --quiet update --depth 1 --init --recursive
+                GIT_TERMINAL_PROMPT=0 git fetch -q --depth=1 --recurse-submodules=yes origin tag "${version}"
+                GIT_TERMINAL_PROMPT=0 git checkout -q "${version}"
+                GIT_TERMINAL_PROMPT=0 git submodule --quiet update --depth 1 --init --recursive
             } &> /dev/null
 
             if [[ "${verify}" = "true" ]]
@@ -423,7 +448,7 @@ MANAGE_TAG ()
     local tag=${1}; shift
     local trim='s/^[ \t]*//;s/[ \t]*$//'
     local comment='^[ \t]*[#]+[ \t]*'
-    local import='[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+|github.com\/[-a-z0-9]{0,39}\/[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+(\?[a-zA-Z0-9]+=[a-zA-Z0-9\.]+)*'
+    local import='[-_a-zA-Z0-9]+\/[-_a-zA-Z0-9]+|.*'
     local dependency='[-_a-zA-Z0-9]+'
 
     case "$tag" in
@@ -483,54 +508,90 @@ MANAGE_RESOLVE_REMOTE () {
         if [[ -n "${script}" ]] &&
            [[ -z "${scripts["${script}"]}" ]]
         then
-            if [[ "${script:0:10}" != "github.com" ]]
+            if MANAGE_IS_LOCAL "${script}"
             then
                 [[ -z "${MANAGE_MODULES["${script}"]}" ]] && {
                     scripts["${script}"]="${script}"
                     MANAGE_SPINNER "${script}"
                 }
             else
-                IFS='/?' read -r -a query <<< "$script"
+                local prefix
+                local scriptWithoutPrefix
 
-                local directory="${MANAGE_DOWNLOAD_DIRECTORY}/${query[1]}/${query[2]}"
-                local repository="https://${query[0]}/${query[1]}/${query[2]}.git"
-                local scriptName="${query[3]}/${query[4]}"
-                script="${query[0]}/${query[1]}/${query[2]}/${query[3]}/${query[4]}"
+                if [[ $script = "https://"* ]]
+                then
+                    prefix="https://"
+                    scriptWithoutPrefix="${script#https:\/\/}"
+                elif [[ $script = "git://"* ]]
+                then
+                    prefix="git://"
+                    scriptWithoutPrefix="${script#git:\/\/}"
+                elif [[ $script = "ssh://"* ]]
+                then
+                    prefix="ssh://"
+                    scriptWithoutPrefix="${script#ssh:\/\/}"
+                else
+                    scriptWithoutPrefix="${script}"
+
+                    if [[ $script = "github.com/"* ]]
+                    then
+                        prefix="https://"
+                    else
+                        prefix=""
+                    fi
+                fi
+
+                scriptWithoutPrefix="${scriptWithoutPrefix/\/\///}"
+                local query
+
+                IFS='/' read -r -a query <<< "${script/\/\///}"
+
+                local scriptPath="${query[-2]}/${query[-1]}"
+                local repository="${prefix}${scriptWithoutPrefix%/${scriptPath}}"
+                local scriptName="${scriptPath%\?*}"
+                local scriptQuery="${scriptPath#*\?}"
+                local directory="${MANAGE_DOWNLOAD_DIRECTORY}/$(MANAGE_SHASUM "${repository}")"
+
+                script="${scriptWithoutPrefix%/${scriptPath}}/${scriptName}"
 
                 if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
                 then
-                    local query=("${query[@]:5}")
                     local part key value
                     local version="latest"
                     local verify="true"
 
-                    for part in "${query[@]}"
-                    do
-                        key="${part%=*}"
-                        value="${part#*=}"
+                    if [[ "${scriptQuery}" != "${scriptName}" ]]
+                    then
+                        IFS='&' read -r -a query <<< "${scriptQuery}"
 
-                        case "${key}" in
-                            version)
-                                if [[ "${value}" =~ ^${versionRegex}$ || "${value}" = "latest" ]]
-                                then
-                                    version="${value}"
-                                else
-                                    MANAGE_ERROR invalidVersion "${script}?${part}" "${versionRegex}"
-                                fi
-                            ;;
-                            verify)
-                                case "${value}" in
-                                    no|n|false|f|off|0)
-                                        verify=false
-                                        ;;
-                                    *)
-                                        verify=true
-                                esac
-                            ;;
-                            *)
-                                MANAGE_ERROR invalidQuery "${part}" "${script}?${part}"
-                        esac
-                    done
+                        for part in "${query[@]}"
+                        do
+                            key="${part%=*}"
+                            value="${part#*=}"
+
+                            case "${key}" in
+                                version)
+                                    if [[ "${value}" =~ ^${versionRegex}$ || "${value}" = "latest" ]]
+                                    then
+                                        version="${value}"
+                                    else
+                                        MANAGE_ERROR invalidVersion "${script}?${part}" "${versionRegex}"
+                                    fi
+                                ;;
+                                verify)
+                                    case "${value}" in
+                                        no|n|false|f|off|0)
+                                            verify=false
+                                            ;;
+                                        *)
+                                            verify=true
+                                    esac
+                                ;;
+                                *)
+                                    MANAGE_ERROR invalidQuery "${part}" "${script}?${part}"
+                            esac
+                        done
+                    fi
 
                     MANAGE_SPINNER "${script}"
 
@@ -567,7 +628,7 @@ MANAGE_RESOLVE_REMOTE () {
     do
         local longName="${scripts["${script}"]}"
 
-        if [[ "${longName:0:10}" = "github.com" ]]
+        if ! MANAGE_IS_LOCAL "${longName}"
         then
             MANAGE_ERROR failImport "${longName}"
         fi
@@ -672,9 +733,8 @@ MANAGE_RESOLVE_LOCAL () {
     do
         if [ -z "${MANAGE_MODULES["${script}"]}" ]
         then
-            if [[ "${script:0:10}" = "github.com" ]]
+            if ! MANAGE_IS_LOCAL "${script}"
             then
-                # echo "${script}"
                 MANAGE_RESOLVE_REMOTE "${mode}" "${script}"
             else
                 MANAGE_ERROR failImport "${script}"
@@ -708,13 +768,15 @@ MANAGE_RESOLVE () {
 
     for script in "${arguments[@]}"
     do
-        [[ -n "${script}" ]] && case "${script}" in
-            github.com*)
+        if [[ -n "${script}" ]]
+        then
+            if ! MANAGE_IS_LOCAL "${script}"
+            then
                 remoteModules["${script}"]=1
-            ;;
-            *)
+            else
                 localModules["${script}"]=1
-        esac
+            fi
+        fi
     done
 
     MANAGE_RESOLVE_LOCAL "${mode}" "${!localModules[@]}"
