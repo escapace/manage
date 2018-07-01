@@ -5,6 +5,7 @@ manage="${MANAGE_DIRECTORY}/manage"
 FIXTURES="${SHARNESS_TEST_DIRECTORY}/fixtures/end-to-end"
 
 expectSuccess "init" '
+    gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525 &&
     "${manage}" init
 '
 
@@ -132,6 +133,16 @@ expectSuccess "directories" '
     mv "$(pwd)/other" "$(pwd)/scripts" &&
     mv "$(pwd)/modules" "$(pwd)/scripts/modules" &&
     cp -f "${FIXTURES}/default.yml" "$(pwd)/.manage.yml"
+'
+
+expectSuccess "import" '
+    cp -f "${FIXTURES}/import-https" "$(pwd)/scripts/import-https" &&
+    expectCode 0 "$(pwd)/manage" import-https
+'
+
+expectSuccess "import github.com" '
+    cp -f "${FIXTURES}/import-no-https" "$(pwd)/scripts/import-no-https" &&
+    expectCode 0 "$(pwd)/manage" import-no-https
 '
 
 finish
