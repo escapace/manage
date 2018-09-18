@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# @import lang/required
+# @import lang/exists
+# @import lang/retry
+
+manageGPGKey ()
+{
+    required "$1" || return 1
+    required "$2" || return 1
+
+    local mode="${1:-"--recv-keys"}"
+    local key="$2"
+    local keyservers=(
+        "hkp://keyserver.ubuntu.com:80"
+        "hkp://ipv4.pool.sks-keyservers.net"
+        "hkp://p80.pool.sks-keyservers.net:80"
+        "hkp://pgp.mit.edu:80"
+        "keyserver.ubuntu.com"
+        "ha.pool.sks-keyservers.net"
+        "pgp.mit.edu"
+    )
+
+    ( [[ "${mode}" == "--recv-keys" ]] || [[ "${mode}" == "--send-keys" ]] ) || return 1
+
+    local executable
+
+    if exists gpg
+    then
+        executable="gpg"
+    fi
+
+    if exists gpg2
+    then
+        executable="gpg2"
+    fi
+
+    required "${executable}" || return 1
+
+    local exitCode=1
+
+    [[ "${mode}" == "--send-keys" ]] && exitCode=0
+
+    for keyserver in "${keyservers[@]}"
+    do
+        local code=0
+
+        retry 2 "${executable}" --keyserver "${keyserver}" "${mode}" "$key" &> /dev/null || code=$?
+
+        if [[ "${mode}" == "--recv-keys" ]]
+        then
+            if (( code == 0 ))
+            then
+                echo "${key}:5:" | gpg --import-ownertrust &> /dev/null
+
+                exitCode=0
+
+                break
+            fi
+        else
+            exitCode=$((exitCode + code))
+        fi
+    done
+
+    return "${exitCode}"
+}

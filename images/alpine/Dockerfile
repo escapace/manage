@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM alpine:latest
 
 RUN apk add --no-cache coreutils bash sed bc gnupg git tini
 
@@ -14,7 +14,7 @@ COPY scripts scripts
 COPY test test
 COPY vendor vendor
 
-RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
+RUN ./manage trust-escapace
 
 ENTRYPOINT ["/sbin/tini", "--", "/workdir/manage"]
 CMD ["help"]

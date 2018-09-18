@@ -5,7 +5,7 @@
 # @import manage/scriptPresent
 # @import string/capitalize
 
-useageString () {
+usageString () {
     local name="${1:-[ script ]}"
     printf "\n  %s %s %s [ arguments ... ]\n\n" \
         "$(attribute bold)Usage:$(attribute)" \
@@ -47,11 +47,11 @@ help () {
 
     if [ -n "${script}" ]
     then
-        useageString "$1"
+        usageString "$1"
         description "$(scriptPath "${script}")"
         echo
     else
-        useageString
+        usageString
         scriptFilter getMaximum
         scriptFilter description "$((HELP_MAXIMUM))" "$((80 - HELP_MAXIMUM - 6))" | sort
         echo

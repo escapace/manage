@@ -4,8 +4,8 @@ before_install:
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get -y install docker-ce
-  - gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
 script:
+  - ./manage trust-escapace
   - ./manage ci
 
 language: bash
@@ -19,31 +19,22 @@ matrix:
       services: docker
       language: bash
       env: TEST_SUITE=centos
-    # - os: linux
-    #   services: docker
-    #   language: bash
-    #   env: TEST_SUITE=alpine
-    #   script:
-    #     - gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
-    #     - ./manage ci
     # - os: osx
     #   language: bash
     #   env: TEST_SUITE=osx
-    #   script:
+    #   before_script:
     #     - brew update
     #     - brew install bash
     #     - brew install gnu-sed
     #     - brew upgrade coreutils
     #     - brew upgrade gnupg
     #     - brew upgrade git
-    #     - gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525
     #     - /usr/local/bin/bash --version
-    #     - /usr/local/bin/bash manage ci
 branches:
   only:
+    - next
     - staging
     - development
-    - next
     - /^v?\d+\.\d+\.\d+$/
     - /^\d+\.\d+\.\d+$/
     - /^new-.*$/

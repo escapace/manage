@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# @import manage/manageGPGKey
+# @import lang/required
+
+sendKey ()
+{
+    required "$1" || return 1
+
+    manageGPGKey --send-keys "$1"
+}
+

@@ -119,16 +119,19 @@ proceedWithManage () {
     if [[ "${MANAGE_CWD}" == "${MANAGE_DIRECTORY}" ]]
     then
         MANAGE_PUBLIC=(
-                       "help"
-                       "test"
-                       "lint"
                        "ci"
+                       "help"
+                       "lint"
                        "release"
+                       "send-escapace-key"
+                       "test"
+                       "trust-escapace"
                      )
     else
         MANAGE_PUBLIC=(
                        "help"
                        "init"
+                       "trust-escapace"
                      )
     fi
 

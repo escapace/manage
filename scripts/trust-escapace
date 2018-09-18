@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# @description import and trust Escapace public key
+# @import manage/trust
+# @import console/info
+# @import console/error
+
+main ()
+{
+    verbose true
+    strict true
+
+    local id="13F26F82E955B8B8CE469054F29CCEBC83FD4525"
+
+    _ trust "${id}"
+}
+
+onExit ()
+{
+    if (( $1 == 0 ))
+    then
+        _ info "Escapace public key has been successfully added to the local GPG keyring"
+    else
+        _ error "Failed to import Escapace public key"
+    fi
+}
