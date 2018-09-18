@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# vim: set ft=sh:
+#
+# @description import and trust Escapace GPG key
+# @import manage/sendKey
+
+main ()
+{
+    verbose true
+    strict true
+
+    local id="13F26F82E955B8B8CE469054F29CCEBC83FD4525"
+
+    _ sendKey "${id}"
+}
