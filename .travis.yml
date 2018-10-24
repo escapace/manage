@@ -1,57 +1,48 @@
 sudo: required
 before_install:
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  - sudo apt-get update
-  - sudo apt-get -y install docker-ce
+- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+- sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu
+  $(lsb_release -cs) stable"
+- sudo apt-get update
+- sudo apt-get -y install docker-ce
 script:
-  - ./manage trust-escapace
-  - ./manage ci
-
+- "./manage trust-escapace"
+- "./manage ci"
 language: bash
 matrix:
   include:
-    - os: linux
-      services: docker
-      language: bash
-      env: TEST_SUITE=lint
-    - os: linux
-      services: docker
-      language: bash
-      env: TEST_SUITE=centos
-    # - os: osx
-    #   language: bash
-    #   env: TEST_SUITE=osx
-    #   before_script:
-    #     - brew update
-    #     - brew install bash
-    #     - brew install gnu-sed
-    #     - brew upgrade coreutils
-    #     - brew upgrade gnupg
-    #     - brew upgrade git
-    #     - /usr/local/bin/bash --version
+  - os: linux
+    services: docker
+    language: bash
+    env: TEST_SUITE=lint
+  - os: linux
+    services: docker
+    language: bash
+    env: TEST_SUITE=centos
 branches:
   only:
-    - next
-    - staging
-    - development
-    - /^v?\d+\.\d+\.\d+$/
-    - /^\d+\.\d+\.\d+$/
-    - /^new-.*$/
-    - /^feat-.*$/
-    - /^add-.*$/
-    - /^change-.*$/
-    - /^breaking-.*$/
-    - /^deprecate-.*$/
-    - /^remove-.*$/
-    - /^fix-.*$/
-    - /^sec-.*$/
-    - /^security-.*$/
-    - /^perf-.*$/
-    - /^performance-.*$/
-    - /^test-.*$/
-    - /^tests-.*$/
+  - next
+  - staging
+  - development
+  - "/^v?\\d+\\.\\d+\\.\\d+$/"
+  - "/^\\d+\\.\\d+\\.\\d+$/"
+  - "/^new-.*$/"
+  - "/^feat-.*$/"
+  - "/^add-.*$/"
+  - "/^change-.*$/"
+  - "/^breaking-.*$/"
+  - "/^deprecate-.*$/"
+  - "/^remove-.*$/"
+  - "/^fix-.*$/"
+  - "/^sec-.*$/"
+  - "/^security-.*$/"
+  - "/^perf-.*$/"
+  - "/^performance-.*$/"
+  - "/^test-.*$/"
+  - "/^tests-.*$/"
 notifications:
-  email:
+  email: false
+  slack:
     on_success: change
     on_failure: always
+    secure: hEsYiNUnNXl5CVm+B9dVW4BfgY7jppPphphI200Xt0IdWxtbkn+QtObsSd87RKRPgzMp7GVANUzdYPNqgvU3JlcFEpPDEdsIKpfgOlteYvWmSJq6R4ssON8Q8iFrYy/QsEDkT25SDIbD7506DS4qDKdKd8P00mjUKrdwZJpcsumjFhl4biv5wpmJm+9e+uGgAGYGrProI8A1Ry8em8pCc4nyziaL/Ahz3vOrRyeu2VoiahlEmkEF32GnLBO5tPGHjbvnp8QyPTS+EKRCu2HPU1tiLNPNZTTkybcyKRjVoRIDDm8koIO+KNtXj0W6J3y57PF+fCv3d0C31K4/PRfemHbiSE1p6cmluptGpdcCaHfGLYc5mKLOUiIhVQuRRjeLzZUkAtSwkGnNnHPA55AiCMqs2KTJppK3Xh+mw5ri4BRZLmEtxuJGBh7w8yr5BAqg8aj5jReBKgfA839hECFuua08anxB1wW1s4ixGnMP2tQVMrgCuhA0ArVKRZJdxQU/y4Gf6S0NAftViswRDnsBvUYa5VQikdxw4Oqz3iyB9EVbtxFt/KJWIIm8U851YCumlvZMJUfTWI0YS8vDFXJ+zA8WxxnvcGg6RRAQ1N0fK/RmCIYdRJowz1MejhNByozCHouxqxUu8GRrwrJTSOcZnnFpZNja8vgoPtxqiN7mgDU=

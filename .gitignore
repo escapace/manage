@@ -1,4 +1,5 @@
 .manage_modules/*
+.DS_Store
 !.manage_modules/.gitkeep
 .vagrant
 Vagrantfile
