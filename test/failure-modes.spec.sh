@@ -9,8 +9,6 @@ expectSuccess "init" '
     "${manage}" init
 '
 
->&2 echo here
-
 expectSuccess "function is not defined" '
     cp -f "${FIXTURES}/notDefined" "$(pwd)/scripts/notDefined" &&
     message="$("$(pwd)/manage" notDefined 2>&1 || true)" &&
