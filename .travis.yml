@@ -1,5 +1,5 @@
 language: bash
-before_install: ./manage trust-escapace
+before_script: ./manage trust-escapace
 script: ./manage ci
 matrix:
   include:
