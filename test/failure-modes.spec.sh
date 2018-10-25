@@ -5,6 +5,7 @@ manage="${MANAGE_DIRECTORY}/manage"
 FIXTURES="${SHARNESS_TEST_DIRECTORY}/fixtures/failure-modes"
 
 expectSuccess "init" '
+    gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525 &&
     "${manage}" init
 '
 
