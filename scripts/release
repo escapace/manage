@@ -8,7 +8,7 @@
 # @import console/error
 # @import lang/required
 # @import string/camelCase
-# @import github.com/escapace/stack-tools/docker/dockerBuild
+# @import github.com/escapace/stack-tools docker/dockerBuild
 # @dependency git
 
 image () {

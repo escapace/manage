@@ -1,24 +1,17 @@
-sudo: required
-before_install:
-- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-- sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu
-  $(lsb_release -cs) stable"
-- sudo apt-get update
-- sudo apt-get -y install docker-ce
-script:
-- "./manage trust-escapace"
-- "./manage ci"
 language: bash
+before_install: ./manage trust-escapace
+script: ./manage ci
 matrix:
   include:
   - os: linux
     services: docker
-    language: bash
     env: TEST_SUITE=lint
   - os: linux
     services: docker
-    language: bash
     env: TEST_SUITE=centos
+  - os: osx
+    env: TEST_SUITE=osx
+    install: brew install bash gnu-sed gnupg git
 branches:
   only:
   - next

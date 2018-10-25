@@ -66,6 +66,8 @@ else
     MANAGE_INTERACTIVE=false
 fi
 
+MANAGE_DELIMITER=$'[]'
+
 MANAGE_COREUTILS=(sed sort)
 
 for executable in "${MANAGE_COREUTILS[@]}"
@@ -326,7 +328,7 @@ MANAGE_GET () {
     local repository="$1"
     local version="$2"
     local directory="$3"
-    local verify="$4"
+    local verify="${4:-true}"
     local modulePath
 
     local localVersion
@@ -453,13 +455,47 @@ MANAGE_TAG ()
 
     case "$tag" in
         import)
-            sed -nr "s/${comment}@${tag} (${import})$/\1/p;${trim}" "$@"
+            text="$(sed -nr "s/${comment}@${tag} (${import})$/\1/p;${trim}" "$@")"
+
+            if [[ ! -z "${text}" ]]
+            then
+                declare -a lines
+                declare -a fragments
+                declare -A product
+                local fragment
+                local line
+
+                IFS=$'\n' read -rd '' -a lines <<< "${text}"
+
+                for line in "${lines[@]}"
+                do
+                    IFS=$' ' read -r -a fragments <<< "${line}"
+
+                    if MANAGE_IS_LOCAL "${fragments[0]}"
+                    then
+                        product["${line}"]=1
+                    else
+                        local repo="${fragments[0]}"
+                        local fragments=("${fragments[@]:1}")
+
+                        for fragment in "${fragments[@]}"
+                        do
+                            product["${repo}${MANAGE_DELIMITER}${fragment}"]=1
+                        done
+                    fi
+                done
+
+                if  [[ ! -z "${!product[*]}" ]]
+                then
+                    echo "${!product[*]}"
+                fi
+            fi
         ;;
         dependency)
-            sed -nr "s/${comment}*@${tag} (${dependency})$/\1/p;${trim}" "$@"
+            sed -nr "s/${comment}@${tag} (${dependency})$/\1/p;${trim}" "$@"
         ;;
         *)
-            sed -nr "s/${comment}*@${tag} (.+)$/\1/p;${trim}" "$@"
+            sed -nr "s/${comment}@${tag} (.+)$/\1/p;${trim}" "$@"
     esac
 }
 
@@ -516,24 +552,26 @@ MANAGE_RESOLVE_REMOTE () {
                 }
             else
                 local prefix
-                local scriptWithoutPrefix
+                local url
+                local left="${script%%${MANAGE_DELIMITER}*}"
+                local right="${script#*${MANAGE_DELIMITER}}"
 
-                if [[ $script = "https://"* ]]
+                if [[ $left = "https://"* ]]
                 then
                     prefix="https://"
-                    scriptWithoutPrefix="${script#https:\/\/}"
-                elif [[ $script = "git://"* ]]
+                    url="${left#https:\/\/}"
+                elif [[ $left = "git://"* ]]
                 then
                     prefix="git://"
-                    scriptWithoutPrefix="${script#git:\/\/}"
-                elif [[ $script = "ssh://"* ]]
+                    url="${left#git:\/\/}"
+                elif [[ $left = "ssh://"* ]]
                 then
                     prefix="ssh://"
-                    scriptWithoutPrefix="${script#ssh:\/\/}"
+                    url="${left#ssh:\/\/}"
                 else
-                    scriptWithoutPrefix="${script}"
+                    url="${left}"
 
-                    if [[ $script = "github.com/"* ]]
+                    if [[ $left = "github.com/"* ]]
                     then
                         prefix="https://"
                     else
@@ -541,61 +579,36 @@ MANAGE_RESOLVE_REMOTE () {
                     fi
                 fi
 
-                scriptWithoutPrefix="${scriptWithoutPrefix/\/\///}"
-                local query
-
-                IFS='/' read -r -a query <<< "${script/\/\///}"
-
-                local scriptPath="${query[-2]}/${query[-1]}"
-                local repository="${prefix}${scriptWithoutPrefix%/${scriptPath}}"
+                local scriptPath="${right}"
                 local scriptName="${scriptPath%\?*}"
-                local scriptQuery="${scriptPath#*\?}"
-                local directory="${MANAGE_DOWNLOAD_DIRECTORY}/$(MANAGE_SHASUM "${repository}")"
+                local repository
+                local directory
 
-                script="${scriptWithoutPrefix%/${scriptPath}}/${scriptName}"
+                local version="${left##*\#}"
+
+                if [[ "${version}" == "${left}" ]]
+                then
+                    repository="${prefix}${url}"
+                    version=latest
+                else
+                    repository="${prefix}${url%%\#${version}}"
+                fi
+
+
+                if [[ "${version}" =~ ^${versionRegex}$ || "${version}" = "latest" ]]
+                then
+                    true
+                else
+                    MANAGE_ERROR invalidVersion "${repository}#${version}" "${versionRegex}"
+                fi
+
+                directory="${MANAGE_DOWNLOAD_DIRECTORY}/$(MANAGE_SHASUM "${repository}")"
 
                 if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
                 then
-                    local part key value
-                    local version="latest"
-                    local verify="true"
-
-                    if [[ "${scriptQuery}" != "${scriptName}" ]]
-                    then
-                        IFS='&' read -r -a query <<< "${scriptQuery}"
-
-                        for part in "${query[@]}"
-                        do
-                            key="${part%=*}"
-                            value="${part#*=}"
-
-                            case "${key}" in
-                                version)
-                                    if [[ "${value}" =~ ^${versionRegex}$ || "${value}" = "latest" ]]
-                                    then
-                                        version="${value}"
-                                    else
-                                        MANAGE_ERROR invalidVersion "${script}?${part}" "${versionRegex}"
-                                    fi
-                                ;;
-                                verify)
-                                    case "${value}" in
-                                        no|n|false|f|off|0)
-                                            verify=false
-                                            ;;
-                                        *)
-                                            verify=true
-                                    esac
-                                ;;
-                                *)
-                                    MANAGE_ERROR invalidQuery "${part}" "${script}?${part}"
-                            esac
-                        done
-                    fi
-
                     MANAGE_SPINNER "${script}"
 
-                    MANAGE_GET "${repository}" "${version}" "${directory}" "${verify}" || {
+                    MANAGE_GET "${repository}" "${version}" "${directory}" || {
                         rm -rf "${directory}" || true
                         MANAGE_ERROR failDownload "${repository}"
                     }

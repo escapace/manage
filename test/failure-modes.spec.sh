@@ -5,9 +5,10 @@ manage="${MANAGE_DIRECTORY}/manage"
 FIXTURES="${SHARNESS_TEST_DIRECTORY}/fixtures/failure-modes"
 
 expectSuccess "init" '
-    gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525 &&
     "${manage}" init
 '
+
+>&2 echo here
 
 expectSuccess "function is not defined" '
     cp -f "${FIXTURES}/notDefined" "$(pwd)/scripts/notDefined" &&
@@ -27,13 +28,6 @@ expectSuccess "version conflict" '
     cp -f "${FIXTURES}/diffVersion" "$(pwd)/scripts/diffVersion" &&
     message="$("$(pwd)/manage" diffVersion 2>&1 || true)" &&
     [[ "${message}" =~ "different versions" ]] &&
-    [[ "${message}" =~ ERROR ]]
-'
-
-expectSuccess "invalid query" '
-    cp -f "${FIXTURES}/invalidQuery" "$(pwd)/scripts/invalidQuery" &&
-    message="$("$(pwd)/manage" invalidQuery 2>&1 || true)" &&
-    [[ "${message}" =~ "invalid option" ]] &&
     [[ "${message}" =~ ERROR ]]
 '
 

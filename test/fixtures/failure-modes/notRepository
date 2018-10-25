@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @import github.com/escapace/empty-repository.git/directory/function?verify=false
+# @import github.com/escapace/empty-repository.git directory/function
 
 main ()
 {
