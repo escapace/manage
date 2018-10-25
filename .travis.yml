@@ -11,7 +11,7 @@ matrix:
     env: TEST_SUITE=centos
   - os: osx
     env: TEST_SUITE=osx
-    install: brew install bash gnu-sed coreutils
+    install: brew install bash gnu-sed
 branches:
   only:
   - next
