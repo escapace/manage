@@ -233,19 +233,22 @@ MANAGE_SPINNER_SYMBOLS=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "�
 
 MANAGE_SHASUM () {
     local string="$1"
+    local product
 
     if command -v "sha256sum" > /dev/null 2>&1
     then
-        echo -n "${string}" | sha256sum | awk '{print toupper($1)}'
+        product="$(echo -n "${string}" | sha256sum | awk '{print toupper($1)}')"
     elif command -v "shasum" > /dev/null 2>&1
     then
-        echo -n "${string}" | shasum -a 256 | awk '{print toupper($1)}'
+        product="$(echo -n "${string}" | shasum -a 256 | awk '{print toupper($1)}')"
     elif command -v "openssl" > /dev/null 2>&1
     then
-        echo -n "${string}" | openssl dgst -sha256 | awk '{print toupper($2)}'
+        product="$(echo -n "${string}" | openssl dgst -sha256 | awk '{print toupper($2)}')"
     else
         MANAGE_ERROR shasum
     fi
+
+    echo "${product:0:32}"
 }
 
 MANAGE_SPINNER () {
@@ -606,7 +609,7 @@ MANAGE_RESOLVE_REMOTE () {
 
                 if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
                 then
-                    MANAGE_SPINNER "${script}"
+                    MANAGE_SPINNER "${repository} ${scriptPath}"
 
                     MANAGE_GET "${repository}" "${version}" "${directory}" || {
                         rm -rf "${directory}" || true
