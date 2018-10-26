@@ -10,11 +10,6 @@ expectSuccess "init" '
     ./manage trust-escapace
 '
 
-# expectSuccess "init" '
-#     "${manage}" init
-# '
-"$(pwd)/manage" hello "Argument One" "Argument Two" "Argument Three" 1>&2
-
 expectSuccess "arguments" '
     readarray -t lines <<< "$("$(pwd)/manage" hello "Argument One" "Argument Two" "Argument Three" 2>/dev/null)"
     [ "${lines[5]}" = "Argument 1 : Argument One" ] &&
