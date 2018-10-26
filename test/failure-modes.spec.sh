@@ -5,14 +5,24 @@ manage="${MANAGE_DIRECTORY}/manage"
 FIXTURES="${SHARNESS_TEST_DIRECTORY}/fixtures/failure-modes"
 
 expectSuccess "init" '
-    gpg --keyserver ha.pool.sks-keyservers.net --recv-key 13F26F82E955B8B8CE469054F29CCEBC83FD4525 &&
-    "${manage}" init
+    "${manage}" init &&
+    cp -f "${SHARNESS_TEST_DIRECTORY}/default.yml" .manage.yml &&
+    ./manage trust-escapace
 '
 
 expectSuccess "function is not defined" '
     cp -f "${FIXTURES}/notDefined" "$(pwd)/scripts/notDefined" &&
     message="$("$(pwd)/manage" notDefined 2>&1 || true)" &&
     [[ "${message}" =~ "is not defined" ]] &&
+    [[ "${message}" =~ ERROR ]]
+'
+
+expectSuccess "collision" '
+    mkdir "$(pwd)/scripts/modules/another-example" &&
+    cp -f "${FIXTURES}/another-example/hello" "$(pwd)/scripts/modules/another-example/hello" &&
+    cp -f "${FIXTURES}/collision" "$(pwd)/scripts/collision" &&
+    message="$("$(pwd)/manage" collision 2>&1 || true)" &&
+    [[ "${message}" =~ "two different functions" ]] &&
     [[ "${message}" =~ ERROR ]]
 '
 
@@ -48,15 +58,6 @@ expectSuccess "fail to verify" '
     cp -f "${FIXTURES}/failVerify" "$(pwd)/scripts/failVerify" &&
     message="$("$(pwd)/manage" failVerify 2>&1 || true)" &&
     [[ "${message}" =~ "failed to verify" ]] &&
-    [[ "${message}" =~ ERROR ]]
-'
-
-expectSuccess "collision" '
-    mkdir "$(pwd)/scripts/modules/another-example" &&
-    cp -f "${FIXTURES}/another-example/hello" "$(pwd)/scripts/modules/another-example/hello" &&
-    cp -f "${FIXTURES}/collision" "$(pwd)/scripts/collision" &&
-    message="$("$(pwd)/manage" collision 2>&1 || true)" &&
-    [[ "${message}" =~ "two different functions" ]] &&
     [[ "${message}" =~ ERROR ]]
 '
 

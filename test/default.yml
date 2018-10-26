@@ -1,0 +1,15 @@
+directories:
+  script: scripts
+  module: scripts/modules
+
+# Environment variables
+env:
+  HELLO: "Hello World!"
+
+# Enable manage repository scripts
+enable:
+  - help
+  - trust-escapace
+
+# Default script
+default: help
