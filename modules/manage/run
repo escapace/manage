@@ -37,8 +37,6 @@ run () {
         shift
         executeScript "${name}" "$@"
     else
-        name="$(yml default || echo help)"
-
         name="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" default || echo null)"
 
         if [[ "${MANAGE_SCRIPT_DIRECTORY}" == "null" ]]

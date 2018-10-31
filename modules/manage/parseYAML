@@ -38,8 +38,6 @@ parseYAML () {
 
     if includes MANAGE_PUBLIC "test"
     then
-        # MANAGE_TEST_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_test || echo "scripts/tests")"
-
         MANAGE_TEST_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" directories.test || echo null)"
 
         if [[ "${MANAGE_TEST_DIRECTORY}" == "null" ]]
