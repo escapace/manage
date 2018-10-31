@@ -40,7 +40,12 @@ build () {
 
     docker cp "${name}:/data" "${tmpDir}"
 
-    find "${tmpDir}" -type f ! -name '.travis.yml' ! -name '.manage.yml' -name '.*' -delete 2> /dev/null
+    find "${tmpDir}" -type f \
+        ! -name '.manage-directory' \
+        ! -name '.gitkeep' \
+        ! -name '.travis.yml' \
+        ! -name '.manage.yml' \
+        -name '.*' -delete 2> /dev/null
 
     RELEASE_DIRECTORY="${tmpDir}/data/manage"
 }
@@ -96,6 +101,8 @@ main ()
     local commitHashh
     local diff
     local line
+
+    sed -i "s/MANAGE_VERSION=\"latest\"/MANAGE_VERSION=\"${tag}\"/g" "${deployDirectory}/manage"
 
     previousBranch="$(git rev-parse --abbrev-ref HEAD)"
     commitHashh="$(git log -n 1 --format="%H" HEAD)"

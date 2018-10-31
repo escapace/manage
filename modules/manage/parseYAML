@@ -29,7 +29,7 @@ parseYAML () {
 
         if [[ "${public}" == "ll" ]]
         then
-            MANAGE_PUBLIC=("help" "test")
+            MANAGE_PUBLIC=("help")
         else
             # shellcheck disable=SC2206
             MANAGE_PUBLIC=(${public})
