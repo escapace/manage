@@ -1,11 +1,11 @@
 directories:
-  script: scripts
-  module: scripts/modules
-  test: scripts/tests
+  scripts: scripts
+  modules: scripts/modules
+  tests: scripts/tests
 
 # Environment variables
 env:
-  HELLO: "Modified environment"
+  HELLO: "Hello World!"
 
 # Enable manage repository scripts
 enable:
@@ -13,4 +13,4 @@ enable:
   - test
 
 # Default script
-default: help
+default: hello

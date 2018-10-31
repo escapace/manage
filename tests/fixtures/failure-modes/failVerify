@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# @import github.com/escapace/manage-examples#v1.0.0 spark/spark
+
+main ()
+{
+    verbose true
+    strict true
+}

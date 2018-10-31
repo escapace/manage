@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# @import github.com/escapace/stack-tools/docker/downloadTini
-# @import github.com/escapace/stack-tools/docker/dockerBuild
+# @import github.com/escapace/stack-tools docker/downloadTini
+# @import github.com/escapace/stack-tools docker/dockerBuild
 # @import manage/manage
 # @import lang/required
 # @import console/die

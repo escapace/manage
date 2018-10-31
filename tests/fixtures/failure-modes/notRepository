@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# @import github.com/escapace/empty-repository.git directory/function
+
+main ()
+{
+    verbose true
+    strict true
+}

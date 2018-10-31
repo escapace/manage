@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# @import github.com/escapace/manage-examples#v1.1.0 string/capitalize
+
+main ()
+{
+    verbose true
+    strict true
+}

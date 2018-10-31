@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# @import github.com/escapace/manage-examples//spark/spark?version=v1.1.0&verify=true
+# @import github.com/escapace/manage-examples#v1.1.0 spark/spark
 
 main ()
 {

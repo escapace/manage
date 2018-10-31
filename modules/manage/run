@@ -37,7 +37,12 @@ run () {
         shift
         executeScript "${name}" "$@"
     else
-        name="$(yml default || echo help)"
+        name="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" default || echo null)"
+
+        if [[ "${MANAGE_SCRIPT_DIRECTORY}" == "null" ]]
+        then
+            name="help"
+        fi
 
         if scriptPresent "${name}"
         then
@@ -53,18 +58,13 @@ run () {
 
 scriptEnvironment ()
 {
-    if declare -f "yml" > /dev/null 2>&1
+    local variables
+
+    variables="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" env)"
+
+    if [[ "${variables}" != "null" ]]
     then
-        local keys
-        local key
-        keys="$(yml __keys || echo)"
-        for key in ${keys}
-        do
-            if [[ "${key}" =~ ^env_.* ]]
-            then
-                echo "$(upper "${key#env_}")=\"$(yml "${key}" || echo)\""
-            fi
-        done
+        echo "${variables}" | sed 's/: /="/' | sed 's/$/"/'
     fi
 }
 
@@ -96,7 +96,7 @@ executeScript () {
         imports="$(MANAGE_TAG "import" "${path}")"
 
         zero="$(basename "${MANAGE_ZERO}")"
-        libexec="source \"${MANAGE_DIRECTORY}/manage\""
+        libexec="source \"${MANAGE_ZERO}\""
 
         if [ ! -z "${MANAGE_TEST_DIRECTORY}" ]
         then
@@ -109,6 +109,7 @@ executeScript () {
                   MANAGE_REPOSITORY=\"${MANAGE_REPOSITORY}\"
                   MANAGE_MODULE_DIRECTORY=\"${MANAGE_MODULE_DIRECTORY}\"
                   MANAGE_SCRIPT_PATH=\"${path}\"
+                  MANAGE_BIN=\"${MANAGE_BIN}\"
                   MANAGE_ZERO=\"${MANAGE_ZERO}\"
                   MANAGE_IMPORT=\"${imports}\""
 

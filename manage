@@ -30,6 +30,8 @@ else
     exit 1
 fi
 
+MANAGE_VERSION="v3.0.0"
+
 MANAGE_IS_CI () {
     # Returns 0 if the current environment
     # is a Continuous Integration server.
@@ -65,6 +67,8 @@ then
 else
     MANAGE_INTERACTIVE=false
 fi
+
+MANAGE_DELIMITER=$'[]'
 
 MANAGE_COREUTILS=(sed sort)
 
@@ -176,6 +180,15 @@ MANAGE_ERROR () {
         collision)
             printf "%s the same name is used by two different functions\n '%s' and '%s'\n" "${prefix}" "$@" >&2
         ;;
+        arch)
+            printf "%s Unsupported architecture '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        os)
+            printf "%s Unsupported os type '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        yq)
+            printf "%s failed to download yq from '%s'\n" "${prefix}" "$@" >&2
+        ;;
         *)
             printf "%s uncaught exception\n" "${prefix}" >&2
     esac
@@ -231,19 +244,22 @@ MANAGE_SPINNER_SYMBOLS=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "�
 
 MANAGE_SHASUM () {
     local string="$1"
+    local product
 
     if command -v "sha256sum" > /dev/null 2>&1
     then
-        echo -n "${string}" | sha256sum | awk '{print toupper($1)}'
+        product="$(echo -n "${string}" | sha256sum | awk '{print toupper($1)}')"
     elif command -v "shasum" > /dev/null 2>&1
     then
-        echo -n "${string}" | shasum -a 256 | awk '{print toupper($1)}'
+        product="$(echo -n "${string}" | shasum -a 256 | awk '{print toupper($1)}')"
     elif command -v "openssl" > /dev/null 2>&1
     then
-        echo -n "${string}" | openssl dgst -sha256 | awk '{print toupper($2)}'
+        product="$(echo -n "${string}" | openssl dgst -sha256 | awk '{print toupper($2)}')"
     else
         MANAGE_ERROR shasum
     fi
+
+    echo "${product:0:32}"
 }
 
 MANAGE_SPINNER () {
@@ -326,8 +342,7 @@ MANAGE_GET () {
     local repository="$1"
     local version="$2"
     local directory="$3"
-    local verify="$4"
-    local modulePath
+    local verify="${4:-true}"
 
     local localVersion
 
@@ -407,6 +422,24 @@ MANAGE_GET () {
 
         MANAGE_REMOTES["${repository}"]="${2}"
     fi
+}
+
+MANAGE_GET_OR_DELETE () {
+    local repository="$1"
+    local version="$2"
+    local directory="$3"
+    local verify="${4:-true}"
+
+    MANAGE_GET "$1" "$2" "$3" "$4" || {
+        rm -rf "${directory}" || true
+        MANAGE_ERROR failDownload "${repository}"
+    }
+}
+
+MANAGE_REPOSITORY_PATH () {
+    local repository="$1"
+    local directory="$2"
+    local modulePath
 
     if [[ ! -n "${MANAGE_REMOTE_PATHS["${repository}"]}" ]]
     then
@@ -415,19 +448,9 @@ MANAGE_GET () {
             MANAGE_ERROR notRepository "${repository}"
         }
 
-        modulePath="$(
-            awk '
-                !/^[[:blank:]]/ {unindented = $0}
-                /module: / && /^[[:blank:]]/ {
-                    if (unindented == "directories:") {
-                            gsub(/^[ \t\r\n]+module:[ \t\r\n]+/, "", $0);
-                            print;
-                    }
-                }
-            ' "${directory}/.manage.yml"
-        )" || modulePath=
+        modulePath="$(yq r "${directory}/.manage.yml" directories.module)"
 
-        if [ ! -n "${modulePath}" ]
+        if [[ "${modulePath}" == "null" ]]
         then
             modulePath="scripts/modules"
         fi
@@ -453,13 +476,47 @@ MANAGE_TAG ()
 
     case "$tag" in
         import)
-            sed -nr "s/${comment}@${tag} (${import})$/\1/p;${trim}" "$@"
+            text="$(sed -nr "s/${comment}@${tag} (${import})$/\1/p;${trim}" "$@")"
+
+            if [[ ! -z "${text}" ]]
+            then
+                declare -a lines
+                declare -a fragments
+                declare -A product
+                local fragment
+                local line
+
+                IFS=$'\n' read -rd '' -a lines <<< "${text}"
+
+                for line in "${lines[@]}"
+                do
+                    IFS=$' ' read -r -a fragments <<< "${line}"
+
+                    if MANAGE_IS_LOCAL "${fragments[0]}"
+                    then
+                        product["${line}"]=1
+                    else
+                        local repo="${fragments[0]}"
+                        local fragments=("${fragments[@]:1}")
+
+                        for fragment in "${fragments[@]}"
+                        do
+                            product["${repo}${MANAGE_DELIMITER}${fragment}"]=1
+                        done
+                    fi
+                done
+
+                if  [[ ! -z "${!product[*]}" ]]
+                then
+                    echo "${!product[*]}"
+                fi
+            fi
         ;;
         dependency)
-            sed -nr "s/${comment}*@${tag} (${dependency})$/\1/p;${trim}" "$@"
+            sed -nr "s/${comment}@${tag} (${dependency})$/\1/p;${trim}" "$@"
         ;;
         *)
-            sed -nr "s/${comment}*@${tag} (.+)$/\1/p;${trim}" "$@"
+            sed -nr "s/${comment}@${tag} (.+)$/\1/p;${trim}" "$@"
     esac
 }
 
@@ -516,24 +573,26 @@ MANAGE_RESOLVE_REMOTE () {
                 }
             else
                 local prefix
-                local scriptWithoutPrefix
+                local url
+                local left="${script%%${MANAGE_DELIMITER}*}"
+                local right="${script#*${MANAGE_DELIMITER}}"
 
-                if [[ $script = "https://"* ]]
+                if [[ $left = "https://"* ]]
                 then
                     prefix="https://"
-                    scriptWithoutPrefix="${script#https:\/\/}"
-                elif [[ $script = "git://"* ]]
+                    url="${left#https:\/\/}"
+                elif [[ $left = "git://"* ]]
                 then
                     prefix="git://"
-                    scriptWithoutPrefix="${script#git:\/\/}"
-                elif [[ $script = "ssh://"* ]]
+                    url="${left#git:\/\/}"
+                elif [[ $left = "ssh://"* ]]
                 then
                     prefix="ssh://"
-                    scriptWithoutPrefix="${script#ssh:\/\/}"
+                    url="${left#ssh:\/\/}"
                 else
-                    scriptWithoutPrefix="${script}"
+                    url="${left}"
 
-                    if [[ $script = "github.com/"* ]]
+                    if [[ $left = "github.com/"* ]]
                     then
                         prefix="https://"
                     else
@@ -541,64 +600,37 @@ MANAGE_RESOLVE_REMOTE () {
                     fi
                 fi
 
-                scriptWithoutPrefix="${scriptWithoutPrefix/\/\///}"
-                local query
-
-                IFS='/' read -r -a query <<< "${script/\/\///}"
-
-                local scriptPath="${query[-2]}/${query[-1]}"
-                local repository="${prefix}${scriptWithoutPrefix%/${scriptPath}}"
+                local scriptPath="${right}"
                 local scriptName="${scriptPath%\?*}"
-                local scriptQuery="${scriptPath#*\?}"
-                local directory="${MANAGE_DOWNLOAD_DIRECTORY}/$(MANAGE_SHASUM "${repository}")"
+                local repository
+                local directory
 
-                script="${scriptWithoutPrefix%/${scriptPath}}/${scriptName}"
+                local version="${left##*\#}"
+
+                if [[ "${version}" == "${left}" ]]
+                then
+                    repository="${prefix}${url}"
+                    version=latest
+                else
+                    repository="${prefix}${url%%\#${version}}"
+                fi
+
+
+                if [[ "${version}" =~ ^${versionRegex}$ || "${version}" = "latest" ]]
+                then
+                    true
+                else
+                    MANAGE_ERROR invalidVersion "${repository}#${version}" "${versionRegex}"
+                fi
+
+                directory="${MANAGE_DOWNLOAD_DIRECTORY}/$(MANAGE_SHASUM "${repository}")"
 
                 if [[ -z "${MANAGE_MODULES["${script}"]}" ]]
                 then
-                    local part key value
-                    local version="latest"
-                    local verify="true"
+                    MANAGE_SPINNER "${repository} ${scriptPath}"
 
-                    if [[ "${scriptQuery}" != "${scriptName}" ]]
-                    then
-                        IFS='&' read -r -a query <<< "${scriptQuery}"
-
-                        for part in "${query[@]}"
-                        do
-                            key="${part%=*}"
-                            value="${part#*=}"
-
-                            case "${key}" in
-                                version)
-                                    if [[ "${value}" =~ ^${versionRegex}$ || "${value}" = "latest" ]]
-                                    then
-                                        version="${value}"
-                                    else
-                                        MANAGE_ERROR invalidVersion "${script}?${part}" "${versionRegex}"
-                                    fi
-                                ;;
-                                verify)
-                                    case "${value}" in
-                                        no|n|false|f|off|0)
-                                            verify=false
-                                            ;;
-                                        *)
-                                            verify=true
-                                    esac
-                                ;;
-                                *)
-                                    MANAGE_ERROR invalidQuery "${part}" "${script}?${part}"
-                            esac
-                        done
-                    fi
-
-                    MANAGE_SPINNER "${script}"
-
-                    MANAGE_GET "${repository}" "${version}" "${directory}" "${verify}" || {
-                        rm -rf "${directory}" || true
-                        MANAGE_ERROR failDownload "${repository}"
-                    }
+                    MANAGE_GET_OR_DELETE "${repository}" "${version}" "${directory}"
+                    MANAGE_REPOSITORY_PATH "${repository}" "${directory}"
 
                     scripts["${scriptName}"]="${script}"
                 fi
@@ -826,6 +858,111 @@ MANAGE_RETURN ()
     return "${_code}"
 }
 
+MANAGE_ARCH () {
+    local arch
+
+    arch="$(uname -m)"
+
+    case "${arch}" in
+        # armv6*)
+        #     arch="arm"
+        #     ;;
+        x86_64)
+            arch="amd64"
+            ;;
+        x86)
+            arch="386"
+            ;;
+        i686)
+            arch="386"
+            ;;
+        i386)
+            arch="386"
+            ;;
+        aarch64)
+            arch="arm64"
+            ;;
+        armv7*)
+            arch="arm"
+            ;;
+        *)
+            MANAGE_ERROR arch "${arch}"
+    esac
+
+    echo ${arch}
+}
+
+MANAGE_OS () {
+    local ostype
+
+    ostype="$(uname)"
+
+    case "${ostype}" in
+        Linux)
+            ostype="linux"
+            ;;
+        Darwin)
+            ostype="darwin"
+            ;;
+        FreeBSD)
+            ostype="freebsd"
+            ;;
+        NetBSD)
+            ostype="netbsd"
+            ;;
+        *MINGW* | *WIN32* | *CYGWIN*)
+            ostype="windows"
+            ;;
+        *)
+            MANAGE_ERROR os "${ostype}"
+    esac
+
+    echo ${ostype}
+}
+
+MANAGE_GET_YQ() {
+    local version="2.1.2"
+    local url
+    local binary="${MANAGE_BIN}/yq"
+    local localVersion
+    local download="true"
+
+    url="https://github.com/mikefarah/yq/releases/download/${version}/yq_$(MANAGE_OS)_$(MANAGE_ARCH)"
+
+    if [[ -f "${binary}" ]]
+    then
+        localVersion="$("${binary}" --version 2>/dev/null)" || download=true
+        localVersion="${localVersion##"yq version "}"
+
+        if [[ "${localVersion}" == "${version}" ]]
+        then
+            download="false"
+        fi
+    fi
+
+    if [[ "${download}" == "true" ]]
+    then
+
+        {
+            if [[ "${MANAGE_INTERACTIVE}" == "true" ]]
+            then
+                curl -0 -S --progress-bar -L "${url}" -o "${MANAGE_BIN}/yq"
+            else
+                curl -0 -s -S -L "${url}" -o "${MANAGE_BIN}/yq"
+            fi
+        } || MANAGE_ERROR yq "${url}"
+
+        chmod +x "${MANAGE_BIN}/yq"
+
+        [[ "$("${MANAGE_BIN}/yq" --version)" == "yq version ${version}" ]] &> /dev/null || MANAGE_ERROR yq "${url}"
+    fi
+}
+
+yq () {
+    "${MANAGE_BIN}/yq" "$@"
+}
+
+
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
 then
     MANAGE_IMPORT_ARRAY=(${MANAGE_IMPORT})
@@ -881,8 +1018,19 @@ else
     MANAGE_CWD="$(absolutedirectorypath .)"
     MANAGE_ZERO="$(expandpath "$0")"
     MANAGE_DIRECTORY="$(absolutedirectorypath "${MANAGE_ZERO}")"
-
     LC_ALL=C
+
+    if [[ ! -f "${MANAGE_DIRECTORY}/.manage_modules/.manage-directory" ]]
+    then
+        MANAGE_DIRECTORY="${MANAGE_DIRECTORY}/.manage_modules/manage"
+
+        MANAGE_GET_OR_DELETE "https://github.com/escapace/manage.git" "${MANAGE_VERSION}" "${MANAGE_DIRECTORY}"
+    fi
+
+    MANAGE_BIN="${MANAGE_DIRECTORY}/.manage_modules/bin"
+    [[ ! -d "${MANAGE_BIN}" ]] && mkdir -p "${MANAGE_BIN}"
+
+    MANAGE_GET_YQ
 
     declare -A MANAGE_SCRIPTS
 
@@ -895,6 +1043,6 @@ else
 
     MANAGE_SPINNER disable
 
-    checkFileDependencies "${MANAGE_DIRECTORY}/manage"
+    checkFileDependencies "${MANAGE_ZERO}"
     collectScripts "$@"
 fi
