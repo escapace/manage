@@ -430,10 +430,16 @@ MANAGE_GET_OR_DELETE () {
     local directory="$3"
     local verify="${4:-true}"
 
+    local OPWD
+
+    OPWD="$(pwd)"
+
     MANAGE_GET "$1" "$2" "$3" "$4" || {
         rm -rf "${directory}" || true
         MANAGE_ERROR failDownload "${repository}"
     }
+
+    [[ "$(pwd)" = "${OPWD}" ]] || cd "${OPWD}"
 }
 
 MANAGE_REPOSITORY_PATH () {
