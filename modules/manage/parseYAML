@@ -3,7 +3,7 @@
 # shellcheck disable=SC2034
 
 parseYAML () {
-    MANAGE_SCRIPT_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" directories.script || echo null)"
+    MANAGE_SCRIPT_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" directories.scripts || echo null)"
 
     if [[ "${MANAGE_SCRIPT_DIRECTORY}" == "null" ]]
     then
@@ -12,7 +12,7 @@ parseYAML () {
         MANAGE_SCRIPT_DIRECTORY="${MANAGE_REPOSITORY}/${MANAGE_SCRIPT_DIRECTORY}"
     fi
 
-    MANAGE_MODULE_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" directories.module || echo null)"
+    MANAGE_MODULE_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" directories.modules || echo null)"
 
     if [[ "${MANAGE_MODULE_DIRECTORY}" == "null" ]]
     then
@@ -38,7 +38,7 @@ parseYAML () {
 
     if includes MANAGE_PUBLIC "test"
     then
-        MANAGE_TEST_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" directories.test || echo null)"
+        MANAGE_TEST_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" directories.tests || echo null)"
 
         if [[ "${MANAGE_TEST_DIRECTORY}" == "null" ]]
         then

@@ -1,6 +1,6 @@
 directories:
-  script: scripts
-  module: scripts/modules
+  scripts: scripts
+  modules: scripts/modules
 
 # Environment variables
 env:

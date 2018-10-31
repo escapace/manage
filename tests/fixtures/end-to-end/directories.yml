@@ -1,7 +1,7 @@
 directories:
-  script: other
-  module: modules
-  test: tests
+  scripts: other
+  modules: modules
+  tests: tests
 
 # Environment variables
 env:
