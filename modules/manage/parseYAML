@@ -1,20 +1,52 @@
 #!/usr/bin/env bash
 # @import array/includes
-# @import manage/yaml
 # shellcheck disable=SC2034
 
 parseYAML () {
-    eval "$(yaml "${MANAGE_REPOSITORY}/.manage.yml" "yml")"
+    MANAGE_SCRIPT_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" directories.script || echo null)"
 
-    MANAGE_SCRIPT_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_script || echo scripts)"
-    MANAGE_MODULE_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_module || echo "scripts/modules")"
+    if [[ "${MANAGE_SCRIPT_DIRECTORY}" == "null" ]]
+    then
+        MANAGE_SCRIPT_DIRECTORY="${MANAGE_REPOSITORY}/scripts"
+    else
+        MANAGE_SCRIPT_DIRECTORY="${MANAGE_REPOSITORY}/${MANAGE_SCRIPT_DIRECTORY}"
+    fi
 
-    # TODO: extra filter
-    [ -z "${MANAGE_PUBLIC}" ] &&
-        MANAGE_PUBLIC=($(yml enable || echo -e "help\ntest"))
+    MANAGE_MODULE_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" directories.module || echo null)"
+
+    if [[ "${MANAGE_MODULE_DIRECTORY}" == "null" ]]
+    then
+        MANAGE_MODULE_DIRECTORY="${MANAGE_SCRIPT_DIRECTORY}/modules"
+    else
+        MANAGE_MODULE_DIRECTORY="${MANAGE_REPOSITORY}/${MANAGE_MODULE_DIRECTORY}"
+    fi
+
+
+    if [[ -z "${MANAGE_PUBLIC}" ]]
+    then
+        local public
+        public="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" enable | cut -c3- || echo ll)"
+
+        if [[ "${public}" == "ll" ]]
+        then
+            MANAGE_PUBLIC=("help" "test")
+        else
+            # shellcheck disable=SC2206
+            MANAGE_PUBLIC=(${public})
+        fi
+    fi
 
     if includes MANAGE_PUBLIC "test"
     then
-        MANAGE_TEST_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_test || echo "scripts/tests")"
+        # MANAGE_TEST_DIRECTORY="${MANAGE_REPOSITORY}/$(yml directories_test || echo "scripts/tests")"
+
+        MANAGE_TEST_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" directories.test || echo null)"
+
+        if [[ "${MANAGE_TEST_DIRECTORY}" == "null" ]]
+        then
+            MANAGE_TEST_DIRECTORY="${MANAGE_SCRIPT_DIRECTORY}/tests"
+        else
+            MANAGE_TEST_DIRECTORY="${MANAGE_REPOSITORY}/${MANAGE_TEST_DIRECTORY}"
+        fi
     fi
 }

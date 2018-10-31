@@ -3,8 +3,8 @@
 manage () {
     if [ "${MANAGE_REPOSITORY}" == "${MANAGE_DIRECTORY}" ]
     then
-        MANAGE_INTERACTIVE=false "${MANAGE_DIRECTORY}/manage" "$@"
+        MANAGE_INTERACTIVE=false "${MANAGE_ZERO}" "$@"
     else
-        MANAGE_INTERACTIVE=false "${MANAGE_DIRECTORY}/manage" "${MANAGE_REPOSITORY}" "$@"
+        MANAGE_INTERACTIVE=false "${MANAGE_ZERO}" "${MANAGE_REPOSITORY}" "$@"
     fi
 }

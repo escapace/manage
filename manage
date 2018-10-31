@@ -30,6 +30,8 @@ else
     exit 1
 fi
 
+MANAGE_VERSION="latest"
+
 MANAGE_IS_CI () {
     # Returns 0 if the current environment
     # is a Continuous Integration server.
@@ -177,6 +179,15 @@ MANAGE_ERROR () {
         ;;
         collision)
             printf "%s the same name is used by two different functions\n '%s' and '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        arch)
+            printf "%s Unsupported architecture '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        os)
+            printf "%s Unsupported os type '%s'\n" "${prefix}" "$@" >&2
+        ;;
+        yq)
+            printf "%s failed to download yq from '%s'\n" "${prefix}" "$@" >&2
         ;;
         *)
             printf "%s uncaught exception\n" "${prefix}" >&2
@@ -332,7 +343,6 @@ MANAGE_GET () {
     local version="$2"
     local directory="$3"
     local verify="${4:-true}"
-    local modulePath
 
     local localVersion
 
@@ -412,6 +422,24 @@ MANAGE_GET () {
 
         MANAGE_REMOTES["${repository}"]="${2}"
     fi
+}
+
+MANAGE_GET_OR_DELETE () {
+    local repository="$1"
+    local version="$2"
+    local directory="$3"
+    local verify="${4:-true}"
+
+    MANAGE_GET "$1" "$2" "$3" "$4" || {
+        rm -rf "${directory}" || true
+        MANAGE_ERROR failDownload "${repository}"
+    }
+}
+
+MANAGE_REPOSITORY_PATH () {
+    local repository="$1"
+    local directory="$2"
+    local modulePath
 
     if [[ ! -n "${MANAGE_REMOTE_PATHS["${repository}"]}" ]]
     then
@@ -420,19 +448,9 @@ MANAGE_GET () {
             MANAGE_ERROR notRepository "${repository}"
         }
 
-        modulePath="$(
-            awk '
-                !/^[[:blank:]]/ {unindented = $0}
-                /module: / && /^[[:blank:]]/ {
-                    if (unindented == "directories:") {
-                            gsub(/^[ \t\r\n]+module:[ \t\r\n]+/, "", $0);
-                            print;
-                    }
-                }
-            ' "${directory}/.manage.yml"
-        )" || modulePath=
+        modulePath="$(yq r "${directory}/.manage.yml" directories.module)"
 
-        if [ ! -n "${modulePath}" ]
+        if [[ "${modulePath}" == "null" ]]
         then
             modulePath="scripts/modules"
         fi
@@ -611,10 +629,8 @@ MANAGE_RESOLVE_REMOTE () {
                 then
                     MANAGE_SPINNER "${repository} ${scriptPath}"
 
-                    MANAGE_GET "${repository}" "${version}" "${directory}" || {
-                        rm -rf "${directory}" || true
-                        MANAGE_ERROR failDownload "${repository}"
-                    }
+                    MANAGE_GET_OR_DELETE "${repository}" "${version}" "${directory}"
+                    MANAGE_REPOSITORY_PATH "${repository}" "${directory}"
 
                     scripts["${scriptName}"]="${script}"
                 fi
@@ -842,6 +858,111 @@ MANAGE_RETURN ()
     return "${_code}"
 }
 
+MANAGE_ARCH () {
+    local arch
+
+    arch="$(uname -m)"
+
+    case "${arch}" in
+        # armv6*)
+        #     arch="arm"
+        #     ;;
+        x86_64)
+            arch="amd64"
+            ;;
+        x86)
+            arch="386"
+            ;;
+        i686)
+            arch="386"
+            ;;
+        i386)
+            arch="386"
+            ;;
+        aarch64)
+            arch="arm64"
+            ;;
+        armv7*)
+            arch="arm"
+            ;;
+        *)
+            MANAGE_ERROR arch "${arch}"
+    esac
+
+    echo ${arch}
+}
+
+MANAGE_OS () {
+    local ostype
+
+    ostype="$(uname)"
+
+    case "${ostype}" in
+        Linux)
+            ostype="linux"
+            ;;
+        Darwin)
+            ostype="darwin"
+            ;;
+        FreeBSD)
+            ostype="freebsd"
+            ;;
+        NetBSD)
+            ostype="netbsd"
+            ;;
+        *MINGW* | *WIN32* | *CYGWIN*)
+            ostype="windows"
+            ;;
+        *)
+            MANAGE_ERROR os "${ostype}"
+    esac
+
+    echo ${ostype}
+}
+
+MANAGE_GET_YQ() {
+    local version="2.1.2"
+    local url
+    local binary="${MANAGE_BIN}/yq"
+    local localVersion
+    local download="true"
+
+    url="https://github.com/mikefarah/yq/releases/download/${version}/yq_$(MANAGE_OS)_$(MANAGE_ARCH)"
+
+    if [[ -f "${binary}" ]]
+    then
+        localVersion="$("${binary}" --version 2>/dev/null)" || download=true
+        localVersion="${localVersion##"yq version "}"
+
+        if [[ "${localVersion}" == "${version}" ]]
+        then
+            download="false"
+        fi
+    fi
+
+    if [[ "${download}" == "true" ]]
+    then
+
+        {
+            if [[ "${MANAGE_INTERACTIVE}" == "true" ]]
+            then
+                curl -0 -S --progress-bar -L "${url}" -o "${MANAGE_BIN}/yq"
+            else
+                curl -0 -s -S -L "${url}" -o "${MANAGE_BIN}/yq"
+            fi
+        } || MANAGE_ERROR yq "${url}"
+
+        chmod +x "${MANAGE_BIN}/yq"
+
+        [[ "$("${MANAGE_BIN}/yq" --version)" == "yq version ${version}" ]] &> /dev/null || MANAGE_ERROR yq "${url}"
+    fi
+}
+
+yq () {
+    "${MANAGE_BIN}/yq" "$@"
+}
+
+
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]
 then
     MANAGE_IMPORT_ARRAY=(${MANAGE_IMPORT})
@@ -897,8 +1018,19 @@ else
     MANAGE_CWD="$(absolutedirectorypath .)"
     MANAGE_ZERO="$(expandpath "$0")"
     MANAGE_DIRECTORY="$(absolutedirectorypath "${MANAGE_ZERO}")"
-
     LC_ALL=C
+
+    if [[ ! -f "${MANAGE_DIRECTORY}/.manage_modules/.manage-directory" ]]
+    then
+        MANAGE_DIRECTORY="${MANAGE_DIRECTORY}/.manage_modules/manage"
+
+        MANAGE_GET_OR_DELETE "https://github.com/escapace/manage.git" "${MANAGE_VERSION}" "${MANAGE_DIRECTORY}"
+    fi
+
+    MANAGE_BIN="${MANAGE_DIRECTORY}/.manage_modules/bin"
+    [[ ! -d "${MANAGE_BIN}" ]] && mkdir -p "${MANAGE_BIN}"
+
+    MANAGE_GET_YQ
 
     declare -A MANAGE_SCRIPTS
 
@@ -911,6 +1043,6 @@ else
 
     MANAGE_SPINNER disable
 
-    checkFileDependencies "${MANAGE_DIRECTORY}/manage"
+    checkFileDependencies "${MANAGE_ZERO}"
     collectScripts "$@"
 fi
