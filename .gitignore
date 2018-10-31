@@ -1,7 +1,8 @@
 .manage_modules/*
-.DS_Store
 !.manage_modules/.gitkeep
 !.manage_modules/bin/.gitkeep
+!.manage_modules/.manage-directory
+.DS_Store
 .vagrant
 Vagrantfile
 typescript

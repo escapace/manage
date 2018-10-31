@@ -1,6 +1,9 @@
+.manage_modules/*
+!.manage_modules/.gitkeep
+!.manage_modules/bin/.gitkeep
+!.manage_modules/.manage-directory
 .git
 .gitignore
-.manage_modules
 .vagrant
 Makefile
 Vagrantfile

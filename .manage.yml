@@ -1,7 +1,7 @@
 directories:
   script: scripts
   module: modules
-  test: test
+  test: tests
 
 # Default script to execute
 default: help

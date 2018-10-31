@@ -26,12 +26,12 @@ expectSuccess "commonTail" '
 
 expectSuccess "absolutePath" '
     cd "${MANAGE_DIRECTORY}"
-    result="$(_ absolutePath test/fixtures)"
+    result="$(_ absolutePath tests/fixtures)"
     [ "$result" = "${FIXTURES}" ]
 '
 expectSuccess "relativePath" '
     result="$(_ relativePath "${FIXTURES}" "${MANAGE_DIRECTORY}")"
-    [ "$result" = "test/fixtures" ]
+    [ "$result" = "tests/fixtures" ]
 '
 
 finish

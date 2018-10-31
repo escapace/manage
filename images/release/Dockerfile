@@ -13,9 +13,10 @@ COPY LICENSE LICENSE
 COPY manage manage
 COPY modules modules
 COPY scripts scripts
-COPY test test
+COPY tests tests
 COPY vendor/sharness vendor/sharness
 COPY .travis-master.yml .travis.yml
+COPY .manage_modules .manage_modules
 
 RUN rm scripts/release
 

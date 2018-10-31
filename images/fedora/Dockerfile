@@ -12,8 +12,9 @@ COPY LICENSE LICENSE
 COPY manage manage
 COPY modules modules
 COPY scripts scripts
-COPY test test
+COPY tests tests
 COPY vendor vendor
+COPY .manage_modules .manage_modules
 
 RUN ./manage trust-escapace
 RUN mv /workdir/vendor/tini/tini /sbin/tini
