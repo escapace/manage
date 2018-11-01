@@ -30,7 +30,7 @@ else
     exit 1
 fi
 
-MANAGE_VERSION="v3.1.0"
+MANAGE_VERSION="v3.1.1"
 
 MANAGE_IS_CI () {
     # Returns 0 if the current environment
@@ -360,7 +360,7 @@ MANAGE_GET () {
         if [ -d "${directory}" ] &&
            [ -f "${directory}/.manage.yml" ] &&
            cd "${directory}" &&
-           [[ "$(git remote get-url origin)" = "${repository}" ]] &&
+           [[ "$(git config remote.origin.url)" = "${repository}" ]] &&
            localVersion="$(git describe --exact-match HEAD | head -n 1)"
         then
             if [[ "${verify}" = "false" ]]
