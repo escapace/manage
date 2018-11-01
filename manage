@@ -30,7 +30,7 @@ else
     exit 1
 fi
 
-MANAGE_VERSION="v3.0.3"
+MANAGE_VERSION="v3.0.4"
 
 MANAGE_IS_CI () {
     # Returns 0 if the current environment
@@ -434,7 +434,7 @@ MANAGE_GET_OR_DELETE () {
 
     OPWD="$(pwd)"
 
-    MANAGE_GET "$1" "$2" "$3" "$4" || {
+    MANAGE_GET "${repository}" "${version}" "${directory}" "${verify}" || {
         rm -rf "${directory}" || true
         MANAGE_ERROR failDownload "${repository}"
     }
@@ -1030,7 +1030,7 @@ else
     then
         MANAGE_DIRECTORY="${MANAGE_DIRECTORY}/.manage_modules/manage"
 
-        MANAGE_GET_OR_DELETE "https://github.com/escapace/manage.git" "${MANAGE_VERSION}" "${MANAGE_DIRECTORY}"
+        MANAGE_GET_OR_DELETE "https://github.com/escapace/manage.git" "${MANAGE_VERSION}" "${MANAGE_DIRECTORY}" false
     fi
 
     MANAGE_BIN="${MANAGE_DIRECTORY}/.manage_modules/bin"
