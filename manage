@@ -30,7 +30,7 @@ else
     exit 1
 fi
 
-MANAGE_VERSION="v3.0.4"
+MANAGE_VERSION="v3.1.0"
 
 MANAGE_IS_CI () {
     # Returns 0 if the current environment
@@ -529,13 +529,13 @@ MANAGE_TAG ()
 MANAGE_QUERY () {
     local mode="$1"; shift 1
     local file
-    local list
+    local list=()
+    local text
 
     for file in "$@"
     do
-        list="$(MANAGE_TAG import "${file}")"
-        list="${list//$'\n'/ }"
-        list=(${list})
+        text="$(MANAGE_TAG import "${file}" | tr '\n' ' ' || true)"
+        IFS=$' ' read -ra list <<< "${text}"
 
         if [[ "${file}" == "${MANAGE_DOWNLOAD_DIRECTORY}"/* ]]
         then
