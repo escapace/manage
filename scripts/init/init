@@ -95,6 +95,9 @@ main () {
     if [[ ! -f "${cwd}/manage" ]]
     then
         ln -s "${cwd}/manage" "${PWD}/manage"
+    elif [[ -L "${cwd}/manage" ]]
+    then
+        ln -sf "${cwd}/manage" "${PWD}/manage"
     fi
 }
 
