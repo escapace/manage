@@ -86,18 +86,14 @@ main () {
 
     [ -d "${templates}" ] || _ die
 
-    cp -Li "${templates}/hello" "${scripts}/hello"
-    cp -Li "${templates}/hello-function" "${modules}/example/hello"
-    cp -Li "${templates}/manage.yml" "${PWD}/.manage.yml"
-
+    cp -Li  "${templates}/hello" "${scripts}/hello"
     # cp -Li  "${templates}/hello.spec.sh"  "${tests}/hello.spec.sh"
+    cp -Li  "${templates}/hello-function" "${modules}/example/hello"
+    cp -Li  "${templates}/manage.yml" "${PWD}/.manage.yml"
 
-    if [[ ! -f "${cwd}/manage" ]]
+    if [[ ! -f "${PWD}/manage" ]]
     then
-        ln -s "${cwd}/manage" "${PWD}/manage"
-    elif [[ -L "${cwd}/manage" ]]
-    then
-        ln -sf "${cwd}/manage" "${PWD}/manage"
+        ln -si "${cwd}/manage" "${PWD}/manage"
     fi
 }
 
