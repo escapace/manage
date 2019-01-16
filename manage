@@ -21,8 +21,11 @@
 # @dependency sort
 # @dependency tr
 
-if ((BASH_VERSINFO[0] >= 4)) &&
+if ((BASH_VERSINFO[0] == 4)) &&
    ((BASH_VERSINFO[1] >= 2))
+then
+    true
+elif ((BASH_VERSINFO[0] >= 5))
 then
     true
 else
