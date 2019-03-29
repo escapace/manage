@@ -9,6 +9,9 @@ matrix:
   - os: linux
     services: docker
     env: TEST_SUITE=centos
+  - os: linux
+    services: docker
+    env: TEST_SUITE=alpine
   - os: osx
     env: TEST_SUITE=osx
     install: brew install bash gnu-sed

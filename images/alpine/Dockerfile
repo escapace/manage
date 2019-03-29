@@ -1,6 +1,7 @@
 FROM alpine:latest
 
-RUN apk add --no-cache coreutils bash sed bc gnupg git tini
+RUN apk add --no-cache \
+        coreutils bash sed bc gnupg git tini curl
 
 ENV DOCKER=true
 RUN mkdir -p /workdir
