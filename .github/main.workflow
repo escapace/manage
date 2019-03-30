@@ -1,4 +1,4 @@
-workflow "New workflow" {
+workflow "Docker" {
   on = "push"
   resolves = ["Docker Push A", "Docker Push B"]
 }
