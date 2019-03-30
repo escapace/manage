@@ -15,10 +15,9 @@ COPY scripts scripts
 COPY tests tests
 COPY vendor vendor
 COPY .manage_modules .manage_modules
-COPY .github .github
 
 RUN ./manage trust-escapace
 
 ENTRYPOINT ["/sbin/tini", "--", "/workdir/manage"]
 CMD ["help"]
-LABEL version=v3.2.5
+LABEL version=3.2.6
