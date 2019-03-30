@@ -20,3 +20,4 @@ RUN ./manage trust-escapace
 
 ENTRYPOINT ["/sbin/tini", "--", "/workdir/manage"]
 CMD ["help"]
+LABEL version=v3.2.2
