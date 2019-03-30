@@ -16,26 +16,20 @@ action "Docker Login" {
 
 action "Docker Build" {
   uses = "actions/docker/cli@8cdf801b322af5f369e00d85e9cf3a7122f49108"
-  args = "build -t manage ."
+  args = "build -t escapace/manage:latest -t escapace/manage:${GITHUB_REF:11} ."
   needs = ["Filter"]
-}
-
-action "Docker Tag" {
-  uses = "actions/docker/tag@8cdf801b322af5f369e00d85e9cf3a7122f49108"
-  needs = ["Docker Build"]
-  args = "--no-sha --no-ref --env manage escapace/manage"
 }
 
 action "Docker Push A" {
   uses = "actions/docker/cli@8cdf801b322af5f369e00d85e9cf3a7122f49108"
-  needs = ["Docker Tag", "Docker Login"]
-  args = "push escapace/mange:latest"
+  needs = ["Docker Build", "Docker Login"]
+  args = "push build escapace/manage:latest"
   secrets = ["DOCKER_PASSWORD", "DOCKER_USERNAME"]
 }
 
 action "Docker Push B" {
   uses = "actions/docker/cli@8cdf801b322af5f369e00d85e9cf3a7122f49108"
-  needs = ["Docker Tag", "Docker Login"]
+  needs = ["Docker Build", "Docker Login"]
   secrets = ["DOCKER_PASSWORD", "DOCKER_USERNAME"]
-  args = "push escapace/mange:${IMAGE_VERSION}"
+  args = "push escapace/manage:${GITHUB_REF:11} ."
 }
