@@ -18,5 +18,6 @@ COPY vendor/sharness vendor/sharness
 COPY .travis-master.yml .travis.yml
 COPY .manage_modules .manage_modules
 COPY images/alpine/Dockerfile Dockerfile
+COPY .github .github
 
 RUN rm scripts/release

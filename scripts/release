@@ -41,6 +41,7 @@ build () {
     docker cp "${name}:/data" "${tmpDir}"
 
     find "${tmpDir}" -type f \
+        ! -name '.github' \
         ! -name '.manage-directory' \
         ! -name '.gitkeep' \
         ! -name '.travis.yml' \
@@ -93,6 +94,11 @@ main ()
     git config user.signingkey 0xF29CCEBC83FD4525
 
     build release
+
+    if [[ -f "${RELEASE_DIRECTORY}/Dockerfile" ]]
+    then
+        echo "LABEL version=${tag:1}" >> "${RELEASE_DIRECTORY}/Dockerfile"
+    fi
 
     local deployDirectory="${RELEASE_DIRECTORY}"
     local deployBranch="master"
