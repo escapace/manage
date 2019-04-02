@@ -15,4 +15,4 @@ WORKDIR /var/manage
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/manage"]
 CMD ["help"]
-LABEL version=3.3.1
+LABEL version=3.3.2
