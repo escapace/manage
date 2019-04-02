@@ -127,6 +127,13 @@ expectSuccess "environment" '
     [ "${lines[1]}" = "Script name: hello"      ]
 '
 
+expectSuccess "environment override" '
+    cp -f "${FIXTURES}/env.yml" "$(pwd)/.manage.yml"
+    readarray -t lines <<< "$(HELLO=QWE "$(pwd)/manage" hello 2>/dev/null)"
+    [ "${lines[0]}" = "QWE" ] &&
+    [ "${lines[1]}" = "Script name: hello" ]
+'
+
 expectSuccess "directories" '
     cp -f "${FIXTURES}/directories.yml" "$(pwd)/.manage.yml"
     mv "$(pwd)/scripts/modules" "$(pwd)/modules" &&

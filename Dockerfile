@@ -26,4 +26,4 @@ RUN /usr/bin/manage init
 
 ENTRYPOINT ["/sbin/tini", "--", "/manage/manage"]
 CMD ["help"]
-LABEL version=3.2.9
+LABEL version=3.3.0

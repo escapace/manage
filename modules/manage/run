@@ -59,12 +59,33 @@ run () {
 scriptEnvironment ()
 {
     local variables
+    local lines
+    local line
+    local name
+    local value
+    local delimiter=": "
+    local rx="s/^\([\"']\)\(.*\)\1\$/\2/g"
 
     variables="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" env)"
 
     if [[ "${variables}" != "null" ]]
     then
-        echo "${variables}" | sed 's/: /="/' | sed 's/$/"/'
+
+        IFS=$'\n' read -rd '' -a lines <<< "${variables}"
+
+        for line in "${lines[@]}"
+        do
+            name="${line%%${delimiter}*}"
+
+            if [[ "${name}" =~ ^[_a-zA-Z][-_a-zA-Z0-9]*$ ]] &&
+               [[ -z "${!name}" ]]
+            then
+                value="${line#*${delimiter}}"
+                value="$(echo "${value}" | sed "${rx}")"
+
+                echo -n "${name}=\"${value}\" "
+            fi
+        done
     fi
 }
 
@@ -98,7 +119,7 @@ executeScript () {
         zero="$(basename "${MANAGE_ZERO}")"
         libexec="source \"${MANAGE_ZERO}\""
 
-        if [ ! -z "${MANAGE_TEST_DIRECTORY}" ]
+        if [ -n "${MANAGE_TEST_DIRECTORY}" ]
         then
             exports+="MANAGE_TEST_DIRECTORY=\"${MANAGE_TEST_DIRECTORY}\" "
         fi
