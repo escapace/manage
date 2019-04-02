@@ -7,7 +7,7 @@ RUN mkdir -p /opt/manage /var/manage && \
 
 COPY .manage_modules vendor tests scripts modules manage .manage.yml LICENSE /opt/manage/
 
-RUN ln -s /opt/manage /usr/bin/manage && \
+RUN ln -s /opt/manage/manage /usr/bin/manage && \
     cd /opt/manage && ./manage trust-escapace && \
     cd /var/manage && /usr/bin/manage init
 
