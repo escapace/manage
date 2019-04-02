@@ -95,10 +95,10 @@ main ()
 
     build release
 
-    if [[ -f "${RELEASE_DIRECTORY}/Dockerfile" ]]
-    then
-        echo "LABEL version=${tag:1}" >> "${RELEASE_DIRECTORY}/Dockerfile"
-    fi
+    # if [[ -f "${RELEASE_DIRECTORY}/Dockerfile" ]]
+    # then
+    #     echo "LABEL version=${tag:1}" >> "${RELEASE_DIRECTORY}/Dockerfile"
+    # fi
 
     local deployDirectory="${RELEASE_DIRECTORY}"
     local deployBranch="master"

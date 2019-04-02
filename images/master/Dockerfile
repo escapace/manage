@@ -5,7 +5,7 @@ RUN mkdir -p /opt/manage /var/manage && \
         coreutils bash \
         sed bc gnupg git tini curl
 
-COPY .manage_modules vendor tests scripts modules manage .manage.yml LICENSE /opt/manage
+COPY .manage_modules vendor tests scripts modules manage .manage.yml LICENSE /opt/manage/
 
 RUN ln -s /opt/manage /usr/bin/manage && \
     cd /opt/manage && ./manage trust-escapace && \
