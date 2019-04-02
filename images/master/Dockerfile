@@ -1,28 +1,17 @@
 FROM alpine:latest
 
-RUN apk add --no-cache \
+RUN mkdir -p /opt/manage /var/manage && \
+    apk add --no-cache \
         coreutils bash \
         sed bc gnupg git tini curl
 
-ENV DOCKER=true
-RUN mkdir -p /manage /data
-WORKDIR /manage
+COPY .manage_modules vendor tests scripts modules manage .manage.yml LICENSE /opt/manage
 
-COPY .manage.yml .manage.yml
-COPY LICENSE LICENSE
-COPY manage manage
-COPY modules modules
-COPY scripts scripts
-COPY tests tests
-COPY vendor vendor
-COPY .manage_modules .manage_modules
+RUN ln -s /opt/manage /usr/bin/manage && \
+    cd /opt/manage && ./manage trust-escapace && \
+    cd /var/manage && /usr/bin/manage init
 
-RUN ln -s /manage/manage /usr/bin/manage && \
-         ./manage trust-escapace
+WORKDIR /var/manage
 
-WORKDIR /data
-
-RUN /usr/bin/manage init
-
-ENTRYPOINT ["/sbin/tini", "--", "/manage/manage"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/manage"]
 CMD ["help"]
