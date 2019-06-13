@@ -4,12 +4,15 @@ script: ./manage ci
 matrix:
   include:
   - os: linux
+    dist: trusty
     services: docker
     env: TEST_SUITE=lint
   - os: linux
+    dist: trusty
     services: docker
     env: TEST_SUITE=centos
   - os: linux
+    dist: trusty
     services: docker
     env: TEST_SUITE=alpine
   - os: osx
