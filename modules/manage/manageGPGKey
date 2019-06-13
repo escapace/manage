@@ -29,10 +29,10 @@ manageGPGKey ()
         executable="gpg"
     fi
 
-    if exists gpg2
-    then
-        executable="gpg2"
-    fi
+    # if exists gpg2
+    # then
+    #     executable="gpg2"
+    # fi
 
     required "${executable}" || return 1
 
@@ -50,7 +50,7 @@ manageGPGKey ()
         then
             if (( code == 0 ))
             then
-                echo "${key}:5:" | gpg --import-ownertrust &> /dev/null
+                echo "${key}:5:" | "${executable}" --import-ownertrust &> /dev/null
 
                 exitCode=0
 
