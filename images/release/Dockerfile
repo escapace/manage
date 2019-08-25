@@ -15,8 +15,10 @@ COPY modules modules
 COPY scripts scripts
 COPY tests tests
 COPY vendor/sharness vendor/sharness
-COPY .travis-master.yml .travis.yml
 COPY .manage_modules .manage_modules
+COPY images/alpine images/alpine
+COPY images/centos images/centos
+COPY images/shellcheck images/shellcheck
 COPY images/master/Dockerfile Dockerfile
 COPY .github .github
 
