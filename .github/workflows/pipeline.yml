@@ -87,7 +87,7 @@ jobs:
       run: |
         mkdir ~/bin
         wget -qO- https://github.com/github/hub/releases/download/v2.12.3/hub-linux-amd64-2.12.3.tgz | tar xvz -C ~/bin --strip=2 --wildcards --no-anchored 'hub*/bin/hub'
-        ~/bin/hub release create -a manage -m "manage ${GITHUB_REF:11}" v${GITHUB_REF:11}
+        ~/bin/hub release create -a manage -m "manage ${GITHUB_REF:11}" -t master v${GITHUB_REF:11}
       env:
         GITHUB_USER: escapace
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
