@@ -935,7 +935,7 @@ MANAGE_OS () {
 }
 
 MANAGE_GET_YQ() {
-    local version="2.1.2"
+    local version="3.2.1"
     local url
     local binary="${MANAGE_BIN}/yq"
     local localVersion
