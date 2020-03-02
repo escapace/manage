@@ -462,13 +462,7 @@ MANAGE_REPOSITORY_PATH () {
             MANAGE_ERROR notRepository "${repository}"
         }
 
-        modulePath="$(yq r "${directory}/.manage.yml" directories.module)"
-
-        if [[ "${modulePath}" == "null" ]]
-        then
-            modulePath="scripts/modules"
-        fi
-
+        modulePath="$(yq r "${directory}/.manage.yml" --defaultValue "scripts/modules" directories.module)"
         modulePath="${directory}/${modulePath}"
 
         [ ! -d "${modulePath}" ] && {
