@@ -1,6 +1,6 @@
-FROM centos:latest
-RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-RUN yum -y install coreutils findutils bc gnupg git
+FROM centos:8
+RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+RUN yum -y --allowerasing install coreutils findutils bc gnupg git
 
 ENV DOCKER=true
 RUN mkdir -p /workdir
