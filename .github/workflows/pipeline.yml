@@ -59,33 +59,17 @@ jobs:
         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
         git submodule sync --recursive
         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-    - name: Docker Login
+    - name: Docker Build & Push
       if: contains(github.ref, 'tags/v')
-      uses: actions/docker/login@fe7ed3ce992160973df86480b83a2f8ed581cd50
+      shell: bash
+      run: |
+        echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+        docker build -t escapace/manage:latest -t escapace/manage:${GITHUB_REF:11} .
+        docker push escapace/manage:latest
+        docker push escapace/manage:${GITHUB_REF:11}
       env:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-    - name: Docker Build
-      if: contains(github.ref, 'tags/v')
-      uses: actions/docker/cli@fe7ed3ce992160973df86480b83a2f8ed581cd50
-      with:
-        args: build -t escapace/manage:latest -t escapace/manage:${GITHUB_REF:11} .
-    - name: Docker Push Latest
-      if: contains(github.ref, 'tags/v')
-      uses: actions/docker/cli@fe7ed3ce992160973df86480b83a2f8ed581cd50
-      env:
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      with:
-        args: push escapace/manage:latest
-    - name: Docker Push Tag
-      if: contains(github.ref, 'tags/v')
-      uses: actions/docker/cli@fe7ed3ce992160973df86480b83a2f8ed581cd50
-      env:
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      with:
-        args: push escapace/manage:${GITHUB_REF:11}
   release:
     name: "Github Release"
     runs-on: ubuntu-latest
