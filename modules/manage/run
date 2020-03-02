@@ -37,12 +37,12 @@ run () {
         shift
         executeScript "${name}" "$@"
     else
-        name="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" default || echo null)"
+        name="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" --defaultValue help default)"
 
-        if [[ "${MANAGE_SCRIPT_DIRECTORY}" == "null" ]]
-        then
-            name="help"
-        fi
+        # if [[ "${MANAGE_SCRIPT_DIRECTORY}" == "null" ]]
+        # then
+        #     name="help"
+        # fi
 
         if scriptPresent "${name}"
         then
@@ -66,11 +66,10 @@ scriptEnvironment ()
     local delimiter=": "
     local rx="s/^\([\"']\)\(.*\)\1\$/\2/g"
 
-    variables="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" env)"
+    variables="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" --defaultValue null env)"
 
     if [[ "${variables}" != "null" ]]
     then
-
         IFS=$'\n' read -rd '' -a lines <<< "${variables}"
 
         for line in "${lines[@]}"
