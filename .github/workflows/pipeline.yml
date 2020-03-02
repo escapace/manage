@@ -25,11 +25,15 @@ jobs:
         TEST_SUITE: ${{ matrix.suite }}
   test-macOS:
     name: "macOS Test"
-    runs-on: macOS-latest
+    runs-on: macos-latest
     steps:
-    - uses: actions/checkout@master
-      with:
-        submodules: true
+    - uses: actions/checkout@v2.0.0
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
     - name: manage ci
       run: |
         brew install bash gnu-sed gnupg
@@ -42,10 +46,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-macOS, test-linux]
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2.0.0
       if: contains(github.ref, 'tags/v')
-      with:
-        submodules: true
+    - name: Checkout submodules
+      if: contains(github.ref, 'tags/v')
+      shell: bash
+      run: |
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
     - name: Docker Login
       if: contains(github.ref, 'tags/v')
       uses: actions/docker/login@fe7ed3ce992160973df86480b83a2f8ed581cd50
@@ -78,10 +87,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-macOS, test-linux]
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2.0.0
       if: contains(github.ref, 'tags/v')
-      with:
-        submodules: true
+    - name: Checkout submodules
+      if: contains(github.ref, 'tags/v')
+      shell: bash
+      run: |
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
     - name: release
       if: contains(github.ref, 'tags/v')
       run: |
