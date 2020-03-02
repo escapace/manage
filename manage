@@ -33,7 +33,7 @@ else
     exit 1
 fi
 
-MANAGE_VERSION="v3.4.1"
+MANAGE_VERSION="v3.5.0"
 
 MANAGE_IS_CI () {
     # Returns 0 if the current environment
@@ -935,7 +935,7 @@ MANAGE_OS () {
 }
 
 MANAGE_GET_YQ() {
-    local version="2.1.2"
+    local version="3.2.1"
     local url
     local binary="${MANAGE_BIN}/yq"
     local localVersion
