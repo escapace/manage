@@ -1,4 +1,4 @@
-FROM centos:latest
+FROM centos:7
 RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install coreutils findutils bc gnupg git ShellCheck
 
