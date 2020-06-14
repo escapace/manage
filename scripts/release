@@ -101,7 +101,7 @@ main ()
     # fi
 
     local deployDirectory="${RELEASE_DIRECTORY}"
-    local deployBranch="master"
+    local deployBranch="release"
     local repo="https://github.com/escapace/manage.git"
     local previousBranch
     local commitHashh
@@ -141,7 +141,7 @@ main ()
             *)
                 echo "git diff exited with code $diff. Aborting. Staying on
                 branch $deployBranch so you can debug. To switch back to
-                master, use: git symbolic-ref HEAD refs/heads/master && git
+                trunk, use: git symbolic-ref HEAD refs/heads/trunk && git
                 reset --mixed >&2"
             ;;
         esac
