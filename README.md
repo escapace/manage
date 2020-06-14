@@ -242,17 +242,17 @@ copyright notices, and licenses.
 
 [4]: #built-in-statements
 
-[5]: https://github.com/escapace/manage/tree/master/modules/array
+[5]: https://github.com/escapace/manage/tree/trunk/modules/array
 
-[6]: https://github.com/escapace/manage/tree/master/modules/console
+[6]: https://github.com/escapace/manage/tree/trunk/modules/console
 
-[7]: https://github.com/escapace/manage/tree/master/modules/lang
+[7]: https://github.com/escapace/manage/tree/trunk/modules/lang
 
-[8]: https://github.com/escapace/manage/tree/master/modules/manage
+[8]: https://github.com/escapace/manage/tree/trunk/modules/manage
 
-[9]: https://github.com/escapace/manage/tree/master/modules/path
+[9]: https://github.com/escapace/manage/tree/trunk/modules/path
 
-[10]: https://github.com/escapace/manage/tree/master/modules/string
+[10]: https://github.com/escapace/manage/tree/trunk/modules/string
 
 [11]: https://github.com/escapace/stack-tools
 
