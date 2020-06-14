@@ -19,7 +19,7 @@ COPY .manage_modules .manage_modules
 COPY images/alpine images/alpine
 COPY images/centos images/centos
 COPY images/shellcheck images/shellcheck
-COPY images/master/Dockerfile Dockerfile
+COPY images/release/dist-dockerfile Dockerfile
 COPY .github .github
 
 RUN rm scripts/release
