@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suite: [lint, centos, alpine]
+        suite: [lint, centos]
     steps:
     - uses: actions/checkout@v2.0.0
     - name: Checkout submodules
