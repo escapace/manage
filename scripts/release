@@ -58,7 +58,7 @@ commit () {
     local repo="$4"
 
     git --work-tree "$deployDirectory" commit \
-        --gpg-sign=0xF29CCEBC83FD4525 \
+        --gpg-sign=0x90A65F3603169487 \
         -m "$tag"
 
     git --work-tree "$deployDirectory" tag -d "${tag}" &> /dev/null || true
@@ -91,7 +91,7 @@ main ()
 
     git config user.name "escapace"
     git config user.email "security@escapace.com"
-    git config user.signingkey 0xF29CCEBC83FD4525
+    git config user.signingkey 0x90A65F3603169487
 
     build release
 
