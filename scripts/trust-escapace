@@ -12,7 +12,7 @@ main ()
     verbose true
     strict true
 
-    local id="13F26F82E955B8B8CE469054F29CCEBC83FD4525"
+    local id="D52633612B824195696B80D690A65F3603169487"
 
     _ trust "${id}"
 }

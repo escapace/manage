@@ -1,5 +1,4 @@
-FROM centos:8
-RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+FROM centos:latest
 RUN yum -y --allowerasing install coreutils findutils bc gnupg git
 
 ENV DOCKER=true
@@ -16,9 +15,6 @@ COPY vendor vendor
 COPY .manage_modules .manage_modules
 
 RUN ./manage trust-escapace
-RUN mv /workdir/vendor/tini/tini /sbin/tini
-RUN chown root:root /sbin/tini
-RUN chmod 755 /sbin/tini
 
-ENTRYPOINT ["/sbin/tini", "--", "/workdir/manage"]
+ENTRYPOINT ["/workdir/manage"]
 CMD ["help"]
