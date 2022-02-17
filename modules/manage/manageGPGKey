@@ -11,7 +11,6 @@ manageGPGKey ()
     local mode="${1:-"--recv-keys"}"
     local key="$2"
     local keyservers=(
-        "hkps://keys.openpgp.org"
         "hkp://keyserver.ubuntu.com:80"
         "hkp://ipv4.pool.sks-keyservers.net"
         "hkp://p80.pool.sks-keyservers.net:80"
@@ -19,6 +18,7 @@ manageGPGKey ()
         "keyserver.ubuntu.com"
         "ha.pool.sks-keyservers.net"
         "pgp.mit.edu"
+        "hkps://keys.openpgp.org"
     )
 
     ( [[ "${mode}" == "--recv-keys" ]] || [[ "${mode}" == "--send-keys" ]] ) || return 1
