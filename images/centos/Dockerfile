@@ -1,4 +1,5 @@
-FROM centos:latest
+FROM quay.io/centos/centos:stream9
+
 RUN yum -y --allowerasing install coreutils findutils bc gnupg git
 
 ENV DOCKER=true
