@@ -63,12 +63,12 @@ jobs:
       if: contains(github.ref, 'tags/v')
       shell: bash
       run: |
-        echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+        echo ${DOCKER_ACCESS_TOKEN} | docker login -u ${DOCKER_USERNAME} --password-stdin
         docker build -t escapace/manage:latest -t escapace/manage:${GITHUB_REF:11} .
         docker push escapace/manage:latest
         docker push escapace/manage:${GITHUB_REF:11}
       env:
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   release:
     name: "Github Release"
