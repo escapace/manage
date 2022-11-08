@@ -37,7 +37,7 @@ run () {
         shift
         executeScript "${name}" "$@"
     else
-        name="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" --defaultValue help default)"
+        name="$(yq '.default // "help"' "${MANAGE_REPOSITORY}/.manage.yml" )"
 
         # if [[ "${MANAGE_SCRIPT_DIRECTORY}" == "null" ]]
         # then
@@ -66,7 +66,7 @@ scriptEnvironment ()
     local delimiter=": "
     local rx="s/^\([\"']\)\(.*\)\1\$/\2/g"
 
-    variables="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" --defaultValue null env)"
+    variables="$(yq '.env // "null"' "${MANAGE_REPOSITORY}/.manage.yml")"
 
     if [[ "${variables}" != "null" ]]
     then
@@ -135,7 +135,7 @@ executeScript () {
 
         commandstring="${exports} && ${libexec}"
         commandstring="${commandstring//$'\n'/ }"
- 
+
         exec -a "${zero}"           \
             "bash"                  \
             "--norc"                \
