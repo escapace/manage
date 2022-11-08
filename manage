@@ -33,7 +33,7 @@ else
     exit 1
 fi
 
-MANAGE_VERSION="v3.8.1"
+MANAGE_VERSION="v3.9.0"
 
 MANAGE_IS_CI () {
     # Returns 0 if the current environment
@@ -462,7 +462,7 @@ MANAGE_REPOSITORY_PATH () {
             MANAGE_ERROR notRepository "${repository}"
         }
 
-        modulePath="$(yq r "${directory}/.manage.yml" --defaultValue "scripts/modules" directories.module)"
+        modulePath="$(yq '.directories.module // "scripts/modules"' "${directory}/.manage.yml")"
         modulePath="${directory}/${modulePath}"
 
         [ ! -d "${modulePath}" ] && {
@@ -887,6 +887,9 @@ MANAGE_ARCH () {
         i386)
             arch="386"
             ;;
+        arm64)
+            arch="arm64"
+            ;;
         aarch64)
             arch="arm64"
             ;;
@@ -929,13 +932,13 @@ MANAGE_OS () {
 }
 
 MANAGE_GET_YQ() {
-    local version="3.2.1"
+    local version="4.29.2"
     local url
     local binary="${MANAGE_BIN}/yq"
     local localVersion
     local download="true"
 
-    url="https://github.com/mikefarah/yq/releases/download/${version}/yq_$(MANAGE_OS)_$(MANAGE_ARCH)"
+    url="https://github.com/mikefarah/yq/releases/download/v${version}/yq_$(MANAGE_OS)_$(MANAGE_ARCH)"
 
     if [[ -f "${binary}" ]]
     then
@@ -950,7 +953,6 @@ MANAGE_GET_YQ() {
 
     if [[ "${download}" == "true" ]]
     then
-
         {
             if [[ "${MANAGE_INTERACTIVE}" == "true" ]]
             then
@@ -962,7 +964,7 @@ MANAGE_GET_YQ() {
 
         chmod +x "${MANAGE_BIN}/yq"
 
-        [[ "$("${MANAGE_BIN}/yq" --version)" == "yq version ${version}" ]] &> /dev/null || MANAGE_ERROR yq "${url}"
+        [[ "$("${MANAGE_BIN}/yq" --version)" == "yq (https://github.com/mikefarah/yq/) version ${version}" ]] &> /dev/null || MANAGE_ERROR yq "${url}"
     fi
 }
 

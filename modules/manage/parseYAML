@@ -3,10 +3,10 @@
 # shellcheck disable=SC2034
 
 parseYAML () {
-    MANAGE_SCRIPT_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" --defaultValue scripts  directories.scripts)"
+    MANAGE_SCRIPT_DIRECTORY="$(yq '.directories.scripts // "scripts"' "${MANAGE_REPOSITORY}/.manage.yml")"
     MANAGE_SCRIPT_DIRECTORY="${MANAGE_REPOSITORY}/${MANAGE_SCRIPT_DIRECTORY}"
 
-    MANAGE_MODULE_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" --defaultValue null directories.modules)"
+    MANAGE_MODULE_DIRECTORY="$(yq '.directories.modules // "null"' "${MANAGE_REPOSITORY}/.manage.yml")"
 
     if [[ "${MANAGE_MODULE_DIRECTORY}" == "null" ]]
     then
@@ -19,14 +19,14 @@ parseYAML () {
     if [[ -z "${MANAGE_PUBLIC}" ]]
     then
         local public
-        public="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" --defaultValue '- help' enable | cut -c3-)"
+        public="$(yq '.enable // "- help"' "${MANAGE_REPOSITORY}/.manage.yml" | cut -c3-)"
 
         MANAGE_PUBLIC=(${public})
     fi
 
     if includes MANAGE_PUBLIC "test"
     then
-        MANAGE_TEST_DIRECTORY="$(yq r "${MANAGE_REPOSITORY}/.manage.yml" --defaultValue null directories.tests)"
+        MANAGE_TEST_DIRECTORY="$(yq '.directories.tests // "null"' "${MANAGE_REPOSITORY}/.manage.yml")"
 
         if [[ "${MANAGE_TEST_DIRECTORY}" == "null" ]]
         then
