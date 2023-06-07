@@ -33,7 +33,7 @@ else
     exit 1
 fi
 
-MANAGE_VERSION="v3.9.0"
+MANAGE_VERSION="v3.9.1"
 
 MANAGE_IS_CI () {
     # Returns 0 if the current environment
@@ -943,7 +943,7 @@ MANAGE_GET_YQ() {
     if [[ -f "${binary}" ]]
     then
         localVersion="$("${binary}" --version 2>/dev/null)" || download=true
-        localVersion="${localVersion##"yq version "}"
+        localVersion="${localVersion##"yq (https://github.com/mikefarah/yq/) version "}"
 
         if [[ "${localVersion}" == "${version}" ]]
         then
