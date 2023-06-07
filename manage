@@ -943,7 +943,7 @@ MANAGE_GET_YQ() {
     if [[ -f "${binary}" ]]
     then
         localVersion="$("${binary}" --version 2>/dev/null)" || download=true
-        localVersion="${localVersion##"yq version "}"
+        localVersion="${localVersion##"yq (https://github.com/mikefarah/yq/) version "}"
 
         if [[ "${localVersion}" == "${version}" ]]
         then
